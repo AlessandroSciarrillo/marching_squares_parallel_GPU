@@ -37,6 +37,11 @@ Valutazioni:
 
 * Utilizzare Marching Cubes/Blocks? 
     Speedup Marching Blocks PMB è applicabile al 2D?
+    
+* Parallelizzando solo i due for di find_contours_cy il progetto non è troppo piccolo?
+** Cosa aggiungere?
+** Includere nel progetto il codice dello stage Aliquis?
+*** Parallelizzare anche il ciclo sui vari canali
 
 
 
