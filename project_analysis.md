@@ -31,12 +31,13 @@ argomenti in input ma che implementi una versione più efficente di
 Marching Squares(*se trovata) interamente scritta per
 funzionare con CUDA API o Numba.
 
-(*) Valutazioni:
-        Trovare versione ottimizzata Marching Cubes con CUDA?
-            - https://ieeexplore.ieee.org/document/9415927
-        Utilizzare Marching Cubes/Blocks? 
-            - Speedup Marching Blocks PMB è applicabile al 2D?
-        
+Valutazioni:
+* Trovare versione ottimizzata Marching Cubes con CUDA? hanno senso?
+    https://ieeexplore.ieee.org/document/9415927
+
+* Utilizzare Marching Cubes/Blocks? 
+    Speedup Marching Blocks PMB è applicabile al 2D?
+
 
 
 
