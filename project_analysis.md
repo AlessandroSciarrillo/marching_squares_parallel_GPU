@@ -43,6 +43,10 @@ Valutazioni:
     * Includere nel progetto il codice dello stage Aliquis?
         * Parallelizzare anche il ciclo sui vari canali
 
+Riunione 01/03/2023
+- utilizzare compilatore nvc++ ottimizzato da nvidia per compilare find_contours_cy in Cython
+- fare benchmark rispetto a versione utilizzata ora da loro su Aliquis (versione vanilla)
+- nel caso provare a scrivere kernel cuda con Python-Cuda riscrivendo find_contours_cy
 
 
 
