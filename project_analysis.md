@@ -50,13 +50,12 @@ Riunione 01/03/2023
 
 
 # Current
-Errore core dump su esecuzione codice cimpilato
+Errore segmentation fault (core dump)
+- generato all'import del codice compilato con nvc++ (CC=nvc++ python setup.py build_ext --inplace)
+	- se si compila con cython invece il codice esegue correttamente (python setup.py build_ext --inplace)
+
 ## Next
-provare a lascire una funziona void o con una 
-banale operazione per vedere se il problema è
-dato dal codice della libreria o meno.
-
-
-
-
+- tentare di capire la causa del segmentation fault generato dal import su python del cython compilato con nvc++
+- capire perchè le prestazioni sul loro Jupyter notebook con la versione GPU siano uguali a quelle con CPU seriale
+- fare test con CUDA API
 
