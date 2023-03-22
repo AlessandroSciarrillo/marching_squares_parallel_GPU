@@ -1,7 +1,8 @@
 import numpy as np
 
-#from ._find_contours_cy import _get_contour_segments
-from cppsort import _get_contour_segments
+#*original*#from ._find_contours_cy import _get_contour_segments
+#from cppsort import _get_contour_segments
+from cppsort import _get_hello
 
 from collections import deque
 
@@ -145,12 +146,16 @@ def find_contours(image, level=None,
     if level is None:
         level = (np.nanmin(image) + np.nanmax(image)) / 2.0
 
-    segments = _get_contour_segments(image.astype(np.float64), float(level),
-                                     fully_connected == 'high', mask=mask)
-    contours = _assemble_contours(segments)
-    if positive_orientation == 'high':
-        contours = [c[::-1] for c in contours]
-    return contours
+
+    #segments = _get_contour_segments(image.astype(np.float64), float(level),
+    #                                 fully_connected == 'high', mask=mask)
+    #contours = _assemble_contours(segments)
+    #if positive_orientation == 'high':
+    #    contours = [c[::-1] for c in contours]
+    #return contours
+
+    val = _get_hello()
+    print(val)
 
 
 def _assemble_contours(segments):
