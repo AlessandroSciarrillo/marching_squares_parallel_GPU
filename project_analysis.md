@@ -49,6 +49,13 @@ Riunione 01/03/2023
 - nel caso provare a scrivere kernel cuda con Python-Cuda riscrivendo find_contours_cy
 
 
+# Current
+Errore core dump su esecuzione codice cimpilato
+## Next
+provare a lascire una funziona void o con una 
+banale operazione per vedere se il problema è
+dato dal codice della libreria o meno.
+
 
 
 
