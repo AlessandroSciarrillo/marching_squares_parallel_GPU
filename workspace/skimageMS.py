@@ -18,6 +18,7 @@ st = time.time()
 #contours = measure.find_contours(r, 0.8)
 for c in range(11):
     r=t[:,:,c]
+    print("Lancio ",c)
     contours = find_contours(r, 0.5) # circa 0.00674
 
 # get the end time

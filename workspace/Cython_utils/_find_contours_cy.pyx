@@ -1,22 +1,10 @@
-
 # distutils: language=c++
-
 
 #cython: cdivision=True
 #cython: boundscheck=False
 #cython: nonecheck=False
 #cython: wraparound=False
 
-#TEST#
-def _get_hello():
-
-    ris=0;
-    for i in range(10000):
-        for j in range(1000):
-            ris = j+1;
-    return ris
-
-"""
 cimport numpy as cnp
 cnp.import_array()
 
@@ -33,7 +21,7 @@ cdef inline cnp.float64_t _get_fraction(cnp.float64_t from_value,
 def _get_contour_segments(cnp.float64_t[:, :] array,
                           cnp.float64_t level, bint vertex_connect_high,
                           cnp.uint8_t[:, :] mask):
-    ""Iterate across the given array in a marching-squares fashion,
+    """Iterate across the given array in a marching-squares fashion,
     looking for segments that cross 'level'. If such a segment is
     found, its coordinates are added to a growing list of segments,
     which is returned by the function.  if vertex_connect_high is
@@ -42,7 +30,7 @@ def _get_contour_segments(cnp.float64_t[:, :] array,
 
     Positions where the boolean array ``mask`` is ``False`` are considered
     as not containing data.
-    ""
+    """
 
     # The plan is to iterate a 2x2 square across the input array. This means
     # that the upper-left corner of the square needs to iterate across a
@@ -173,4 +161,3 @@ def _get_contour_segments(cnp.float64_t[:, :] array,
                 segments.append((left, top))
 
     return segments
-"""
