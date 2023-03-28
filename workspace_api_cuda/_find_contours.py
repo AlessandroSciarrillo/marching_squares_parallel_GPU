@@ -1,9 +1,7 @@
 import numpy as np
 
-#*original*#from ._find_contours_cy import _get_contour_segments
-#from cppsort import _get_contour_segments
-from hello import get_hello
-#import cppsort
+#from ._find_contours_cy import _get_contour_segments
+from find_contours_cuda import _get_contour_segments
 
 from collections import deque
 
@@ -44,10 +42,10 @@ def find_contours(image, level=None,
     return contours
     """
 
-    print("Enter _get_hello...")
-    val = get_hello(10,5)
+    #print("Enter _get_hello...")
+    val = _get_contour_segments()
     print(val)
-    print("Done")
+    #print("Done")
 
 
 def _assemble_contours(segments):

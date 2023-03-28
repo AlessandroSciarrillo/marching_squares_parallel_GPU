@@ -28,6 +28,7 @@ et = time.time()
 elapsed_time = et - st
 print('Execution time:', elapsed_time, 'seconds')
 
+"""
 # Display the image and plot all contours found
 fig, ax = plt.subplots()
 ax.imshow(r, cmap=plt.cm.gray)
@@ -39,3 +40,4 @@ ax.axis('image')
 ax.set_xticks([])
 ax.set_yticks([])
 plt.show()
+"""
