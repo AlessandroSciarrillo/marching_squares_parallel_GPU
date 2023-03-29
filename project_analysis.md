@@ -59,3 +59,5 @@ Errore segmentation fault (core dump)
 - capire perchè le prestazioni sul loro Jupyter notebook con la versione GPU siano uguali a quelle con CPU seriale
 - fare test con CUDA API
 
+- scaricare docker nvidia con tutto l ambiente
+- proseguire con nvc++, controllare i flag, testare codice su RTX2060
