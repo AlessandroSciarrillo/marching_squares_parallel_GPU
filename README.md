@@ -1,20 +1,24 @@
+# Marching Squares parallelo su GPU
 
-# Libreria Skimage implementazione find_contours
-https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours.py
-https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours_cy.pyx
+# Implementazione Marching Squares usta attualmente da Bioretics
 
-## Nvidia supporto a Cython e parallelizzazione automatica su CPU e GPU 
-https://developer.nvidia.com/blog/accelerating-python-on-gpus-with-nvc-and-cython/
-
-
-
-# Nvidia (>=11.4) Cuda-Python
-https://nvidia.github.io/cuda-python/overview.html
+## Libreria Skimage implementazione find_contours
+_find_contours.py (https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours.py)	
+_find_contours_cy.pyx (https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours_cy.pyx)
 	
-                                C++         Python
-    Application execution       1076ms      1080ms    (-0.004%)
 
-## Numba (consigliato da Emanuele)
+# Potenziali strumenti per la parallelizzazione
+
+## nvc++
+Compilazione codice Cython tramite nvc++ con flag per la parallelizzazione su GPU.
+(Nvidia supporto a Cython e parallelizzazione automatica su CPU e GPU https://developer.nvidia.com/blog/accelerating-python-on-gpus-with-nvc-and-cython/)
+
+## API Cuda-Python
+
+### API Cuda-Python Nvidia (>=11.4)
+https://nvidia.github.io/cuda-python/overview.html
+
+### Numba
 https://numba.readthedocs.io/en/stable/cuda/index.html
 
 
@@ -56,7 +60,7 @@ Errore segmentation fault (core dump)
 
 ## Next
 - tentare di capire la causa del segmentation fault generato dal import su python del cython compilato con nvc++
-- capire perchè le prestazioni sul loro Jupyter notebook con la versione GPU siano uguali a quelle con CPU seriale
+- capire perchè le prestazioni sul loro Jupyter notebook con la versione GPU siano uguali a quelle con CPU seriale (causa GPU test?)
 - fare test con CUDA API
 
 - scaricare docker nvidia con tutto l ambiente
