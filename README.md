@@ -1,28 +1,28 @@
 # Marching Squares parallelo su GPU
 
-# Implementazione Marching Squares usta attualmente da Bioretics
+## Implementazione Marching Squares usta attualmente da Bioretics
 
-## Libreria Skimage implementazione find_contours
+### Libreria Skimage implementazione find_contours
 _find_contours.py (https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours.py)	
 _find_contours_cy.pyx (https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours_cy.pyx)
 	
 
-# Potenziali strumenti per la parallelizzazione
+## Potenziali strumenti per la parallelizzazione
 
-## nvc++
+### nvc++
 Compilazione codice Cython tramite nvc++ con flag per la parallelizzazione su GPU.
 (Nvidia supporto a Cython e parallelizzazione automatica su CPU e GPU https://developer.nvidia.com/blog/accelerating-python-on-gpus-with-nvc-and-cython/)
 
-## API Cuda-Python
+### API Cuda-Python
 
-### API Cuda-Python Nvidia (>=11.4)
+#### API Cuda-Python Nvidia (>=11.4)
 https://nvidia.github.io/cuda-python/overview.html
 
-### Numba
+#### Numba
 https://numba.readthedocs.io/en/stable/cuda/index.html
 
 
-# Next steps
+## Next steps
 Utilizzare find_countours.py sostituendo l'esecuzione del metodo 
 _get_contour_segments importato da find_contours_cy.pyx (Cython)
 con una versione di _get_contour_segments riscritta in C++ che 
@@ -53,12 +53,12 @@ Riunione 01/03/2023
 - nel caso provare a scrivere kernel cuda con Python-Cuda riscrivendo find_contours_cy
 
 
-# Current
+## Current
 Errore segmentation fault (core dump)
 - generato all'import del codice compilato con nvc++ (CC=nvc++ python setup.py build_ext --inplace)
 	- se si compila con cython invece il codice esegue correttamente (python setup.py build_ext --inplace)
 
-## Next
+### Next
 - tentare di capire la causa del segmentation fault generato dal import su python del cython compilato con nvc++
 - capire perchè le prestazioni sul loro Jupyter notebook con la versione GPU siano uguali a quelle con CPU seriale (causa GPU test?)
 - fare test con CUDA API
