@@ -4,7 +4,6 @@
 #cython: boundscheck=False
 #cython: nonecheck=False
 #cython: wraparound=False
-
 cimport numpy as cnp
 cnp.import_array()
 

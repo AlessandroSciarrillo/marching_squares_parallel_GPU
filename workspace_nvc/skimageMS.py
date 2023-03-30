@@ -26,7 +26,7 @@ et = time.time()
 
 # get the execution time
 elapsed_time = et - st
-print('Execution time:', elapsed_time, 'seconds')
+print('Execution timess:', elapsed_time, 'seconds')
 
 """
 # Display the image and plot all contours found

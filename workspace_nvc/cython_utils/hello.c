@@ -1667,7 +1667,7 @@ static PyObject *__pyx_pf_5hello_get_hello(CYTHON_UNUSED PyObject *__pyx_self) {
  */
 printf("Before pragma omp\n");
 
-#pragma omp parallel for num_threads(6) default(none) private(__pyx_t_1, __pyx_t_2, __pyx_t_3) shared(__pyx_f, __pyx_filename, __pyx_lineno, __pyx_clineno,   __pyx_v_i, __pyx_v_j, __pyx_v_k) 
+//#pragma omp parallel for num_threads(6) default(none) private(__pyx_t_1, __pyx_t_2, __pyx_t_3) shared(__pyx_f, __pyx_filename, __pyx_lineno, __pyx_clineno,   __pyx_v_i, __pyx_v_j, __pyx_v_k) 
   for (__pyx_t_1 = 0; __pyx_t_1 < 10; __pyx_t_1+=1) { //0x3E8
     //printf("Entered pragma omp %ld\n",__pyx_t_1);
     __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 5, __pyx_L1_error)
@@ -1683,7 +1683,7 @@ printf("Before pragma omp\n");
  *             k=i*j
  * 
  */
-    for (__pyx_t_3 = 0; __pyx_t_3 < 25; __pyx_t_3+=1) { //0x2710
+    for (__pyx_t_3 = 0; __pyx_t_3 < 10; __pyx_t_3+=1) { //0x2710
       __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 6, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_XDECREF_SET(__pyx_v_j, __pyx_t_2);
