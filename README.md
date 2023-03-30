@@ -58,10 +58,12 @@ Errore segmentation fault (core dump)
 - generato all'import del codice compilato con nvc++ (CC=nvc++ python setup.py build_ext --inplace)
 	- se si compila con cython invece il codice esegue correttamente (python setup.py build_ext --inplace)
 
+### Colloquio Marzolla
+- provare a mettere pragma omp for ed eventuale collapse 2 nei due for del c++ derivato dal cython
+
 ### Next
 - tentare di capire la causa del segmentation fault generato dal import su python del cython compilato con nvc++
 - capire perchè le prestazioni sul loro Jupyter notebook con la versione GPU siano uguali a quelle con CPU seriale (causa GPU test?)
 - fare test con CUDA API
-
 - scaricare docker nvidia con tutto l ambiente
 - proseguire con nvc++, controllare i flag, testare codice su RTX2060
