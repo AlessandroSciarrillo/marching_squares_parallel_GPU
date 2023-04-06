@@ -59,7 +59,7 @@ def _get_contour_segments(image,level):
     NUM_BLOCKS_y = (image.shape[0] + BLKDIM-1) / BLKDIM   # Blocks per grid  y
 
     n = np.array(image.size, dtype=np.uint32) 
-    print("n:   ",n)
+    #print("n:   ",n)
     width = np.array(image.shape[1], dtype=np.uint32)
     height = np.array(image.shape[0], dtype=np.uint32)
     lev_np = np.array([level], dtype=np.float32)
@@ -67,12 +67,14 @@ def _get_contour_segments(image,level):
 
     # image è 95x511 con 48545 elementi 
     image = image.ravel()
-    result = np.zeros(n).astype(dtype=np.float32)
+    result_x = np.zeros(n * 2).astype(dtype=np.float32)
+    result_y = np.zeros(n * 2).astype(dtype=np.float32)
     print("image:   \n",image)
-    print("result:  ",result)
+    #print("result_x:  ",result_x)
 
     err, dImageclass = cuda.cuMemAlloc(bufferSize)
-    err, dResultclass = cuda.cuMemAlloc(bufferSize)
+    err, dResultXclass = cuda.cuMemAlloc(bufferSize)
+    err, dResultYclass = cuda.cuMemAlloc(bufferSize)
 
     err, stream = cuda.cuStreamCreate(0)
 
@@ -81,9 +83,10 @@ def _get_contour_segments(image,level):
     )
 
     dImage = np.array([int(dImageclass)], dtype=np.uint64)
-    dResult = np.array([int(dResultclass)], dtype=np.uint64)
+    dResult_x = np.array([int(dResultXclass)], dtype=np.uint64)
+    dResult_y = np.array([int(dResultYclass)], dtype=np.uint64)
 
-    args = [dImage, dResult, n, width, height, lev_np]
+    args = [dImage, dResult_x, dResult_y, n, width, height, lev_np]
     args = np.array([arg.ctypes.data for arg in args], dtype=np.uint64)
 
     err, = cuda.cuLaunchKernel(
@@ -102,10 +105,13 @@ def _get_contour_segments(image,level):
     #ASSERT_DRV(err)
 
     err, = cuda.cuMemcpyDtoHAsync(
-        result.ctypes.data, dResultclass, bufferSize, stream
+        result_x.ctypes.data, dResultXclass, bufferSize, stream
+    )
+    err, = cuda.cuMemcpyDtoHAsync(
+        result_y.ctypes.data, dResultYclass, bufferSize, stream
     )
     err, = cuda.cuStreamSynchronize(stream)
-    print("result     : \n",result)
+    #print("result_x     : \n",result_x)
 
     # Assert values are same after running kernel   
     #hZ = a * hX + hY   
@@ -114,8 +120,20 @@ def _get_contour_segments(image,level):
 
     err, = cuda.cuStreamDestroy(stream)
     err, = cuda.cuMemFree(dImageclass)
-    err, = cuda.cuMemFree(dResultclass)
+    err, = cuda.cuMemFree(dResultXclass)
+    err, = cuda.cuMemFree(dResultYclass)
     err, = cuda.cuModuleUnload(module)
     err, = cuda.cuCtxDestroy(context)
 
-    return result.reshape(25,-1) #.reshape(95,511)
+    # join result_x and result_y
+    segments = []
+    for x, y in zip(result_x, result_y): # !!! non considera il salto alternato di n posizioni
+        a = (x,y)
+        b = (x,y) # !!! ci andrebbero quelli in posizione +n
+        # Per dopo: Qui servirebbe filtraggio dei -1 dei valori nulli 
+        segments.append( (a,b) )
+
+    #print(segments)
+
+    #return result_x.reshape(25,-1) #.reshape(95,511)
+    return segments

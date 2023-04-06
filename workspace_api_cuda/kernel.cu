@@ -6,7 +6,7 @@ float get_fraction(float from_value, float to_value, float level){
 }
 
 extern "C" __global__
-void saxpy(float *image, float *result, size_t n, size_t width, size_t height, float level)
+void saxpy(float *image, float *result_x, float *result_y, size_t n, size_t width, size_t height, float level)
 {        
     size_t square_case;
     size_t r0 = blockIdx.y * blockDim.y + threadIdx.y;
@@ -39,6 +39,8 @@ void saxpy(float *image, float *result, size_t n, size_t width, size_t height, f
 
         if (square_case == 0 || square_case == 15){
             //TODO 
+            result_x[r0*width+c0] = 0; //-1
+            result_y[r0*width+c0] = 0; //-1
         }
 
         top.x = r0; 
@@ -51,16 +53,26 @@ void saxpy(float *image, float *result, size_t n, size_t width, size_t height, f
         right.y = c1;
 
 
-        result[r0*width+c0] = square_case;
+        //result[r0*width+c0] = square_case;
 
         if (square_case == 1){
-
+    
         }
         else if (square_case == 2){
 
         }
 
 
+
+        // TEST
+        if(square_case>0 && square_case<15){
+            // case 7
+            result_x[ r0 * width + c0 ] = right.x;
+            result_y[ r0 * width + c0 ] = right.y;
+            result_x[ n + r0 * width + c0 ] = bottom.x;
+            result_y[ n + r0 * width + c0 ] = bottom.y; 
+        }
+               
     } 
 
 }

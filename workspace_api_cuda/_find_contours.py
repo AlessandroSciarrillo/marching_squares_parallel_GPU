@@ -12,7 +12,7 @@ def find_contours(image, level=None,
                   fully_connected='low', positive_orientation='low',
                   *,
                   mask=None):
-    """
+    
     if fully_connected not in _param_options:
         raise ValueError('Parameters "fully_connected" must be either '
                          '"high" or "low".')
@@ -34,17 +34,19 @@ def find_contours(image, level=None,
         level = (np.nanmin(image) + np.nanmax(image)) / 2.0
 
 
-    segments = _get_contour_segments(image.astype(np.float64), float(level),
-                                     fully_connected == 'high', mask=mask)
+    #segments = _get_contour_segments(image.astype(np.float64), float(level),
+    #                                 fully_connected == 'high', mask=mask)
+    segments = _get_contour_segments(image.astype(np.float64), float(level))
+
     contours = _assemble_contours(segments)
     if positive_orientation == 'high':
         contours = [c[::-1] for c in contours]
     return contours
-    """
+    
 
-    print("Enter _get_contour_segments()...")
-    val = _get_contour_segments(image,level)
-    print("Done with val: \n",val)
+    # print("Enter _get_contour_segments()...")
+    # val = _get_contour_segments(image,level)
+    # print("Done with val: \n",val)
 
 
 def _assemble_contours(segments):
