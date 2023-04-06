@@ -12,29 +12,14 @@ def ASSERT_DRV(err):
         raise RuntimeError("Unknown error type: {}".format(err))
 
 def _get_contour_segments(image,level):
-    saxpy = """\
-    extern "C" __global__
-    void saxpy(float *image, float *result, size_t n, size_t width, size_t height)
-    {
-        /* 
-        strategia:
-            allocare due coppie di np.float64_t
-            nel caso classico solo una coppia viene occupata
-            nel caso 6 e 9 entrambe vengono occupate
-            nel caso 0 e 15 entrambe non occupate
-            nelle non-occupate mettere valore es: -1
-        */
-        
-        size_t i = blockIdx.y * blockDim.y + threadIdx.y;
-        size_t j = blockIdx.x * blockDim.x + threadIdx.x;
-        
-        if(i<height && j<width){
-            result[i*width+j] = image[i*width+j] +1;
-        } 
-        
-    }
-    """
-
+    #strategia:
+    #     allocare due coppie di np.float64_t
+    #     nel caso classico solo una coppia viene occupata
+    #     nel caso 6 e 9 entrambe vengono occupate
+    #     nel caso 0 e 15 entrambe non occupate
+    #     nelle non-occupate mettere valore es: -1
+    with open('kernel.cu', 'r') as file:
+        saxpy = file.read()
 
     # Create program
     err, prog = nvrtc.nvrtcCreateProgram(str.encode(saxpy), b"saxpy.cu", 0, [], [])
@@ -98,7 +83,7 @@ def _get_contour_segments(image,level):
     dImage = np.array([int(dImageclass)], dtype=np.uint64)
     dResult = np.array([int(dResultclass)], dtype=np.uint64)
 
-    args = [dImage, dResult, n, width, height]
+    args = [dImage, dResult, n, width, height, lev_np]
     args = np.array([arg.ctypes.data for arg in args], dtype=np.uint64)
 
     err, = cuda.cuLaunchKernel(
@@ -133,4 +118,4 @@ def _get_contour_segments(image,level):
     err, = cuda.cuModuleUnload(module)
     err, = cuda.cuCtxDestroy(context)
 
-    return result.reshape(95,511)
+    return result.reshape(25,-1) #.reshape(95,511)
