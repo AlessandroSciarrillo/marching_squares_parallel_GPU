@@ -14,12 +14,24 @@ def ASSERT_DRV(err):
 def _get_contour_segments(image,level):
     saxpy = """\
     extern "C" __global__
-    void saxpy(float *image, float *result, size_t n)
+    void saxpy(float *image, float *result, size_t n, size_t width, size_t height)
     {
-        size_t tid = blockIdx.x * blockDim.x + threadIdx.x;
-        if (tid < n) {
-            result[tid] = image[tid] + 2.0;
-        }
+        /* 
+        strategia:
+            allocare due coppie di np.float64_t
+            nel caso classico solo una coppia viene occupata
+            nel caso 6 e 9 entrambe vengono occupate
+            nel caso 0 e 15 entrambe non occupate
+            nelle non-occupate mettere valore es: -1
+        */
+        
+        size_t i = blockIdx.y * blockDim.y + threadIdx.y;
+        size_t j = blockIdx.x * blockDim.x + threadIdx.x;
+        
+        if(i<height && j<width){
+            result[i*width+j] = image[i*width+j] +1;
+        } 
+        
     }
     """
 
@@ -54,12 +66,17 @@ def _get_contour_segments(image,level):
     err, kernel = cuda.cuModuleGetFunction(module, b"saxpy")
     ASSERT_DRV(err)
 
-    BLKDIM = 512   
-    NUM_THREADS = BLKDIM  # Threads per block  //512
-    NUM_BLOCKS = (image.size + BLKDIM-1) / BLKDIM   # Blocks per grid  /32768
+    print(image.shape)
+    BLKDIM = 32   
+    NUM_THREADS_x = BLKDIM  # Threads per block  x
+    NUM_THREADS_y = BLKDIM  # Threads per block  y
+    NUM_BLOCKS_x = (image.shape[1] + BLKDIM-1) / BLKDIM   # Blocks per grid  x
+    NUM_BLOCKS_y = (image.shape[0] + BLKDIM-1) / BLKDIM   # Blocks per grid  y
 
     n = np.array(image.size, dtype=np.uint32) 
     print("n:   ",n)
+    width = np.array(image.shape[1], dtype=np.uint32)
+    height = np.array(image.shape[0], dtype=np.uint32)
     lev_np = np.array([level], dtype=np.float32)
     bufferSize = n * lev_np.itemsize
 
@@ -81,22 +98,23 @@ def _get_contour_segments(image,level):
     dImage = np.array([int(dImageclass)], dtype=np.uint64)
     dResult = np.array([int(dResultclass)], dtype=np.uint64)
 
-    args = [dImage, dResult, n]
+    args = [dImage, dResult, n, width, height]
     args = np.array([arg.ctypes.data for arg in args], dtype=np.uint64)
 
     err, = cuda.cuLaunchKernel(
         kernel,
-        NUM_BLOCKS,  # grid x dim
-        1,  # grid y dim
+        NUM_BLOCKS_x,  # grid x dim
+        NUM_BLOCKS_y,  # grid y dim
         1,  # grid z dim
-        NUM_THREADS,  # block x dim
-        1,  # block y dim
+        NUM_THREADS_x,  # block x dim
+        NUM_THREADS_y,  # block y dim
         1,  # block z dim
         0,  # dynamic shared memory
         stream,  # stream
         args.ctypes.data,  # kernel arguments
         0,  # extra (ignore)
     )
+    #ASSERT_DRV(err)
 
     err, = cuda.cuMemcpyDtoHAsync(
         result.ctypes.data, dResultclass, bufferSize, stream
