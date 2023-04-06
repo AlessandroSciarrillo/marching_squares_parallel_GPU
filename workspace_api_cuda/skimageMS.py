@@ -11,12 +11,14 @@ x, y = np.ogrid[-np.pi:np.pi:95j, -np.pi:np.pi:511j]
 t = np.load('./heatmaps_00000001_00000001.npy');
 #r = t[:,:,8];
 
+print(t.dtype," ",t.shape," ",t[:,:,0].size)
+
 # get the start time
 st = time.time()
 
 # Find contours at a constant value of 0.8
 #contours = measure.find_contours(r, 0.8)
-for c in range(11):
+for c in range(1): # range(11) 
     r=t[:,:,c]
     print("Lancio ",c)
     contours = find_contours(r, 0.5) # circa 0.00674

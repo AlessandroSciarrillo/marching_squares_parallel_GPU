@@ -42,10 +42,9 @@ def find_contours(image, level=None,
     return contours
     """
 
-    #print("Enter _get_hello...")
-    val = _get_contour_segments()
-    print(val)
-    #print("Done")
+    print("Enter _get_contour_segments()...")
+    val = _get_contour_segments(image,level)
+    print("Done with val: \n",val)
 
 
 def _assemble_contours(segments):
