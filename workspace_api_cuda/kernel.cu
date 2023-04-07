@@ -1,12 +1,12 @@
 extern "C" __device__
-float get_fraction(float from_value, float to_value, float level){
+float get_fraction(double from_value, double to_value, double level){
     if (to_value == from_value)
         return 0;
     return ((level - from_value) / (to_value - from_value));
 }
 
 extern "C" __global__
-void saxpy(float *image, float *result_x, float *result_y, size_t n, size_t width, size_t height, float level)
+void saxpy(double *image, double *result_1x, double *result_1y, double *result_2x, double *result_2y, double level, size_t n, size_t width, size_t height)
 {        
     size_t square_case;
     size_t r0 = blockIdx.y * blockDim.y + threadIdx.y;
@@ -20,14 +20,13 @@ void saxpy(float *image, float *result_x, float *result_y, size_t n, size_t widt
     } top, bottom, left, right;
     
     if( r0 < height && c0 < width ){
-        //result[r0*width+c0] = image[r0*width+c0] +2;
 
         // skip mask
 
-        float ul = image[ r0 * width + c0 ];
-        float ur = image[ r0 * width + c1 ];
-        float ll = image[ r1 * width + c0 ];
-        float lr = image[ r1 * width + c1 ];
+        double ul = image[ r0 * width + c0 ];
+        double ur = image[ r0 * width + c1 ];
+        double ll = image[ r1 * width + c0 ];
+        double lr = image[ r1 * width + c1 ];
 
         // skip control for NaN values
 
@@ -39,8 +38,10 @@ void saxpy(float *image, float *result_x, float *result_y, size_t n, size_t widt
 
         if (square_case == 0 || square_case == 15){
             //TODO 
-            result_x[r0*width+c0] = 0; //-1
-            result_y[r0*width+c0] = 0; //-1
+            result_1x[r0 * width + c0] = 0.0;
+            result_1y[r0 * width + c0] = 0.0; 
+            result_2x[r0 * width + c0] = 0.0;
+            result_2y[r0 * width + c0] = 0.0;
         }
 
         top.x = r0; 
@@ -52,25 +53,102 @@ void saxpy(float *image, float *result_x, float *result_y, size_t n, size_t widt
         right.x = r0 + get_fraction(ur, lr, level);
         right.y = c1;
 
-
         //result[r0*width+c0] = square_case;
 
         if (square_case == 1){
-    
+            result_1x[ r0 * width + c0 ] = top.x;
+            result_1y[ r0 * width + c0 ] = top.y;
+            result_2x[ r0 * width + c0 ] = left.x;
+            result_2y[ r0 * width + c0 ] = left.y; 
         }
         else if (square_case == 2){
+            result_1x[ r0 * width + c0 ] = right.x;
+            result_1y[ r0 * width + c0 ] = right.y;
+            result_2x[ r0 * width + c0 ] = top.x;
+            result_2y[ r0 * width + c0 ] = top.y; 
+        }
+        else if (square_case == 3){
+            result_1x[ r0 * width + c0 ] = right.x;
+            result_1y[ r0 * width + c0 ] = right.y;
+            result_2x[ r0 * width + c0 ] = left.x;
+            result_2y[ r0 * width + c0 ] = left.y; 
+        }
+        else if (square_case == 4){
+            result_1x[ r0 * width + c0 ] = left.x;
+            result_1y[ r0 * width + c0 ] = left.y;
+            result_2x[ r0 * width + c0 ] = bottom.x;
+            result_2y[ r0 * width + c0 ] = bottom.y; 
+        }
+        else if (square_case == 5){
+            result_1x[ r0 * width + c0 ] = top.x;
+            result_1y[ r0 * width + c0 ] = top.y;
+            result_2x[ r0 * width + c0 ] = bottom.x;
+            result_2y[ r0 * width + c0 ] = bottom.y; 
+        }
+        else if (square_case == 6){
+            // TODO !!!
+            // result_1x[ r0 * width + c0 ] = 0.0;
+            // result_1y[ r0 * width + c0 ] = 0.0;
+            // result_2x[ r0 * width + c0 ] = 0.0;
+            // result_2y[ r0 * width + c0 ] = 0.0; 
+            result_1x[ r0 * width + c0 ] = left.x;
+            result_1y[ r0 * width + c0 ] = left.y;
+            result_2x[ r0 * width + c0 ] = top.x;
+            result_2y[ r0 * width + c0 ] = top.y; 
 
         }
-
-
-
-        // TEST
-        if(square_case>0 && square_case<15){
-            // case 7
-            result_x[ r0 * width + c0 ] = right.x;
-            result_y[ r0 * width + c0 ] = right.y;
-            result_x[ n + r0 * width + c0 ] = bottom.x;
-            result_y[ n + r0 * width + c0 ] = bottom.y; 
+        else if (square_case == 7){
+            result_1x[ r0 * width + c0 ] = right.x;
+            result_1y[ r0 * width + c0 ] = right.y;
+            result_2x[ r0 * width + c0 ] = bottom.x;
+            result_2y[ r0 * width + c0 ] = bottom.y; 
+        }
+        else if (square_case == 8){
+            result_1x[ r0 * width + c0 ] = bottom.x;
+            result_1y[ r0 * width + c0 ] = bottom.y;
+            result_2x[ r0 * width + c0 ] = right.x;
+            result_2y[ r0 * width + c0 ] = right.y; 
+        }
+        else if (square_case == 9){
+            // TODO !!!
+            // result_1x[ r0 * width + c0 ] = 0.0;
+            // result_1y[ r0 * width + c0 ] = 0.0;
+            // result_2x[ r0 * width + c0 ] = 0.0;
+            // result_2y[ r0 * width + c0 ] = 0.0; 
+            result_1x[ r0 * width + c0 ] = top.x;
+            result_1y[ r0 * width + c0 ] = top.y;
+            result_2x[ r0 * width + c0 ] = left.x;
+            result_2y[ r0 * width + c0 ] = left.y; 
+        }
+        else if (square_case == 10){
+            result_1x[ r0 * width + c0 ] = bottom.x;
+            result_1y[ r0 * width + c0 ] = bottom.y;
+            result_2x[ r0 * width + c0 ] = top.x;
+            result_2y[ r0 * width + c0 ] = top.y; 
+        }
+        else if (square_case == 11){
+            result_1x[ r0 * width + c0 ] = bottom.x;
+            result_1y[ r0 * width + c0 ] = bottom.y;
+            result_2x[ r0 * width + c0 ] = left.x;
+            result_2y[ r0 * width + c0 ] = left.y; 
+        }
+        else if (square_case == 12){
+            result_1x[ r0 * width + c0 ] = left.x;
+            result_1y[ r0 * width + c0 ] = left.y;
+            result_2x[ r0 * width + c0 ] = right.x;
+            result_2y[ r0 * width + c0 ] = right.y; 
+        }
+        else if (square_case == 13){
+            result_1x[ r0 * width + c0 ] = top.x;
+            result_1y[ r0 * width + c0 ] = top.y;
+            result_2x[ r0 * width + c0 ] = right.x;
+            result_2y[ r0 * width + c0 ] = right.y; 
+        }
+        else if (square_case == 14){
+            result_1x[ r0 * width + c0 ] = left.x;
+            result_1y[ r0 * width + c0 ] = left.y;
+            result_2x[ r0 * width + c0 ] = top.x;
+            result_2y[ r0 * width + c0 ] = top.y; 
         }
                
     } 

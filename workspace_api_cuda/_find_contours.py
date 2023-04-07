@@ -63,7 +63,7 @@ def _assemble_contours(segments):
         if from_point == to_point:
             continue
 
-        tail, tail_num = starts.pop(to_point, (None, None))
+        tail, tail_num = starts.pop(to_point, (None, None)) # Pop an element not present from the dictionary, provided a default value
         head, head_num = ends.pop(from_point, (None, None))
 
         if tail is not None and head is not None:

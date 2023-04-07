@@ -59,22 +59,24 @@ def _get_contour_segments(image,level):
     NUM_BLOCKS_y = (image.shape[0] + BLKDIM-1) / BLKDIM   # Blocks per grid  y
 
     n = np.array(image.size, dtype=np.uint32) 
-    #print("n:   ",n)
     width = np.array(image.shape[1], dtype=np.uint32)
     height = np.array(image.shape[0], dtype=np.uint32)
-    lev_np = np.array([level], dtype=np.float32)
+    lev_np = np.array([level], dtype=np.float64)
     bufferSize = n * lev_np.itemsize
 
     # image è 95x511 con 48545 elementi 
     image = image.ravel()
-    result_x = np.zeros(n * 2).astype(dtype=np.float32)
-    result_y = np.zeros(n * 2).astype(dtype=np.float32)
+    result_1x = np.zeros(n).astype(dtype=np.float64)
+    result_1y = np.zeros(n).astype(dtype=np.float64)
+    result_2x = np.zeros(n).astype(dtype=np.float64)
+    result_2y = np.zeros(n).astype(dtype=np.float64)
     print("image:   \n",image)
-    #print("result_x:  ",result_x)
 
     err, dImageclass = cuda.cuMemAlloc(bufferSize)
-    err, dResultXclass = cuda.cuMemAlloc(bufferSize)
-    err, dResultYclass = cuda.cuMemAlloc(bufferSize)
+    err, dResult1Xclass = cuda.cuMemAlloc(bufferSize)
+    err, dResult1Yclass = cuda.cuMemAlloc(bufferSize)
+    err, dResult2Xclass = cuda.cuMemAlloc(bufferSize)
+    err, dResult2Yclass = cuda.cuMemAlloc(bufferSize)
 
     err, stream = cuda.cuStreamCreate(0)
 
@@ -83,10 +85,12 @@ def _get_contour_segments(image,level):
     )
 
     dImage = np.array([int(dImageclass)], dtype=np.uint64)
-    dResult_x = np.array([int(dResultXclass)], dtype=np.uint64)
-    dResult_y = np.array([int(dResultYclass)], dtype=np.uint64)
+    dResult_1x = np.array([int(dResult1Xclass)], dtype=np.uint64)
+    dResult_1y = np.array([int(dResult1Yclass)], dtype=np.uint64)
+    dResult_2x = np.array([int(dResult2Xclass)], dtype=np.uint64)
+    dResult_2y = np.array([int(dResult2Yclass)], dtype=np.uint64)
 
-    args = [dImage, dResult_x, dResult_y, n, width, height, lev_np]
+    args = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height]
     args = np.array([arg.ctypes.data for arg in args], dtype=np.uint64)
 
     err, = cuda.cuLaunchKernel(
@@ -102,16 +106,20 @@ def _get_contour_segments(image,level):
         args.ctypes.data,  # kernel arguments
         0,  # extra (ignore)
     )
-    #ASSERT_DRV(err)
 
     err, = cuda.cuMemcpyDtoHAsync(
-        result_x.ctypes.data, dResultXclass, bufferSize, stream
+        result_1x.ctypes.data, dResult1Xclass, bufferSize, stream
     )
     err, = cuda.cuMemcpyDtoHAsync(
-        result_y.ctypes.data, dResultYclass, bufferSize, stream
+        result_1y.ctypes.data, dResult1Yclass, bufferSize, stream
+    )
+    err, = cuda.cuMemcpyDtoHAsync(
+        result_2x.ctypes.data, dResult2Xclass, bufferSize, stream
+    )
+    err, = cuda.cuMemcpyDtoHAsync(
+        result_2y.ctypes.data, dResult2Yclass, bufferSize, stream
     )
     err, = cuda.cuStreamSynchronize(stream)
-    #print("result_x     : \n",result_x)
 
     # Assert values are same after running kernel   
     #hZ = a * hX + hY   
@@ -120,20 +128,19 @@ def _get_contour_segments(image,level):
 
     err, = cuda.cuStreamDestroy(stream)
     err, = cuda.cuMemFree(dImageclass)
-    err, = cuda.cuMemFree(dResultXclass)
-    err, = cuda.cuMemFree(dResultYclass)
+    err, = cuda.cuMemFree(dResult1Xclass)
+    err, = cuda.cuMemFree(dResult1Yclass)
+    err, = cuda.cuMemFree(dResult2Xclass)
+    err, = cuda.cuMemFree(dResult2Yclass)
     err, = cuda.cuModuleUnload(module)
     err, = cuda.cuCtxDestroy(context)
 
-    # join result_x and result_y
     segments = []
-    for x, y in zip(result_x, result_y): # !!! non considera il salto alternato di n posizioni
-        a = (x,y)
-        b = (x,y) # !!! ci andrebbero quelli in posizione +n
-        # Per dopo: Qui servirebbe filtraggio dei -1 dei valori nulli 
-        segments.append( (a,b) )
+    for (x1, y1, x2, y2) in zip(result_1x, result_1y, result_2x, result_2y):  
+        if x1 > 0.0 and y1 > 0.0 and x2 > 0.0 and y2 > 0.0 :
+            point1 = (x1,y1)
+            point2 = (x2,y2) 
+            segments.append( (point1,point2) )
 
     #print(segments)
-
-    #return result_x.reshape(25,-1) #.reshape(95,511)
     return segments
