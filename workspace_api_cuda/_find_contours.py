@@ -10,7 +10,42 @@ from collections import deque
 _param_options = ('high', 'low')
 
 
-def find_contours(kernel, image, level=None,
+def find_contours_full(image, level=None,
+                  fully_connected='low', positive_orientation='low',
+                  *,
+                  mask=None):
+    
+    if fully_connected not in _param_options:
+        raise ValueError('Parameters "fully_connected" must be either '
+                         '"high" or "low".')
+    if positive_orientation not in _param_options:
+        raise ValueError('Parameters "positive_orientation" must be either '
+                         '"high" or "low".')
+    if image.shape[0] < 2 or image.shape[1] < 2:
+        raise ValueError("Input array must be at least 2x2.")
+    if image.ndim != 2:
+        raise ValueError('Only 2D arrays are supported.')
+    if mask is not None:
+        if mask.shape != image.shape:
+            raise ValueError('Parameters "array" and "mask"'
+                             ' must have same shape.')
+        if not np.can_cast(mask.dtype, bool, casting='safe'):
+            raise TypeError('Parameter "mask" must be a binary array.')
+        mask = mask.astype(np.uint8, copy=False)
+    if level is None:
+        level = (np.nanmin(image) + np.nanmax(image)) / 2.0
+
+
+    #segments = _get_contour_segments(image.astype(np.float64), float(level),
+    #                                 fully_connected == 'high', mask=mask)
+    segments = _get_contour_segments(image.astype(np.float64), float(level))
+
+    contours = _assemble_contours(segments)
+    if positive_orientation == 'high':
+        contours = [c[::-1] for c in contours]
+    return contours
+
+def find_contours_splitted(kernel, bufferSize, stream, args, result_1x, result_1y, result_2x, result_2y, dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, image, level=None,
                   fully_connected='low', positive_orientation='low',
                   *,
                   mask=None):
@@ -39,7 +74,7 @@ def find_contours(kernel, image, level=None,
     #segments = _get_contour_segments(image.astype(np.float64), float(level),
     #                                 fully_connected == 'high', mask=mask)
     #segments = _get_contour_segments(image.astype(np.float64), float(level))
-    segments = launch_kernel(kernel, image.astype(np.float64), float(level))
+    segments = launch_kernel(kernel, bufferSize, stream, args, result_1x, result_1y, result_2x, result_2y, dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, image.astype(np.float64), float(level))
 
     contours = _assemble_contours(segments)
     if positive_orientation == 'high':
@@ -47,9 +82,6 @@ def find_contours(kernel, image, level=None,
     return contours
     
 
-    # print("Enter _get_contour_segments()...")
-    # val = _get_contour_segments(image,level)
-    # print("Done with val: \n",val)
 
 
 def _assemble_contours(segments):

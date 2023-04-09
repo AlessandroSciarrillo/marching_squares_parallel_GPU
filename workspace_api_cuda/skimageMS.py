@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import time
 
 from skimage import measure
-from _find_contours import find_contours as my_find_contours
+from _find_contours import find_contours_full as my_find_contours_full
+from _find_contours import find_contours_splitted as my_find_contours_splitted
 
 # Construct some test data
 x, y = np.ogrid[-np.pi:np.pi:95j, -np.pi:np.pi:511j]
@@ -22,16 +23,16 @@ r=t[:,:,10]
 
 ################ LOAD CUDA KERNL ######################
 from load_cuda_kernel import load_kernel
-kernel = load_kernel()
+kernel, bufferSize, stream, args, result_1x, result_1y, result_2x, result_2y, dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y = load_kernel(r.size, r.shape[1], r.shape[0], 0.5)
 #######################################################
 
 # get the start time
 st = time.time()
 
 # TEST confronto risultato con libreria
-#contours = find_contours(r, 0.5) 
+#contours = my_find_contours_full(r, 0.5) 
 #contours = measure.find_contours(r, 0.5)  # skimage
-contours = my_find_contours(kernel, r, 0.5) 
+contours = my_find_contours_splitted(kernel, bufferSize, stream, args, result_1x, result_1y, result_2x, result_2y, dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, r, 0.5) 
 
 # get the end time
 et = time.time()
