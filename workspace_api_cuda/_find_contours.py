@@ -3,12 +3,14 @@ import numpy as np
 #from ._find_contours_cy import _get_contour_segments
 from find_contours_cuda import _get_contour_segments
 
+from launch_cuda_kernel import launch_kernel
+
 from collections import deque
 
 _param_options = ('high', 'low')
 
 
-def find_contours(image, level=None,
+def find_contours(kernel, image, level=None,
                   fully_connected='low', positive_orientation='low',
                   *,
                   mask=None):
@@ -36,7 +38,8 @@ def find_contours(image, level=None,
 
     #segments = _get_contour_segments(image.astype(np.float64), float(level),
     #                                 fully_connected == 'high', mask=mask)
-    segments = _get_contour_segments(image.astype(np.float64), float(level))
+    #segments = _get_contour_segments(image.astype(np.float64), float(level))
+    segments = launch_kernel(kernel, image.astype(np.float64), float(level))
 
     contours = _assemble_contours(segments)
     if positive_orientation == 'high':
