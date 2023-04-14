@@ -1,7 +1,10 @@
 from cuda import cuda, nvrtc
 import numpy as np
 
-def launch_kernel(kernel, bufferSize, stream, args, result_1x, result_1y, result_2x, result_2y, dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, image, level):
+def launch_kernel(  kernel, bufferSize, stream, args, 
+                    result_1x, result_1y, result_2x, result_2y, 
+                    dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, 
+                    NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, image, level):
 
     image = image.ravel()
 
@@ -45,8 +48,8 @@ def launch_kernel(kernel, bufferSize, stream, args, result_1x, result_1y, result
     # err, = cuda.cuMemFree(dResult1Yclass)
     # err, = cuda.cuMemFree(dResult2Xclass)
     # err, = cuda.cuMemFree(dResult2Yclass)
-    # err, = cuda.cuModuleUnload(module) #TODO
-    # err, = cuda.cuCtxDestroy(context)  #TODO
+    # err, = cuda.cuModuleUnload(module) 
+    # err, = cuda.cuCtxDestroy(context)  
 
     segments = []
     for (x1, y1, x2, y2) in zip(result_1x, result_1y, result_2x, result_2y):  
