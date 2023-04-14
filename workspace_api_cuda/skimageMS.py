@@ -6,6 +6,13 @@ from skimage import measure
 from _find_contours import find_contours_full as my_find_contours_full
 from _find_contours import find_contours_splitted as my_find_contours_splitted
 
+
+# Construct some test data
+x, y = np.ogrid[-np.pi:np.pi:950j, -np.pi:np.pi:511j]
+r = np.sin(np.exp((np.sin(x)**3 + np.cos(y)**2)))
+#t = np.load('./heatmaps_00000001_00000001.npy');
+#r = t[:,:,8];
+
 ################ LOAD CUDA KERNEL ######################
 from load_cuda_kernel import load_kernel
 
@@ -15,13 +22,6 @@ dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, \
 dImageclass, \
 NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y = load_kernel(r.size, r.shape[1], r.shape[0], 0.5)
 #######################################################
-
-# Construct some test data
-x, y = np.ogrid[-np.pi:np.pi:950j, -np.pi:np.pi:511j]
-r = np.sin(np.exp((np.sin(x)**3 + np.cos(y)**2)))
-#t = np.load('./heatmaps_00000001_00000001.npy');
-#r = t[:,:,8];
-
 
 # Print Diff with lib
 st = time.time()
