@@ -10,8 +10,8 @@ from _find_contours import find_contours_splitted as my_find_contours_splitted
 # Construct some test data
 x, y = np.ogrid[-np.pi:np.pi:950j, -np.pi:np.pi:511j]
 r = np.sin(np.exp((np.sin(x)**3 + np.cos(y)**2)))
-#t = np.load('./heatmaps_00000001_00000001.npy');
-#r = t[:,:,8];
+t = np.load('./heatmaps_00000001_00000001.npy');
+r = t[:,:,8];
 
 ################ LOAD CUDA KERNEL ######################
 from load_cuda_kernel import load_kernel
