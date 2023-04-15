@@ -18,24 +18,31 @@ def load_kernel(image_size, image_shape_1, image_shape_0, level):
 
     # Create program
     err, prog = nvrtc.nvrtcCreateProgram(str.encode(saxpy), b"saxpy.cu", 0, [], [])
+    ASSERT_DRV(err)
 
     # Compile program
     opts = [b"--fmad=false", b"--gpu-architecture=compute_60"] #compute_75
     err, = nvrtc.nvrtcCompileProgram(prog, 2, opts)
+    ASSERT_DRV(err)
 
     # Get PTX from compilation
     err, ptxSize = nvrtc.nvrtcGetPTXSize(prog)
+    ASSERT_DRV(err)
     ptx = b" " * ptxSize
     err, = nvrtc.nvrtcGetPTX(prog, ptx)
+    ASSERT_DRV(err)
 
     # Initialize CUDA Driver API
     err, = cuda.cuInit(0)
+    ASSERT_DRV(err)
 
     # Retrieve handle for device 0
     err, cuDevice = cuda.cuDeviceGet(0)
+    ASSERT_DRV(err)
 
     # Create context
     err, context = cuda.cuCtxCreate(0, cuDevice)
+    ASSERT_DRV(err)
 
 
     # Load PTX as module data and retrieve function
@@ -66,10 +73,15 @@ def load_kernel(image_size, image_shape_1, image_shape_0, level):
     result_2y = np.zeros(n).astype(dtype=np.float64)
 
     err, dImageclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
     err, dResult1Xclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
     err, dResult1Yclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
     err, dResult2Xclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
     err, dResult2Yclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
 
     err, stream = cuda.cuStreamCreate(0)
 

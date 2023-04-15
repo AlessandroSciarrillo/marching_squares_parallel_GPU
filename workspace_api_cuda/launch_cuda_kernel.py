@@ -1,6 +1,16 @@
 from cuda import cuda, nvrtc
 import numpy as np
 
+def ASSERT_DRV(err):
+    if isinstance(err, cuda.CUresult):
+        if err != cuda.CUresult.CUDA_SUCCESS:
+            raise RuntimeError("Cuda Error: {}".format(err))
+    elif isinstance(err, nvrtc.nvrtcResult):
+        if err != nvrtc.nvrtcResult.NVRTC_SUCCESS:
+            raise RuntimeError("Nvrtc Error: {}".format(err))
+    else:
+        raise RuntimeError("Unknown error type: {}".format(err))
+
 def launch_kernel(  kernel, bufferSize, stream, args, 
                     result_1x, result_1y, result_2x, result_2y, 
                     dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, 
@@ -12,6 +22,7 @@ def launch_kernel(  kernel, bufferSize, stream, args,
     err, = cuda.cuMemcpyHtoDAsync(
         dImageclass, image.ctypes.data, bufferSize, stream
     )
+    ASSERT_DRV(err)
 
     err, = cuda.cuLaunchKernel(
         kernel,
@@ -26,20 +37,27 @@ def launch_kernel(  kernel, bufferSize, stream, args,
         args.ctypes.data,  # kernel arguments
         0,  # extra (ignore)
     )
+    ASSERT_DRV(err)
 
     err, = cuda.cuMemcpyDtoHAsync(
         result_1x.ctypes.data, dResult1Xclass, bufferSize, stream
     )
+    ASSERT_DRV(err)
     err, = cuda.cuMemcpyDtoHAsync(
         result_1y.ctypes.data, dResult1Yclass, bufferSize, stream
     )
+    ASSERT_DRV(err)
     err, = cuda.cuMemcpyDtoHAsync(
         result_2x.ctypes.data, dResult2Xclass, bufferSize, stream
     )
+    ASSERT_DRV(err)
     err, = cuda.cuMemcpyDtoHAsync(
         result_2y.ctypes.data, dResult2Yclass, bufferSize, stream
     )
+    ASSERT_DRV(err)
+    
     err, = cuda.cuStreamSynchronize(stream)
+    ASSERT_DRV(err)
 
     #TODO portare fuori
     # err, = cuda.cuStreamDestroy(stream)

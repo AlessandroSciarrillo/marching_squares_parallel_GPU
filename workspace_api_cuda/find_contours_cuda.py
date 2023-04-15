@@ -4,6 +4,7 @@ import numpy as np
 def ASSERT_DRV(err):
     if isinstance(err, cuda.CUresult):
         if err != cuda.CUresult.CUDA_SUCCESS:
+            print("\nError string: ",cuda.cuGetErrorString(err),"\n")
             raise RuntimeError("Cuda Error: {}".format(err))
     elif isinstance(err, nvrtc.nvrtcResult):
         if err != nvrtc.nvrtcResult.NVRTC_SUCCESS:
@@ -23,25 +24,31 @@ def _get_contour_segments(image,level):
 
     # Create program
     err, prog = nvrtc.nvrtcCreateProgram(str.encode(saxpy), b"saxpy.cu", 0, [], [])
+    ASSERT_DRV(err) 
 
     # Compile program
     opts = [b"--fmad=false", b"--gpu-architecture=compute_60"] #compute_75
     err, = nvrtc.nvrtcCompileProgram(prog, 2, opts)
+    ASSERT_DRV(err)
 
     # Get PTX from compilation
     err, ptxSize = nvrtc.nvrtcGetPTXSize(prog)
+    ASSERT_DRV(err)
     ptx = b" " * ptxSize
     err, = nvrtc.nvrtcGetPTX(prog, ptx)
+    ASSERT_DRV(err)
 
     # Initialize CUDA Driver API
     err, = cuda.cuInit(0)
+    ASSERT_DRV(err)
 
     # Retrieve handle for device 0
     err, cuDevice = cuda.cuDeviceGet(0)
+    ASSERT_DRV(err)
 
     # Create context
     err, context = cuda.cuCtxCreate(0, cuDevice)
-
+    ASSERT_DRV(err)
 
     # Load PTX as module data and retrieve function
     ptx = np.char.array(ptx)
@@ -73,16 +80,23 @@ def _get_contour_segments(image,level):
     print("image:   \n",image)
 
     err, dImageclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
     err, dResult1Xclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
     err, dResult1Yclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
     err, dResult2Xclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
     err, dResult2Yclass = cuda.cuMemAlloc(bufferSize)
+    ASSERT_DRV(err)
 
     err, stream = cuda.cuStreamCreate(0)
+    ASSERT_DRV(err)
 
     err, = cuda.cuMemcpyHtoDAsync(
         dImageclass, image.ctypes.data, bufferSize, stream
     )
+    ASSERT_DRV(err)
 
     dImage = np.array([int(dImageclass)], dtype=np.uint64)
     dResult_1x = np.array([int(dResult1Xclass)], dtype=np.uint64)
@@ -106,20 +120,27 @@ def _get_contour_segments(image,level):
         args.ctypes.data,  # kernel arguments
         0,  # extra (ignore)
     )
+    ASSERT_DRV(err)
 
     err, = cuda.cuMemcpyDtoHAsync(
         result_1x.ctypes.data, dResult1Xclass, bufferSize, stream
     )
+    ASSERT_DRV(err)
     err, = cuda.cuMemcpyDtoHAsync(
         result_1y.ctypes.data, dResult1Yclass, bufferSize, stream
     )
+    ASSERT_DRV(err)
     err, = cuda.cuMemcpyDtoHAsync(
         result_2x.ctypes.data, dResult2Xclass, bufferSize, stream
     )
+    ASSERT_DRV(err)
     err, = cuda.cuMemcpyDtoHAsync(
         result_2y.ctypes.data, dResult2Yclass, bufferSize, stream
     )
+    ASSERT_DRV(err)
+    
     err, = cuda.cuStreamSynchronize(stream)
+    ASSERT_DRV(err)
 
     # Assert values are same after running kernel   
     #hZ = a * hX + hY   
@@ -127,13 +148,21 @@ def _get_contour_segments(image,level):
     #    raise ValueError("Error outside tolerance for host-device vectors")
 
     err, = cuda.cuStreamDestroy(stream)
+    ASSERT_DRV(err)
     err, = cuda.cuMemFree(dImageclass)
+    ASSERT_DRV(err)
     err, = cuda.cuMemFree(dResult1Xclass)
+    ASSERT_DRV(err)
     err, = cuda.cuMemFree(dResult1Yclass)
+    ASSERT_DRV(err)
     err, = cuda.cuMemFree(dResult2Xclass)
+    ASSERT_DRV(err)
     err, = cuda.cuMemFree(dResult2Yclass)
+    ASSERT_DRV(err)
     err, = cuda.cuModuleUnload(module)
+    ASSERT_DRV(err)
     err, = cuda.cuCtxDestroy(context)
+    ASSERT_DRV(err)
 
     segments = []
     for (x1, y1, x2, y2) in zip(result_1x, result_1y, result_2x, result_2y):  
