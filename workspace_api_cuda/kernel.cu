@@ -19,7 +19,8 @@ void saxpy(double *image, double *result_1x, double *result_1y, double *result_2
         size_t y;
     } top, bottom, left, right;
     
-    if( r0 < height && c0 < width ){
+
+    if( r0 < height-1 && c0 < width-1 ){
 
         // skip mask
 
@@ -87,14 +88,14 @@ void saxpy(double *image, double *result_1x, double *result_1y, double *result_2
         }
         else if (square_case == 6){
             // TODO !!!
-            // result_1x[ r0 * width + c0 ] = 0.0;
-            // result_1y[ r0 * width + c0 ] = 0.0;
-            // result_2x[ r0 * width + c0 ] = 0.0;
-            // result_2y[ r0 * width + c0 ] = 0.0; 
-            result_1x[ r0 * width + c0 ] = left.x;
-            result_1y[ r0 * width + c0 ] = left.y;
-            result_2x[ r0 * width + c0 ] = top.x;
-            result_2y[ r0 * width + c0 ] = top.y; 
+            result_1x[ r0 * width + c0 ] = 0.0;
+            result_1y[ r0 * width + c0 ] = 0.0;
+            result_2x[ r0 * width + c0 ] = 0.0;
+            result_2y[ r0 * width + c0 ] = 0.0; 
+            // result_1x[ r0 * width + c0 ] = left.x;
+            // result_1y[ r0 * width + c0 ] = left.y;
+            // result_2x[ r0 * width + c0 ] = top.x;
+            // result_2y[ r0 * width + c0 ] = top.y; 
 
         }
         else if (square_case == 7){
@@ -111,14 +112,14 @@ void saxpy(double *image, double *result_1x, double *result_1y, double *result_2
         }
         else if (square_case == 9){
             // TODO !!!
-            // result_1x[ r0 * width + c0 ] = 0.0;
-            // result_1y[ r0 * width + c0 ] = 0.0;
-            // result_2x[ r0 * width + c0 ] = 0.0;
-            // result_2y[ r0 * width + c0 ] = 0.0; 
-            result_1x[ r0 * width + c0 ] = top.x;
-            result_1y[ r0 * width + c0 ] = top.y;
-            result_2x[ r0 * width + c0 ] = left.x;
-            result_2y[ r0 * width + c0 ] = left.y; 
+            result_1x[ r0 * width + c0 ] = 0.0;
+            result_1y[ r0 * width + c0 ] = 0.0;
+            result_2x[ r0 * width + c0 ] = 0.0;
+            result_2y[ r0 * width + c0 ] = 0.0; 
+            // result_1x[ r0 * width + c0 ] = top.x;
+            // result_1y[ r0 * width + c0 ] = top.y;
+            // result_2x[ r0 * width + c0 ] = left.x;
+            // result_2y[ r0 * width + c0 ] = left.y; 
         }
         else if (square_case == 10){
             result_1x[ r0 * width + c0 ] = bottom.x;

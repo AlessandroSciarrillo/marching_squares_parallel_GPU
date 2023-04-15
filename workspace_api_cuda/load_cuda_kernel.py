@@ -47,10 +47,10 @@ def load_kernel(image_size, image_shape_1, image_shape_0, level):
     ASSERT_DRV(err)
 
     BLKDIM = 32   
-    NUM_THREADS_x = BLKDIM  # Threads per block  x
-    NUM_THREADS_y = BLKDIM  # Threads per block  y
-    NUM_BLOCKS_x = (image_shape_1 + BLKDIM-1) / BLKDIM   # Blocks per grid  x
-    NUM_BLOCKS_y = (image_shape_0 + BLKDIM-1) / BLKDIM   # Blocks per grid  y
+    NUM_THREADS_x = BLKDIM                              # Threads per block  x
+    NUM_THREADS_y = BLKDIM                              # Threads per block  y
+    NUM_BLOCKS_x = (image_shape_1 + BLKDIM-1) / BLKDIM  # Blocks per grid  x
+    NUM_BLOCKS_y = (image_shape_0 + BLKDIM-1) / BLKDIM  # Blocks per grid  y
 
     n = np.array(image_size, dtype=np.uint32) 
     width = np.array(image_shape_1, dtype=np.uint32)
