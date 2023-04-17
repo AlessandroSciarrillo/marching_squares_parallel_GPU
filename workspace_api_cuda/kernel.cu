@@ -19,15 +19,26 @@ void saxpy(double *image, double *result_1x, double *result_1y, double *result_2
         size_t y;
     } top, bottom, left, right;
     
+    // height e width -1: altrimenti r1 e c1 escono dal dominio
+    //  (r0,c0) _ (r0,c1)
+    //     |         |
+    //  (r1,c0) _ (r1,c1)
 
-    if( r0 < height-1 && c0 < width-1 ){
+
+    // width: 511 => (0-510)
+    //                 need : 510 (0 - max val: 509)
+    if( r0 < height-1 && c0 < width-1 ){ 
 
         // skip mask
-
-        double ul = image[ r0 * width + c0 ];
+        
+        //               need : 511
+        double ul = image[ r0 * width + c0 ]; 
         double ur = image[ r0 * width + c1 ];
         double ll = image[ r1 * width + c0 ];
         double lr = image[ r1 * width + c1 ];
+
+        // for dom_res need: [r0 * width + c0], width = 510
+        width = width - 1;
 
         // skip control for NaN values
 

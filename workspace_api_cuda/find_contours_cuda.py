@@ -62,39 +62,44 @@ def _get_contour_segments(image,level):
     BLKDIM = 32   
     NUM_THREADS_x = BLKDIM  # Threads per block  x
     NUM_THREADS_y = BLKDIM  # Threads per block  y
-    NUM_BLOCKS_x = (image.shape[1] + BLKDIM-1) / BLKDIM   # Blocks per grid  x
-    NUM_BLOCKS_y = (image.shape[0] + BLKDIM-1) / BLKDIM   # Blocks per grid  y
+    NUM_BLOCKS_x = (image.shape[1]-1 + BLKDIM-1) / BLKDIM   # Blocks per grid  x
+    NUM_BLOCKS_y = (image.shape[0]-1 + BLKDIM-1) / BLKDIM   # Blocks per grid  y
 
-    n = np.array(image.size, dtype=np.uint32) 
+    dim_dom = image.size
+    dim_res = image.size - image.shape[1] - image.shape[0] + 1
+
+    n = np.array(dim_dom, dtype=np.uint32) 
+    dim_res = np.array(dim_res, dtype=np.uint32) 
     width = np.array(image.shape[1], dtype=np.uint32)
     height = np.array(image.shape[0], dtype=np.uint32)
     lev_np = np.array([level], dtype=np.float64)
-    bufferSize = n * lev_np.itemsize
+    bufferSizeDom = n * lev_np.itemsize
+    bufferSizeRes = dim_res * lev_np.itemsize #TODO si potrebbe usare int per questo dato che le coordinate sono intere
 
     # image è 95x511 con 48545 elementi 
     image = image.ravel()
-    result_1x = np.zeros(n).astype(dtype=np.float64)
-    result_1y = np.zeros(n).astype(dtype=np.float64)
-    result_2x = np.zeros(n).astype(dtype=np.float64)
-    result_2y = np.zeros(n).astype(dtype=np.float64)
+    result_1x = np.zeros(dim_res).astype(dtype=np.float64)
+    result_1y = np.zeros(dim_res).astype(dtype=np.float64)
+    result_2x = np.zeros(dim_res).astype(dtype=np.float64)
+    result_2y = np.zeros(dim_res).astype(dtype=np.float64)
     print("image:   \n",image)
 
-    err, dImageclass = cuda.cuMemAlloc(bufferSize)
+    err, dImageclass = cuda.cuMemAlloc(bufferSizeDom)
     ASSERT_DRV(err)
-    err, dResult1Xclass = cuda.cuMemAlloc(bufferSize)
+    err, dResult1Xclass = cuda.cuMemAlloc(bufferSizeRes)
     ASSERT_DRV(err)
-    err, dResult1Yclass = cuda.cuMemAlloc(bufferSize)
+    err, dResult1Yclass = cuda.cuMemAlloc(bufferSizeRes)
     ASSERT_DRV(err)
-    err, dResult2Xclass = cuda.cuMemAlloc(bufferSize)
+    err, dResult2Xclass = cuda.cuMemAlloc(bufferSizeRes)
     ASSERT_DRV(err)
-    err, dResult2Yclass = cuda.cuMemAlloc(bufferSize)
+    err, dResult2Yclass = cuda.cuMemAlloc(bufferSizeRes)
     ASSERT_DRV(err)
 
     err, stream = cuda.cuStreamCreate(0)
     ASSERT_DRV(err)
 
     err, = cuda.cuMemcpyHtoDAsync(
-        dImageclass, image.ctypes.data, bufferSize, stream
+        dImageclass, image.ctypes.data, bufferSizeDom, stream
     )
     ASSERT_DRV(err)
 
@@ -123,19 +128,19 @@ def _get_contour_segments(image,level):
     ASSERT_DRV(err)
 
     err, = cuda.cuMemcpyDtoHAsync(
-        result_1x.ctypes.data, dResult1Xclass, bufferSize, stream
+        result_1x.ctypes.data, dResult1Xclass, bufferSizeRes, stream
     )
     ASSERT_DRV(err)
     err, = cuda.cuMemcpyDtoHAsync(
-        result_1y.ctypes.data, dResult1Yclass, bufferSize, stream
+        result_1y.ctypes.data, dResult1Yclass, bufferSizeRes, stream
     )
     ASSERT_DRV(err)
     err, = cuda.cuMemcpyDtoHAsync(
-        result_2x.ctypes.data, dResult2Xclass, bufferSize, stream
+        result_2x.ctypes.data, dResult2Xclass, bufferSizeRes, stream
     )
     ASSERT_DRV(err)
     err, = cuda.cuMemcpyDtoHAsync(
-        result_2y.ctypes.data, dResult2Yclass, bufferSize, stream
+        result_2y.ctypes.data, dResult2Yclass, bufferSizeRes, stream
     )
     ASSERT_DRV(err)
     
