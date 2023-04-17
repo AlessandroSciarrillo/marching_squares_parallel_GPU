@@ -1,8 +1,8 @@
 import numpy as np
 
-#*original*#from ._find_contours_cy import _get_contour_segments
-#from cppsort import _get_contour_segments
-from hello import get_hello
+from _find_contours_cy import _get_contour_segments
+#from _find_contours import _get_contour_segments
+#from hello import get_hello
 #import cppsort
 
 from collections import deque
@@ -14,7 +14,7 @@ def find_contours(image, level=None,
                   fully_connected='low', positive_orientation='low',
                   *,
                   mask=None):
-    """
+  
     if fully_connected not in _param_options:
         raise ValueError('Parameters "fully_connected" must be either '
                          '"high" or "low".')
@@ -42,11 +42,11 @@ def find_contours(image, level=None,
     if positive_orientation == 'high':
         contours = [c[::-1] for c in contours]
     return contours
-    """
+   
 
     #print("Enter _get_hello...")
-    val = get_hello()
-    print(val)
+    #val = get_hello()
+    #print(val)
     #print("Done")
 
 

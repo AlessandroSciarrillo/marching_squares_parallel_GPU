@@ -25,7 +25,7 @@ NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y = load_kernel(r.size, r
 
 # Print Diff with lib
 st = time.time()
-contours_lib = measure.find_contours(r, 0.5)  # skimage
+contours = measure.find_contours(r, 0.5)  # skimage
 et = time.time()
 elapsed_time_lib = et - st
 print('Execution time lib :', elapsed_time_lib, 'seconds')

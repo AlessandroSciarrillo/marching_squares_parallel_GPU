@@ -4,7 +4,7 @@ from setuptools.command.build_ext import build_ext
 from Cython.Build import cythonize
 
 # IO
-#import numpy
+import numpy
 
 include_dirs = []
 library_dirs = []
@@ -20,7 +20,7 @@ if NVCPP_EXE is not None:
     ]
 
     # IO
-    #include_dirs += [numpy.get_include()]
+    include_dirs += [numpy.get_include()]
 
     library_dirs += [
         os.path.join(NVCPP_HOME, "lib")
@@ -62,7 +62,7 @@ ext = cythonize([
     )])
 
 setup(
-    name='hello',
+    name='_find_contours_cy',
     author='Alessandro Sciarrillo',
     version='0.1',
     ext_modules=ext,
