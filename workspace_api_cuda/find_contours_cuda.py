@@ -65,7 +65,23 @@ def _get_contour_segments(image,level):
     NUM_BLOCKS_x = (image.shape[1]-1 + BLKDIM-1) / BLKDIM   # Blocks per grid  x
     NUM_BLOCKS_y = (image.shape[0]-1 + BLKDIM-1) / BLKDIM   # Blocks per grid  y
 
+    # dim Domain: 
+    #   ._________.
+    #   |         |
+    #   |         |
+    #   |         |
+    #   |         |
+    #   |_________|
     dim_dom = image.size
+
+    # dim Result:
+    #
+    #   * * * * * 
+    #   * o o o @ o
+    #   * o     * o
+    #   * o     * o
+    #   * @ * * * o
+    #     o o o o o
     dim_res = image.size - image.shape[1] - image.shape[0] + 1
 
     n = np.array(dim_dom, dtype=np.uint32) 
