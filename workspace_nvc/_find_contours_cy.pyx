@@ -160,3 +160,5 @@ def _get_contour_segments(cnp.float64_t[:, :] array,
                 segments.append((left, top))
 
     return segments
+
+# CC=nvc++ python setup.py build_ext --inplace
