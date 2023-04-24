@@ -58,7 +58,7 @@ def _get_contour_segments(image,level):
     err, kernel = cuda.cuModuleGetFunction(module, b"saxpy")
     ASSERT_DRV(err)
 
-    print(image.shape)
+    #print(image.shape)
     BLKDIM = 32   
     NUM_THREADS_x = BLKDIM  # Threads per block  x
     NUM_THREADS_y = BLKDIM  # Threads per block  y
@@ -98,7 +98,7 @@ def _get_contour_segments(image,level):
     result_1y = np.zeros(dim_res).astype(dtype=np.float64)
     result_2x = np.zeros(dim_res).astype(dtype=np.float64)
     result_2y = np.zeros(dim_res).astype(dtype=np.float64)
-    print("image:   \n",image)
+    #print("image:   \n",image)
 
     err, dImageclass = cuda.cuMemAlloc(bufferSizeDom)
     ASSERT_DRV(err)

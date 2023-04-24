@@ -1,0 +1,15 @@
+ 
+API Cuda
+
+Compilazione Kernel Cuda: 0.1453702449798584 seconds
+Execution time lib : 0.0010644493103027343 seconds
+Execution time cuda: 0.008363794326782227 seconds
+Difference : 0.007299345016479493 seconds
+Speedup : 0.12726870947725183 seconds
+48545 (95, 511)
+
+Zip Risultati: 0.007320880889892578 seconds
+>>> lib/(cu-zip)
+1.0206497228353997
+
+

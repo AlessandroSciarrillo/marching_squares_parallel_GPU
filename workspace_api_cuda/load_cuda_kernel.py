@@ -4,6 +4,7 @@ import numpy as np
 def ASSERT_DRV(err):
     if isinstance(err, cuda.CUresult):
         if err != cuda.CUresult.CUDA_SUCCESS:
+            print("\nError string: ",cuda.cuGetErrorString(err),"\n")
             raise RuntimeError("Cuda Error: {}".format(err))
     elif isinstance(err, nvrtc.nvrtcResult):
         if err != nvrtc.nvrtcResult.NVRTC_SUCCESS:
@@ -59,11 +60,12 @@ def load_kernel(image_size, image_shape_1, image_shape_0, level):
     NUM_BLOCKS_x = (image_shape_1 + BLKDIM-1) / BLKDIM  # Blocks per grid  x
     NUM_BLOCKS_y = (image_shape_0 + BLKDIM-1) / BLKDIM  # Blocks per grid  y
 
-    n = np.array(image_size, dtype=np.uint32) 
+    #n = np.array(image_size, dtype=np.uint32) 
+    n = np.array(NUM_BLOCKS_x * NUM_BLOCKS_y * NUM_THREADS_x * NUM_THREADS_y , dtype=np.uint32) 
     width = np.array(image_shape_1, dtype=np.uint32)
     height = np.array(image_shape_0, dtype=np.uint32)
     lev_np = np.array([level], dtype=np.float64)
-    bufferSize = n * lev_np.itemsize
+    bufferSize = n * lev_np.itemsize 
 
     # image è 95x511 con 48545 elementi 
     #image = image.ravel()
@@ -101,4 +103,5 @@ def load_kernel(image_size, image_shape_1, image_shape_0, level):
     return (kernel, bufferSize, stream, args, 
             result_1x, result_1y, result_2x, result_2y, 
             dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, 
-            NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y)
+            NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y,
+            module, context)
