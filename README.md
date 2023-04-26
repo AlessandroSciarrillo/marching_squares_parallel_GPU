@@ -1,6 +1,6 @@
 # Marching Squares parallelo su GPU
 
-## Implementazione Marching Squares usta attualmente da Bioretics
+## Implementazione Marching Squares usta attualmente
 
 ### Libreria Skimage implementazione find_contours
 _find_contours.py (https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours.py)	
@@ -22,3 +22,10 @@ https://nvidia.github.io/cuda-python/overview.html
 https://numba.readthedocs.io/en/stable/cuda/index.html
 
 
+## Current state
+|               |    PC    |   server   |
+| ------------- | -------- | ---------- |
+| api_cuda_test |    OK    | 	 OK	|
+| jupyter_test  |    X     |     X      |
+| api_cuda	|    OK**  |     X      |
+| nvc++		|    X     |     OK*    |
