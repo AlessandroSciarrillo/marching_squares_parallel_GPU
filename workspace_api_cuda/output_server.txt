@@ -2,7 +2,19 @@
 ############# ESECUZIONE #####################à
 
 sciarrillo@HP-Z4-G4-RTX2060:~/Desktop/marching_squares_parallel_GPU/workspace_api_cuda$ python3 skimageMS.py 
-Compilazione Kernel Cuda: 0.3814249038696289 seconds
-Execution time lib : 0.0012394392490386963 seconds
-Segmentation fault (core dumped)
+Compilazione Kernel Cuda: 0.30899596214294434 seconds
+Execution time lib : 0.001234663724899292 seconds
+
+Error string:  (<CUresult.CUDA_SUCCESS: 0>, b'an illegal memory access was encountered') 
+
+Traceback (most recent call last):
+  File "/home/sciarrillo/Desktop/marching_squares_parallel_GPU/workspace_api_cuda/skimageMS.py", line 47, in <module>
+    contours = my_find_contours_splitted(
+  File "/home/sciarrillo/Desktop/marching_squares_parallel_GPU/workspace_api_cuda/_find_contours.py", line 150, in find_contours_splitted
+    segments = launch_kernel(   kernel, bufferSize, stream, args,
+  File "/home/sciarrillo/Desktop/marching_squares_parallel_GPU/workspace_api_cuda/launch_cuda_kernel.py", line 49, in launch_kernel
+    ASSERT_DRV(err)
+  File "/home/sciarrillo/Desktop/marching_squares_parallel_GPU/workspace_api_cuda/launch_cuda_kernel.py", line 11, in ASSERT_DRV
+    raise RuntimeError("Cuda Error: {}".format(err))
+RuntimeError: Cuda Error: 700
 
