@@ -1,0 +1,385 @@
+ 
+############## COMPILAZIONE ##########################
+ 
+main ●  CC=nvc++ python setup.py build_ext --inplace
+Compiling cppsort_parallel.pyx because it changed.
+Compiling cppsort_serial.pyx because it changed.
+Compiling cppsort_stdpar.pyx because it changed.
+[1/3] Cythonizing cppsort_parallel.pyx
+/home/sciro/anaconda3/lib/python3.10/site-packages/Cython/Compiler/Main.py:344: FutureWarning: Cython directive 'language_level' not set, using '3str' for now (Py3). This has changed from earlier releases! File: /home/sciro/Desktop/Thesis/marching_squares_parallel_GPU/jupyter_test/cppsort_parallel.pyx
+  tree = Parsing.p_module(s, pxd, full_module_name)
+[2/3] Cythonizing cppsort_serial.pyx
+/home/sciro/anaconda3/lib/python3.10/site-packages/Cython/Compiler/Main.py:344: FutureWarning: Cython directive 'language_level' not set, using '3str' for now (Py3). This has changed from earlier releases! File: /home/sciro/Desktop/Thesis/marching_squares_parallel_GPU/jupyter_test/cppsort_serial.pyx
+  tree = Parsing.p_module(s, pxd, full_module_name)
+[3/3] Cythonizing cppsort_stdpar.pyx
+/home/sciro/anaconda3/lib/python3.10/site-packages/Cython/Compiler/Main.py:344: FutureWarning: Cython directive 'language_level' not set, using '3str' for now (Py3). This has changed from earlier releases! File: /home/sciro/Desktop/Thesis/marching_squares_parallel_GPU/jupyter_test/cppsort_stdpar.pyx
+  tree = Parsing.p_module(s, pxd, full_module_name)
+running build_ext
+building 'cppsort_parallel' extension
+creating build
+creating build/temp.linux-x86_64-cpython-310
+nvc++ -fPIC -stdpar -gpu=nordc -std=c++17 -Iinclude-stdpar -I/home/sciro/anaconda3/include/python3.10 -c cppsort_parallel.cpp -o build/temp.linux-x86_64-cpython-310/cppsort_parallel.o -std=c++17
+"cppsort_parallel.cpp", line 18073: warning: variable "__pyx_lineno" was set but never used [set_but_not_used]
+    int __pyx_lineno = 0;
+        ^
+
+Remark: individual warnings can be suppressed with "--diag_suppress <warning-name>"
+
+"cppsort_parallel.cpp", line 18074: warning: variable "__pyx_filename" was set but never used [set_but_not_used]
+    const char *__pyx_filename = NULL;
+                ^
+
+"cppsort_parallel.cpp", line 18075: warning: variable "__pyx_clineno" was set but never used [set_but_not_used]
+    int __pyx_clineno = 0;
+        ^
+
+"cppsort_parallel.cpp", line 24009: warning: function "__Pyx_PyObject_AsString" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE const char* __Pyx_PyObject_AsString(PyObject* o) {
+                                   ^
+
+"cppsort_parallel.cpp", line 24006: warning: function "__Pyx_PyUnicode_FromString" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject* __Pyx_PyUnicode_FromString(const char* c_str) {
+                                 ^
+
+"cppsort_parallel.cpp", line 928: warning: function "__Pyx_Py_UNICODE_strlen" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE size_t __Pyx_Py_UNICODE_strlen(const Py_UNICODE *u)
+                              ^
+
+"cppsort_parallel.cpp", line 24083: warning: function "__Pyx_PyObject_IsTrueAndDecref" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyObject_IsTrueAndDecref(PyObject* x) {
+                           ^
+
+"cppsort_parallel.cpp", line 24245: warning: function "__Pyx_PyInt_FromSize_t" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject * __Pyx_PyInt_FromSize_t(size_t ival) {
+                                  ^
+
+"cppsort_parallel.cpp", line 24225: warning: function "__Pyx_PyIndex_AsHash_t" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE Py_hash_t __Pyx_PyIndex_AsHash_t(PyObject* o) {
+                                 ^
+
+"cppsort_parallel.cpp", line 1045: warning: function "__Pyx_pretend_to_initialize" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_pretend_to_initialize(void* ptr) { (void)ptr; }
+                            ^
+
+"cppsort_parallel.cpp", line 1056: warning: variable "__pyx_lineno" was set but never used [set_but_not_used]
+  static int __pyx_lineno;
+             ^
+
+"cppsort_parallel.cpp", line 1057: warning: variable "__pyx_clineno" was set but never used [set_but_not_used]
+  static int __pyx_clineno = 0;
+             ^
+
+"cppsort_parallel.cpp", line 1059: warning: variable "__pyx_filename" was set but never used [set_but_not_used]
+  static const char *__pyx_filename;
+                     ^
+
+"cppsort_parallel.cpp", line 18734: warning: function "__Pyx_PyList_FromArray" was declared but never referenced [declared_but_not_referenced]
+  __Pyx_PyList_FromArray(PyObject *const *src, Py_ssize_t n)
+  ^
+
+"cppsort_parallel.cpp", line 18721: warning: function "__Pyx_PyTuple_FromArray" was declared but never referenced [declared_but_not_referenced]
+  __Pyx_PyTuple_FromArray(PyObject *const *src, Py_ssize_t n)
+  ^
+
+"cppsort_parallel.cpp", line 18748: warning: function "__Pyx_PyBytes_Equals" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyBytes_Equals(PyObject* s1, PyObject* s2, int equals) {
+                           ^
+
+"cppsort_parallel.cpp", line 1524: warning: variable "__pyx_pyframe_localsplus_offset" was set but never used [set_but_not_used]
+    static size_t __pyx_pyframe_localsplus_offset = 0;
+                  ^
+
+"cppsort_parallel.cpp", line 19943: warning: function "__Pyx_GetItemInt_List_Fast" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__Pyx_GetItemInt_List_Fast(PyObject *o, Py_ssize_t i,
+                                 ^
+
+"cppsort_parallel.cpp", line 20176: warning: function "__Pyx_get_tp_dict_version" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj) {
+                                   ^
+
+"cppsort_parallel.cpp", line 20192: warning: function "__Pyx_object_dict_version_matches" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UINT64_T tp_dict_version, PY_UINT64_T obj_dict_version) {
+                           ^
+
+"cppsort_parallel.cpp", line 20751: warning: function "__Pyx_PyErr_GivenExceptionMatches2" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *exc_type1, PyObject *exc_type2) {
+                           ^
+
+"cppsort_parallel.cpp", line 21932: warning: function "__Pyx_CyFunction_InitDefaults" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void *__Pyx_CyFunction_InitDefaults(PyObject *func, size_t size, int pyobjects) {
+                             ^
+
+"cppsort_parallel.cpp", line 21942: warning: function "__Pyx_CyFunction_SetDefaultsTuple" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsTuple(PyObject *func, PyObject *tuple) {
+                            ^
+
+"cppsort_parallel.cpp", line 21947: warning: function "__Pyx_CyFunction_SetDefaultsKwDict" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsKwDict(PyObject *func, PyObject *dict) {
+                            ^
+
+"cppsort_parallel.cpp", line 21952: warning: function "__Pyx_CyFunction_SetAnnotationsDict" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_CyFunction_SetAnnotationsDict(PyObject *func, PyObject *dict) {
+                            ^
+
+"cppsort_parallel.cpp", line 23175: warning: function "__pyx_add_acquisition_count_locked" was declared but never referenced [declared_but_not_referenced]
+  __pyx_add_acquisition_count_locked(__pyx_atomic_int *acquisition_count,
+  ^
+
+"cppsort_parallel.cpp", line 23185: warning: function "__pyx_sub_acquisition_count_locked" was declared but never referenced [declared_but_not_referenced]
+  __pyx_sub_acquisition_count_locked(__pyx_atomic_int *acquisition_count,
+  ^
+
+"cppsort_parallel.cpp", line 3248: warning: Calls to function "std::sort(_EP &&, _RIt, _RIt) [with _EP=const std::execution::parallel_policy &, _RIt=int *]" with execution policy std::execution::par will run sequentially when compiled for a compute capability less than cc70; only std::execution::par_unseq can be run in parallel on such GPUs [parallelization_not_supported_in_cc60]
+      std::sort<std::execution::parallel_policy const &,int *>(std::execution::par, (&(*((int *) ( /* dim=0 */ (__pyx_v_x.data + __pyx_t_1 * __pyx_v_x.strides[0]) )))), ((&(*((int *) ( /* dim=0 */ (__pyx_v_x.data + __pyx_t_3 * __pyx_v_x.strides[0]) )))) + 1));
+                                                              ^
+
+creating build/lib.linux-x86_64-cpython-310
+nvc++ -shared -stdpar build/temp.linux-x86_64-cpython-310/cppsort_parallel.o -Llib -Wl,-Rlib -ltbb -o build/lib.linux-x86_64-cpython-310/cppsort_parallel.cpython-310-x86_64-linux-gnu.so
+building 'cppsort_serial' extension
+nvc++ -fPIC -stdpar -gpu=nordc -std=c++17 -Iinclude-stdpar -I/home/sciro/anaconda3/include/python3.10 -c cppsort_serial.cpp -o build/temp.linux-x86_64-cpython-310/cppsort_serial.o -std=c++17
+"cppsort_serial.cpp", line 18081: warning: variable "__pyx_lineno" was set but never used [set_but_not_used]
+    int __pyx_lineno = 0;
+        ^
+
+Remark: individual warnings can be suppressed with "--diag_suppress <warning-name>"
+
+"cppsort_serial.cpp", line 18082: warning: variable "__pyx_filename" was set but never used [set_but_not_used]
+    const char *__pyx_filename = NULL;
+                ^
+
+"cppsort_serial.cpp", line 18083: warning: variable "__pyx_clineno" was set but never used [set_but_not_used]
+    int __pyx_clineno = 0;
+        ^
+
+"cppsort_serial.cpp", line 24017: warning: function "__Pyx_PyObject_AsString" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE const char* __Pyx_PyObject_AsString(PyObject* o) {
+                                   ^
+
+"cppsort_serial.cpp", line 24014: warning: function "__Pyx_PyUnicode_FromString" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject* __Pyx_PyUnicode_FromString(const char* c_str) {
+                                 ^
+
+"cppsort_serial.cpp", line 936: warning: function "__Pyx_Py_UNICODE_strlen" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE size_t __Pyx_Py_UNICODE_strlen(const Py_UNICODE *u)
+                              ^
+
+"cppsort_serial.cpp", line 24091: warning: function "__Pyx_PyObject_IsTrueAndDecref" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyObject_IsTrueAndDecref(PyObject* x) {
+                           ^
+
+"cppsort_serial.cpp", line 24253: warning: function "__Pyx_PyInt_FromSize_t" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject * __Pyx_PyInt_FromSize_t(size_t ival) {
+                                  ^
+
+"cppsort_serial.cpp", line 24233: warning: function "__Pyx_PyIndex_AsHash_t" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE Py_hash_t __Pyx_PyIndex_AsHash_t(PyObject* o) {
+                                 ^
+
+"cppsort_serial.cpp", line 1053: warning: function "__Pyx_pretend_to_initialize" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_pretend_to_initialize(void* ptr) { (void)ptr; }
+                            ^
+
+"cppsort_serial.cpp", line 1064: warning: variable "__pyx_lineno" was set but never used [set_but_not_used]
+  static int __pyx_lineno;
+             ^
+
+"cppsort_serial.cpp", line 1065: warning: variable "__pyx_clineno" was set but never used [set_but_not_used]
+  static int __pyx_clineno = 0;
+             ^
+
+"cppsort_serial.cpp", line 1067: warning: variable "__pyx_filename" was set but never used [set_but_not_used]
+  static const char *__pyx_filename;
+                     ^
+
+"cppsort_serial.cpp", line 18742: warning: function "__Pyx_PyList_FromArray" was declared but never referenced [declared_but_not_referenced]
+  __Pyx_PyList_FromArray(PyObject *const *src, Py_ssize_t n)
+  ^
+
+"cppsort_serial.cpp", line 18729: warning: function "__Pyx_PyTuple_FromArray" was declared but never referenced [declared_but_not_referenced]
+  __Pyx_PyTuple_FromArray(PyObject *const *src, Py_ssize_t n)
+  ^
+
+"cppsort_serial.cpp", line 18756: warning: function "__Pyx_PyBytes_Equals" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyBytes_Equals(PyObject* s1, PyObject* s2, int equals) {
+                           ^
+
+"cppsort_serial.cpp", line 1532: warning: variable "__pyx_pyframe_localsplus_offset" was set but never used [set_but_not_used]
+    static size_t __pyx_pyframe_localsplus_offset = 0;
+                  ^
+
+"cppsort_serial.cpp", line 19951: warning: function "__Pyx_GetItemInt_List_Fast" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__Pyx_GetItemInt_List_Fast(PyObject *o, Py_ssize_t i,
+                                 ^
+
+"cppsort_serial.cpp", line 20184: warning: function "__Pyx_get_tp_dict_version" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj) {
+                                   ^
+
+"cppsort_serial.cpp", line 20200: warning: function "__Pyx_object_dict_version_matches" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UINT64_T tp_dict_version, PY_UINT64_T obj_dict_version) {
+                           ^
+
+"cppsort_serial.cpp", line 20759: warning: function "__Pyx_PyErr_GivenExceptionMatches2" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *exc_type1, PyObject *exc_type2) {
+                           ^
+
+"cppsort_serial.cpp", line 21940: warning: function "__Pyx_CyFunction_InitDefaults" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void *__Pyx_CyFunction_InitDefaults(PyObject *func, size_t size, int pyobjects) {
+                             ^
+
+"cppsort_serial.cpp", line 21950: warning: function "__Pyx_CyFunction_SetDefaultsTuple" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsTuple(PyObject *func, PyObject *tuple) {
+                            ^
+
+"cppsort_serial.cpp", line 21955: warning: function "__Pyx_CyFunction_SetDefaultsKwDict" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsKwDict(PyObject *func, PyObject *dict) {
+                            ^
+
+"cppsort_serial.cpp", line 21960: warning: function "__Pyx_CyFunction_SetAnnotationsDict" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_CyFunction_SetAnnotationsDict(PyObject *func, PyObject *dict) {
+                            ^
+
+"cppsort_serial.cpp", line 23183: warning: function "__pyx_add_acquisition_count_locked" was declared but never referenced [declared_but_not_referenced]
+  __pyx_add_acquisition_count_locked(__pyx_atomic_int *acquisition_count,
+  ^
+
+"cppsort_serial.cpp", line 23193: warning: function "__pyx_sub_acquisition_count_locked" was declared but never referenced [declared_but_not_referenced]
+  __pyx_sub_acquisition_count_locked(__pyx_atomic_int *acquisition_count,
+  ^
+
+nvc++ -shared -stdpar build/temp.linux-x86_64-cpython-310/cppsort_serial.o -Llib -Wl,-Rlib -o build/lib.linux-x86_64-cpython-310/cppsort_serial.cpython-310-x86_64-linux-gnu.so
+building 'cppsort_stdpar' extension
+nvc++ -fPIC -stdpar -gpu=nordc -std=c++17 -Iinclude-stdpar -I/home/sciro/anaconda3/include/python3.10 -c cppsort_stdpar.cpp -o build/temp.linux-x86_64-cpython-310/cppsort_stdpar.o -std=c++17
+"cppsort_stdpar.cpp", line 18157: warning: variable "__pyx_lineno" was set but never used [set_but_not_used]
+    int __pyx_lineno = 0;
+        ^
+
+Remark: individual warnings can be suppressed with "--diag_suppress <warning-name>"
+
+"cppsort_stdpar.cpp", line 18158: warning: variable "__pyx_filename" was set but never used [set_but_not_used]
+    const char *__pyx_filename = NULL;
+                ^
+
+"cppsort_stdpar.cpp", line 18159: warning: variable "__pyx_clineno" was set but never used [set_but_not_used]
+    int __pyx_clineno = 0;
+        ^
+
+"cppsort_stdpar.cpp", line 24106: warning: function "__Pyx_PyObject_AsString" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE const char* __Pyx_PyObject_AsString(PyObject* o) {
+                                   ^
+
+"cppsort_stdpar.cpp", line 24103: warning: function "__Pyx_PyUnicode_FromString" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject* __Pyx_PyUnicode_FromString(const char* c_str) {
+                                 ^
+
+"cppsort_stdpar.cpp", line 938: warning: function "__Pyx_Py_UNICODE_strlen" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE size_t __Pyx_Py_UNICODE_strlen(const Py_UNICODE *u)
+                              ^
+
+"cppsort_stdpar.cpp", line 24180: warning: function "__Pyx_PyObject_IsTrueAndDecref" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyObject_IsTrueAndDecref(PyObject* x) {
+                           ^
+
+"cppsort_stdpar.cpp", line 24342: warning: function "__Pyx_PyInt_FromSize_t" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject * __Pyx_PyInt_FromSize_t(size_t ival) {
+                                  ^
+
+"cppsort_stdpar.cpp", line 24322: warning: function "__Pyx_PyIndex_AsHash_t" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE Py_hash_t __Pyx_PyIndex_AsHash_t(PyObject* o) {
+                                 ^
+
+"cppsort_stdpar.cpp", line 1055: warning: function "__Pyx_pretend_to_initialize" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_pretend_to_initialize(void* ptr) { (void)ptr; }
+                            ^
+
+"cppsort_stdpar.cpp", line 1066: warning: variable "__pyx_lineno" was set but never used [set_but_not_used]
+  static int __pyx_lineno;
+             ^
+
+"cppsort_stdpar.cpp", line 1067: warning: variable "__pyx_clineno" was set but never used [set_but_not_used]
+  static int __pyx_clineno = 0;
+             ^
+
+"cppsort_stdpar.cpp", line 1069: warning: variable "__pyx_filename" was set but never used [set_but_not_used]
+  static const char *__pyx_filename;
+                     ^
+
+"cppsort_stdpar.cpp", line 18819: warning: function "__Pyx_PyList_FromArray" was declared but never referenced [declared_but_not_referenced]
+  __Pyx_PyList_FromArray(PyObject *const *src, Py_ssize_t n)
+  ^
+
+"cppsort_stdpar.cpp", line 18806: warning: function "__Pyx_PyTuple_FromArray" was declared but never referenced [declared_but_not_referenced]
+  __Pyx_PyTuple_FromArray(PyObject *const *src, Py_ssize_t n)
+  ^
+
+"cppsort_stdpar.cpp", line 18833: warning: function "__Pyx_PyBytes_Equals" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyBytes_Equals(PyObject* s1, PyObject* s2, int equals) {
+                           ^
+
+"cppsort_stdpar.cpp", line 1534: warning: variable "__pyx_pyframe_localsplus_offset" was set but never used [set_but_not_used]
+    static size_t __pyx_pyframe_localsplus_offset = 0;
+                  ^
+
+"cppsort_stdpar.cpp", line 20028: warning: function "__Pyx_GetItemInt_List_Fast" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__Pyx_GetItemInt_List_Fast(PyObject *o, Py_ssize_t i,
+                                 ^
+
+"cppsort_stdpar.cpp", line 20261: warning: function "__Pyx_get_tp_dict_version" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj) {
+                                   ^
+
+"cppsort_stdpar.cpp", line 20277: warning: function "__Pyx_object_dict_version_matches" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UINT64_T tp_dict_version, PY_UINT64_T obj_dict_version) {
+                           ^
+
+"cppsort_stdpar.cpp", line 20836: warning: function "__Pyx_PyErr_GivenExceptionMatches2" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *exc_type1, PyObject *exc_type2) {
+                           ^
+
+"cppsort_stdpar.cpp", line 22017: warning: function "__Pyx_CyFunction_InitDefaults" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void *__Pyx_CyFunction_InitDefaults(PyObject *func, size_t size, int pyobjects) {
+                             ^
+
+"cppsort_stdpar.cpp", line 22027: warning: function "__Pyx_CyFunction_SetDefaultsTuple" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsTuple(PyObject *func, PyObject *tuple) {
+                            ^
+
+"cppsort_stdpar.cpp", line 22032: warning: function "__Pyx_CyFunction_SetDefaultsKwDict" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_CyFunction_SetDefaultsKwDict(PyObject *func, PyObject *dict) {
+                            ^
+
+"cppsort_stdpar.cpp", line 22037: warning: function "__Pyx_CyFunction_SetAnnotationsDict" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_CyFunction_SetAnnotationsDict(PyObject *func, PyObject *dict) {
+                            ^
+
+"cppsort_stdpar.cpp", line 23150: warning: function "__pyx_memview_get_int" was declared but never referenced [declared_but_not_referenced]
+      static CYTHON_INLINE PyObject *__pyx_memview_get_int(const char *itemp) {
+                                     ^
+
+"cppsort_stdpar.cpp", line 23153: warning: function "__pyx_memview_set_int" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __pyx_memview_set_int(const char *itemp, PyObject *obj) {
+                           ^
+
+"cppsort_stdpar.cpp", line 23294: warning: function "__pyx_add_acquisition_count_locked" was declared but never referenced [declared_but_not_referenced]
+  __pyx_add_acquisition_count_locked(__pyx_atomic_int *acquisition_count,
+  ^
+
+"cppsort_stdpar.cpp", line 23304: warning: function "__pyx_sub_acquisition_count_locked" was declared but never referenced [declared_but_not_referenced]
+  __pyx_sub_acquisition_count_locked(__pyx_atomic_int *acquisition_count,
+  ^
+
+"cppsort_stdpar.cpp", line 3304: warning: Calls to function "std::sort(_EP &&, _RIt, _RIt) [with _EP=const std::execution::parallel_policy &, _RIt=__gnu_cxx::__normal_iterator<int *, std::vector<int, std::allocator<int>>>]" with execution policy std::execution::par will run sequentially when compiled for a compute capability less than cc70; only std::execution::par_unseq can be run in parallel on such GPUs [parallelization_not_supported_in_cc60]
+      std::sort<std::execution::parallel_policy const &,std::vector<int> ::iterator>(std::execution::par, __pyx_v_vec.begin(), __pyx_v_vec.end());
+                                                                                    ^
+
+nvc++ -shared -stdpar build/temp.linux-x86_64-cpython-310/cppsort_stdpar.o -Llib -Wl,-Rlib -o build/lib.linux-x86_64-cpython-310/cppsort_stdpar.cpython-310-x86_64-linux-gnu.so
+copying build/lib.linux-x86_64-cpython-310/cppsort_parallel.cpython-310-x86_64-linux-gnu.so -> 
+copying build/lib.linux-x86_64-cpython-310/cppsort_serial.cpython-310-x86_64-linux-gnu.so -> 
+copying build/lib.linux-x86_64-cpython-310/cppsort_stdpar.cpython-310-x86_64-linux-gnu.so -> 
+
+
+
+######################### ESECUZIONE #################################
+
+ main ●  py bench.py 
+Segmentation fault (core dumped)

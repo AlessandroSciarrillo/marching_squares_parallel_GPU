@@ -1,3 +1,5 @@
+
+################## ESECUZIONE con Illegal memory access #####################
  
 >>> py skimageMS.py 
 Compilazione Kernel Cuda: 0.14562559127807617 seconds
@@ -16,6 +18,7 @@ Traceback (most recent call last):
     raise RuntimeError("Cuda Error: {}".format(err))
 RuntimeError: Cuda Error: 700
 
+################## ESECUZIONE a buon fine ####################################
 
 >>> py skimageMS.py 
 Compilazione Kernel Cuda: 0.14565014839172363 seconds
@@ -24,3 +27,18 @@ Execution time cuda: 0.011571701526641845 seconds
 Difference : 0.010445545434951782 seconds
 Speedup : 0.09731983573005953 seconds
 48545 (95, 511)
+
+
+
+################### MISURAZIONI #################################
+
+Compilazione Kernel Cuda: 0.1453702449798584 seconds 
+Execution time lib : 0.0010644493103027343 seconds
+Execution time cuda: 0.008363794326782227 seconds
+Difference : 0.007299345016479493 seconds
+Speedup : 0.12726870947725183 seconds
+48545 (95, 511)
+
+Zip Risultati: 0.007320880889892578 seconds
+>>> lib/(cu-zip)
+1.0206497228353997
