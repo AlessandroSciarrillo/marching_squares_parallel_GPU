@@ -1,0 +1,26 @@
+ 
+>>> py skimageMS.py 
+Compilazione Kernel Cuda: 0.14562559127807617 seconds
+Execution time lib : 0.0010821187496185302 seconds
+
+Error string:  (<CUresult.CUDA_SUCCESS: 0>, b'an illegal memory access was encountered') 
+
+Traceback (most recent call last):
+  File "/home/sciro/Desktop/Thesis/marching_squares_parallel_GPU/workspace_api_cuda/skimageMS.py", line 47, in <module>
+    contours = my_find_contours_splitted(
+  File "/home/sciro/Desktop/Thesis/marching_squares_parallel_GPU/workspace_api_cuda/_find_contours.py", line 150, in find_contours_splitted
+    segments = launch_kernel(   kernel, bufferSize, stream, args,
+  File "/home/sciro/Desktop/Thesis/marching_squares_parallel_GPU/workspace_api_cuda/launch_cuda_kernel.py", line 49, in launch_kernel
+    ASSERT_DRV(err)
+  File "/home/sciro/Desktop/Thesis/marching_squares_parallel_GPU/workspace_api_cuda/launch_cuda_kernel.py", line 11, in ASSERT_DRV
+    raise RuntimeError("Cuda Error: {}".format(err))
+RuntimeError: Cuda Error: 700
+
+
+>>> py skimageMS.py 
+Compilazione Kernel Cuda: 0.14565014839172363 seconds
+Execution time lib : 0.0011261560916900634 seconds
+Execution time cuda: 0.011571701526641845 seconds
+Difference : 0.010445545434951782 seconds
+Speedup : 0.09731983573005953 seconds
+48545 (95, 511)
