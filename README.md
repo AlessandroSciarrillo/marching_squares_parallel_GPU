@@ -31,4 +31,5 @@ https://numba.readthedocs.io/en/stable/cuda/index.html
 | nvc++		|    X     |   RUN*(2)  |
 
 *(1) illegal memory access + tempo per "zip" risultati
+
 *(2) compila ed esegue ma senza gpu poichè le direttive stdpar non sono specificate
