@@ -1,0 +1,125 @@
+
+############# COMPILAZIONE #######################
+
+root@a90fa191b355:/marching_squares_parallel_GPU/jupyter_test# CC=nvc++ python3 setup.py build_ext --inplace
+Compiling cppsort_parallel.pyx because it changed.
+Compiling cppsort_serial.pyx because it changed.
+Compiling cppsort_stdpar.pyx because it changed.
+[1/3] Cythonizing cppsort_parallel.pyx
+/usr/local/lib/python3.8/dist-packages/Cython/Compiler/Main.py:369: FutureWarning: Cython directive 'language_level' not set, using 2 for now (Py2). This will change in a later release! File: /marching_squares_parallel_GPU/jupyter_test/cppsort_parallel.pyx
+  tree = Parsing.p_module(s, pxd, full_module_name)
+[2/3] Cythonizing cppsort_serial.pyx
+/usr/local/lib/python3.8/dist-packages/Cython/Compiler/Main.py:369: FutureWarning: Cython directive 'language_level' not set, using 2 for now (Py2). This will change in a later release! File: /marching_squares_parallel_GPU/jupyter_test/cppsort_serial.pyx
+  tree = Parsing.p_module(s, pxd, full_module_name)
+[3/3] Cythonizing cppsort_stdpar.pyx
+/usr/local/lib/python3.8/dist-packages/Cython/Compiler/Main.py:369: FutureWarning: Cython directive 'language_level' not set, using 2 for now (Py2). This will change in a later release! File: /marching_squares_parallel_GPU/jupyter_test/cppsort_stdpar.pyx
+  tree = Parsing.p_module(s, pxd, full_module_name)
+
+Error compiling Cython file:
+------------------------------------------------------------
+...
+
+# distutils: language=c++
+
+from libcpp.algorithm cimport copy_n
+^
+------------------------------------------------------------
+
+cppsort_stdpar.pyx:4:0: 'libcpp/algorithm/copy_n.pxd' not found
+
+Error compiling Cython file:
+------------------------------------------------------------
+...
+    """
+    Sort the elements of x "in-place" using std::sort
+    """
+    cdef vector[int] vec
+    vec.resize(len(x))
+    copy_n(&x[0], len(x), vec.begin())
+   ^
+------------------------------------------------------------
+
+cppsort_stdpar.pyx:17:4: 'copy_n' is not a constant, variable or function identifier
+
+Error compiling Cython file:
+------------------------------------------------------------
+...
+    """
+    Sort the elements of x "in-place" using std::sort
+    """
+    cdef vector[int] vec
+    vec.resize(len(x))
+    copy_n(&x[0], len(x), vec.begin())
+          ^
+------------------------------------------------------------
+
+cppsort_stdpar.pyx:17:11: Cannot convert 'int *' to Python object
+
+Error compiling Cython file:
+------------------------------------------------------------
+...
+    """
+    Sort the elements of x "in-place" using std::sort
+    """
+    cdef vector[int] vec
+    vec.resize(len(x))
+    copy_n(&x[0], len(x), vec.begin())
+                                  ^
+------------------------------------------------------------
+
+cppsort_stdpar.pyx:17:35: Cannot convert 'iterator' to Python object
+
+Error compiling Cython file:
+------------------------------------------------------------
+...
+    """
+    cdef vector[int] vec
+    vec.resize(len(x))
+    copy_n(&x[0], len(x), vec.begin())
+    sort(par, vec.begin(), vec.end())
+    copy_n(vec.begin(), len(x), &x[0])
+   ^
+------------------------------------------------------------
+
+cppsort_stdpar.pyx:19:4: 'copy_n' is not a constant, variable or function identifier
+
+Error compiling Cython file:
+------------------------------------------------------------
+...
+    """
+    cdef vector[int] vec
+    vec.resize(len(x))
+    copy_n(&x[0], len(x), vec.begin())
+    sort(par, vec.begin(), vec.end())
+    copy_n(vec.begin(), len(x), &x[0])
+                   ^
+------------------------------------------------------------
+
+cppsort_stdpar.pyx:19:20: Cannot convert 'iterator' to Python object
+
+Error compiling Cython file:
+------------------------------------------------------------
+...
+    """
+    cdef vector[int] vec
+    vec.resize(len(x))
+    copy_n(&x[0], len(x), vec.begin())
+    sort(par, vec.begin(), vec.end())
+    copy_n(vec.begin(), len(x), &x[0])
+                               ^
+------------------------------------------------------------
+
+cppsort_stdpar.pyx:19:32: Cannot convert 'int *' to Python object
+Traceback (most recent call last):
+  File "setup.py", line 47, in <module>
+    ext = cythonize([
+  File "/usr/local/lib/python3.8/dist-packages/Cython/Build/Dependencies.py", line 1115, in cythonize
+    cythonize_one(*args)
+  File "/usr/local/lib/python3.8/dist-packages/Cython/Build/Dependencies.py", line 1238, in cythonize_one
+    raise CompileError(None, pyx_file)
+Cython.Compiler.Errors.CompileError: cppsort_stdpar.pyx
+
+
+
+
+

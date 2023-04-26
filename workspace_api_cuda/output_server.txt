@@ -1,0 +1,8 @@
+
+############# ESECUZIONE #####################à
+
+sciarrillo@HP-Z4-G4-RTX2060:~/Desktop/marching_squares_parallel_GPU/workspace_api_cuda$ python3 skimageMS.py 
+Compilazione Kernel Cuda: 0.3814249038696289 seconds
+Execution time lib : 0.0012394392490386963 seconds
+Segmentation fault (core dumped)
+

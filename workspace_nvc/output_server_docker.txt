@@ -1,0 +1,212 @@
+
+############## COMPILAZIONE ##################
+
+root@a90fa191b355:/marching_squares_parallel_GPU/workspace_nvc# CC=nvc++ python3 setup.py build_ext --inplace
+Compiling _find_contours_cy.pyx because it changed.
+[1/1] Cythonizing _find_contours_cy.pyx
+/usr/local/lib/python3.8/dist-packages/Cython/Compiler/Main.py:369: FutureWarning: Cython directive 'language_level' not set, using 2 for now (Py2). This will change in a later release! File: /marching_squares_parallel_GPU/workspace_nvc/_find_contours_cy.pyx
+  tree = Parsing.p_module(s, pxd, full_module_name)
+running build_ext
+building 'workspace_nvc._find_contours_cy' extension
+creating build
+creating build/temp.linux-x86_64-3.8
+nvc++ -fPIC -stdpar -gpu=nordc -std=c++17 -Iinclude-stdpar -I/usr/local/lib/python3.8/dist-packages/numpy/core/include -I/usr/include/python3.8 -c _find_contours_cy.cpp -o build/temp.linux-x86_64-3.8/_find_contours_cy.o -std=c++17
+"/usr/local/lib/python3.8/dist-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h", line 17: warning: #warning directive: "Using deprecated NumPy API, disable it with "          "#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [warning_directive]
+  #warning "Using deprecated NumPy API, disable it with " \
+   ^
+
+Remark: individual warnings can be suppressed with "--diag_suppress <warning-name>"
+
+"_find_contours_cy.cpp", line 3208: warning: statement is unreachable [code_is_unreachable]
+          break;
+          ^
+
+"_find_contours_cy.cpp", line 19215: warning: variable "__pyx_lineno" was set but never used [set_but_not_used]
+    int __pyx_lineno = 0;
+        ^
+
+"_find_contours_cy.cpp", line 19216: warning: variable "__pyx_filename" was set but never used [set_but_not_used]
+    const char *__pyx_filename = NULL;
+                ^
+
+"_find_contours_cy.cpp", line 19217: warning: variable "__pyx_clineno" was set but never used [set_but_not_used]
+    int __pyx_clineno = 0;
+        ^
+
+"_find_contours_cy.cpp", line 19281: warning: variable "__pyx_lineno" was set but never used [set_but_not_used]
+    int __pyx_lineno = 0;
+        ^
+
+"_find_contours_cy.cpp", line 19282: warning: variable "__pyx_filename" was set but never used [set_but_not_used]
+    const char *__pyx_filename = NULL;
+                ^
+
+"_find_contours_cy.cpp", line 19283: warning: variable "__pyx_clineno" was set but never used [set_but_not_used]
+    int __pyx_clineno = 0;
+        ^
+
+"_find_contours_cy.cpp", line 23999: warning: function "__Pyx_PyObject_AsString" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE const char* __Pyx_PyObject_AsString(PyObject* o) {
+                                   ^
+
+"_find_contours_cy.cpp", line 23996: warning: function "__Pyx_PyUnicode_FromString" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject* __Pyx_PyUnicode_FromString(const char* c_str) {
+                                 ^
+
+"_find_contours_cy.cpp", line 884: warning: function "__Pyx_Py_UNICODE_strlen" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE size_t __Pyx_Py_UNICODE_strlen(const Py_UNICODE *u) {
+                              ^
+
+"_find_contours_cy.cpp", line 24073: warning: function "__Pyx_PyObject_IsTrueAndDecref" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyObject_IsTrueAndDecref(PyObject* x) {
+                           ^
+
+"_find_contours_cy.cpp", line 24231: warning: function "__Pyx_PyInt_FromSize_t" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject * __Pyx_PyInt_FromSize_t(size_t ival) {
+                                  ^
+
+"_find_contours_cy.cpp", line 24211: warning: function "__Pyx_PyIndex_AsHash_t" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE Py_hash_t __Pyx_PyIndex_AsHash_t(PyObject* o) {
+                                 ^
+
+"_find_contours_cy.cpp", line 999: warning: function "__Pyx_pretend_to_initialize" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __Pyx_pretend_to_initialize(void* ptr) { (void)ptr; }
+                            ^
+
+"_find_contours_cy.cpp", line 1008: warning: variable "__pyx_lineno" was set but never used [set_but_not_used]
+  static int __pyx_lineno;
+             ^
+
+"_find_contours_cy.cpp", line 1009: warning: variable "__pyx_clineno" was set but never used [set_but_not_used]
+  static int __pyx_clineno = 0;
+             ^
+
+"_find_contours_cy.cpp", line 1011: warning: variable "__pyx_filename" was set but never used [set_but_not_used]
+  static const char *__pyx_filename;
+                     ^
+
+"_find_contours_cy.cpp", line 22867: warning: function "__pyx_t_float_complex_from_parts" was declared but never referenced [declared_but_not_referenced]
+      static CYTHON_INLINE __pyx_t_float_complex __pyx_t_float_complex_from_parts(float x, float y) {
+                                                 ^
+
+"_find_contours_cy.cpp", line 23021: warning: function "__pyx_t_double_complex_from_parts" was declared but never referenced [declared_but_not_referenced]
+      static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(double x, double y) {
+                                                  ^
+
+"_find_contours_cy.cpp", line 20033: warning: function "__pyx_add_acquisition_count_locked" was declared but never referenced [declared_but_not_referenced]
+  __pyx_add_acquisition_count_locked(__pyx_atomic_int *acquisition_count,
+  ^
+
+"_find_contours_cy.cpp", line 20043: warning: function "__pyx_sub_acquisition_count_locked" was declared but never referenced [declared_but_not_referenced]
+  __pyx_sub_acquisition_count_locked(__pyx_atomic_int *acquisition_count,
+  ^
+
+"_find_contours_cy.cpp", line 20710: warning: function "__Pyx_PyBytes_Equals" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyBytes_Equals(PyObject* s1, PyObject* s2, int equals) {
+                           ^
+
+"_find_contours_cy.cpp", line 20879: warning: function "__Pyx_GetItemInt_List_Fast" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__Pyx_GetItemInt_List_Fast(PyObject *o, Py_ssize_t i,
+                                 ^
+
+"_find_contours_cy.cpp", line 1844: warning: function "__Pyx_PyUnicode_DecodeUTF16" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__Pyx_PyUnicode_DecodeUTF16(const char *s, Py_ssize_t size, const char *errors) {
+                                 ^
+
+"_find_contours_cy.cpp", line 1848: warning: function "__Pyx_PyUnicode_DecodeUTF16LE" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__Pyx_PyUnicode_DecodeUTF16LE(const char *s, Py_ssize_t size, const char *errors) {
+                                 ^
+
+"_find_contours_cy.cpp", line 1852: warning: function "__Pyx_PyUnicode_DecodeUTF16BE" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__Pyx_PyUnicode_DecodeUTF16BE(const char *s, Py_ssize_t size, const char *errors) {
+                                 ^
+
+"_find_contours_cy.cpp", line 21037: warning: function "__Pyx_get_tp_dict_version" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PY_UINT64_T __Pyx_get_tp_dict_version(PyObject *obj) {
+                                   ^
+
+"_find_contours_cy.cpp", line 21053: warning: function "__Pyx_object_dict_version_matches" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_object_dict_version_matches(PyObject* obj, PY_UINT64_T tp_dict_version, PY_UINT64_T obj_dict_version) {
+                           ^
+
+"_find_contours_cy.cpp", line 21316: warning: function "__Pyx_PyErr_GivenExceptionMatches2" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __Pyx_PyErr_GivenExceptionMatches2(PyObject *err, PyObject *exc_type1, PyObject *exc_type2) {
+                           ^
+
+"_find_contours_cy.cpp", line 3908: warning: function "__pyx_f_5numpy_PyArray_MultiIterNew1" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__pyx_v_a) {
+                                 ^
+
+"_find_contours_cy.cpp", line 3958: warning: function "__pyx_f_5numpy_PyArray_MultiIterNew2" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__pyx_v_a, PyObject *__pyx_v_b) {
+                                 ^
+
+"_find_contours_cy.cpp", line 4008: warning: function "__pyx_f_5numpy_PyArray_MultiIterNew3" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c) {
+                                 ^
+
+"_find_contours_cy.cpp", line 4058: warning: function "__pyx_f_5numpy_PyArray_MultiIterNew4" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d) {
+                                 ^
+
+"_find_contours_cy.cpp", line 4108: warning: function "__pyx_f_5numpy_PyArray_MultiIterNew5" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d, PyObject *__pyx_v_e) {
+                                 ^
+
+"_find_contours_cy.cpp", line 4158: warning: function "__pyx_f_5numpy_PyDataType_SHAPE" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__pyx_v_d) {
+                                 ^
+
+"_find_contours_cy.cpp", line 4232: warning: function "__pyx_f_5numpy_set_array_base" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_arr, PyObject *__pyx_v_base) {
+                            ^
+
+"_find_contours_cy.cpp", line 4274: warning: function "__pyx_f_5numpy_get_array_base" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__pyx_v_arr) {
+                                 ^
+
+"_find_contours_cy.cpp", line 4487: warning: function "__pyx_f_5numpy_import_umath" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
+                           ^
+
+"_find_contours_cy.cpp", line 4619: warning: function "__pyx_f_5numpy_import_ufunc" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
+                           ^
+
+"_find_contours_cy.cpp", line 4751: warning: function "__pyx_f_5numpy_is_timedelta64_object" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_obj) {
+                           ^
+
+"_find_contours_cy.cpp", line 4788: warning: function "__pyx_f_5numpy_is_datetime64_object" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_obj) {
+                           ^
+
+"_find_contours_cy.cpp", line 4825: warning: function "__pyx_f_5numpy_get_datetime64_value" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *__pyx_v_obj) {
+                                    ^
+
+"_find_contours_cy.cpp", line 4859: warning: function "__pyx_f_5numpy_get_timedelta64_value" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject *__pyx_v_obj) {
+                                     ^
+
+"_find_contours_cy.cpp", line 4893: warning: function "__pyx_f_5numpy_get_datetime64_unit" was declared but never referenced [declared_but_not_referenced]
+  static CYTHON_INLINE NPY_DATETIMEUNIT __pyx_f_5numpy_get_datetime64_unit(PyObject *__pyx_v_obj) {
+                                        ^
+
+creating build/lib.linux-x86_64-3.8
+creating build/lib.linux-x86_64-3.8/workspace_nvc
+nvc++ -shared -stdpar build/temp.linux-x86_64-3.8/_find_contours_cy.o -Llib -Wl,--enable-new-dtags,-Rlib -o build/lib.linux-x86_64-3.8/workspace_nvc/_find_contours_cy.cpython-38-x86_64-linux-gnu.so
+copying build/lib.linux-x86_64-3.8/workspace_nvc/_find_contours_cy.cpython-38-x86_64-linux-gnu.so -> workspace_nvc
+
+
+################### ESECUZIONE ###################
+
+root@a90fa191b355:/marching_squares_parallel_GPU/workspace_nvc# python3 skimageMS.py 
+Lib Execution times: 0.006991386413574219 seconds
+Lib2 Execution times: 0.006705045700073242 seconds
+nvc Execution times: 0.007206916809082031 seconds
+nvc2 Execution times: 0.00707554817199707 seconds
+Difference : 0.0003705024719238281 seconds
+Speedup : 0.9476362165987128 seconds
+
+
