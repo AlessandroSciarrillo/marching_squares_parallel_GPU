@@ -27,5 +27,8 @@ https://numba.readthedocs.io/en/stable/cuda/index.html
 | ------------- | -------- | ---------- |
 | api_cuda_test |    OK    | 	 OK	|
 | jupyter_test  |    X     |     X      |
-| api_cuda	|    OK**  |     X      |
-| nvc++		|    X     |     OK*    |
+| api_cuda	|  RUN*(1) |     X      |
+| nvc++		|    X     |   RUN*(2)  |
+
+*(1) illegal memory access + tempo per "zip" risultati
+*(2) compila ed esegue ma senza gpu poichè le direttive stdpar non sono specificate
