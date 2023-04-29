@@ -2,7 +2,7 @@ from cuda import cuda, nvrtc
 import numpy as np
 
 # only fot test
-#import time
+import time
 
 def ASSERT_DRV(err):
     if isinstance(err, cuda.CUresult):
@@ -22,10 +22,18 @@ def launch_kernel(  kernel, bufferSize, stream, args,
 
     image = image.ravel()
 
+    st = time.time()
+
     #TODO Ask Prof"For increased application performance, you can input data on the device to eliminate data transfers."
     err, = cuda.cuMemcpyHtoDAsync(
         dImageclass, image.ctypes.data, bufferSize, stream
     )
+    ASSERT_DRV(err)
+
+    # For Illegal memory access error
+    err, = cuda.cuCtxSynchronize()
+    ASSERT_DRV(err)
+    err, = cuda.cuStreamSynchronize(stream)
     ASSERT_DRV(err)
 
     err, = cuda.cuLaunchKernel(
@@ -41,6 +49,12 @@ def launch_kernel(  kernel, bufferSize, stream, args,
         args.ctypes.data,  # kernel arguments
         0,  # extra (ignore)
     )
+    ASSERT_DRV(err)
+
+    # For Illegal memory access error
+    err, = cuda.cuCtxSynchronize()
+    ASSERT_DRV(err)
+    err, = cuda.cuStreamSynchronize(stream)
     ASSERT_DRV(err)
 
     err, = cuda.cuMemcpyDtoHAsync(
@@ -63,25 +77,18 @@ def launch_kernel(  kernel, bufferSize, stream, args,
     err, = cuda.cuStreamSynchronize(stream)
     ASSERT_DRV(err)
 
-    #TODO portare fuori
-    # err, = cuda.cuStreamDestroy(stream)
-    # err, = cuda.cuMemFree(dImageclass)
-    # err, = cuda.cuMemFree(dResult1Xclass)
-    # err, = cuda.cuMemFree(dResult1Yclass)
-    # err, = cuda.cuMemFree(dResult2Xclass)
-    # err, = cuda.cuMemFree(dResult2Yclass)
-    # err, = cuda.cuModuleUnload(module) 
-    # err, = cuda.cuCtxDestroy(context)  
+    et = time.time()
+    elapsed_time_kernel = (et - st)
 
     
     #st = time.time()
 
     segments = []
-    for (x1, y1, x2, y2) in zip(result_1x, result_1y, result_2x, result_2y):  
-        if x1 > 0.0 and y1 > 0.0 and x2 > 0.0 and y2 > 0.0 :
-            point1 = (x1,y1)
-            point2 = (x2,y2) 
-            segments.append( (point1,point2) )
+    # for (x1, y1, x2, y2) in zip(result_1x, result_1y, result_2x, result_2y):  
+    #     if x1 > 0.0 and y1 > 0.0 and x2 > 0.0 and y2 > 0.0 :
+    #         point1 = (x1,y1)
+    #         point2 = (x2,y2) 
+    #         segments.append( (point1,point2) )
 
 
     # stacked = np.vstack((result_1x, result_1y, result_2x, result_2y))
@@ -92,4 +99,4 @@ def launch_kernel(  kernel, bufferSize, stream, args,
     #print('Zip Risultati:', elapsed_time_zip_res, 'seconds')
 
     #print(segments)
-    return segments
+    return segments, elapsed_time_kernel

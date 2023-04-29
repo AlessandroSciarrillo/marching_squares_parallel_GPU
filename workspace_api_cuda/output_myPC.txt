@@ -42,3 +42,19 @@ Speedup : 0.12726870947725183 seconds
 Zip Risultati: 0.007320880889892578 seconds
 >>> lib/(cu-zip)
 1.0206497228353997
+
+################### MISURAZIONI 2 #################################
+
+ main ●  py skimageMS.py 
+Compilazione Kernel Cuda: 0.15805387496948242 seconds
+Execution time lib : 0.0010787863731384277 seconds
+Execution time cuda: 0.000583345890045166 seconds
+Difference : -0.0004954404830932617 seconds
+Speedup : 1.8493082604128774 seconds
+
+Execution time MS lib : 0.0010787863731384277 seconds
+Execution time MS cuda: 0.0005156993865966797 seconds
+Difference : 0.0005616564750671386 seconds
+Speedup : 2.0891160425335182 seconds
+48545 (95, 511)
+

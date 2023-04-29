@@ -4,6 +4,7 @@ import numpy as np
 from find_contours_cuda import _get_contour_segments
 
 from launch_cuda_kernel import launch_kernel
+import time
 
 from collections import deque
 
@@ -147,17 +148,20 @@ def find_contours_splitted( kernel, bufferSize, stream, args,
     #segments = _get_contour_segments(image.astype(np.float64), float(level),
     #                                 fully_connected == 'high', mask=mask)
     #segments = _get_contour_segments(image.astype(np.float64), float(level))
-    segments = launch_kernel(   kernel, bufferSize, stream, args,
+    segments, elapsed_time_kernel = launch_kernel(   kernel, bufferSize, stream, args,
                                 result_1x, result_1y, result_2x, result_2y, 
                                 dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, 
                                 NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, 
                                 image.astype(np.float64), float(level))
 
-
+    st = time.time()
     contours = _assemble_contours_splitted(segments)  
+    et = time.time()
+    elapsed_time_assemble_con = et - st
+
     if positive_orientation == 'high':
         contours = [c[::-1] for c in contours]
-    return contours
+    return contours, elapsed_time_assemble_con, elapsed_time_kernel
 
 def _assemble_contours_splitted(segments):
     current_index = 0
@@ -165,23 +169,6 @@ def _assemble_contours_splitted(segments):
     starts = {}
     ends = {}
     for from_point, to_point in segments:
-    # for (x1, y1, x2, y2) in zip(result_1x, result_1y, result_2x, result_2y):     
-    #     if x1 == 0.0 and y1 == 0.0 and x2 == 0.0 and y2 == 0.0 :
-    #         continue
-    #     from_point = (x1,y1)
-    #     to_point = (x2,y2) 
-    # for i in range(len(result_1x)):
-    #     if result_1x[i] == 0.0 and result_1y[i] == 0.0 and result_2x[i] == 0.0 and result_2y[i] == 0.0 :
-    #          continue
-    #     from_point = (result_1x[i],result_1y[i])
-    #     to_point = (result_2x[i],result_2y[i])
-    # for (x1, y1, x2, y2) in segments2:
-    #     from_point = (x1,y1)
-    #     to_point = (x2,y2) 
-    # for row in segments:
-    #     from_point = (row[0],row[1])
-    #     to_point = (row[2],row[3]) 
-
         # Ignore degenerate segments.
         # This happens when (and only when) one vertex of the square is
         # exactly the contour level, and the rest are above or below.

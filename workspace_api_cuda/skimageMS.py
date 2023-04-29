@@ -44,7 +44,7 @@ st = time.time()
 for a in range(times):
     #contours = my_find_contours_full(r,0.5)
 
-    contours = my_find_contours_splitted(
+    contours, elapsed_time_assemble_con, elapsed_time_kernel = my_find_contours_splitted(
         kernel, bufferSize, stream, args,
         result_1x, result_1y, result_2x, result_2y,
         dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass,
@@ -57,6 +57,18 @@ elapsed_time_my = (et - st)/times
 print('Execution time cuda:', elapsed_time_my, 'seconds')
 print('Difference :', elapsed_time_my - elapsed_time_lib, 'seconds')
 print('Speedup :', elapsed_time_lib / elapsed_time_my , 'seconds')
+
+print('\n\n')
+
+time_lib_MS = elapsed_time_lib - elapsed_time_assemble_con #TODO lanciare codice Cython compilato
+time_my_MS = elapsed_time_kernel    #TODO fare chiamata direttamente a lauch kernel x1000, ora stiamo prendendo il tempo solo dell ultimo lancio
+
+print('Execution time MS lib :', elapsed_time_lib, 'seconds')
+print('Execution time MS cuda:', time_my_MS, 'seconds')
+print('Difference :', time_lib_MS - time_my_MS, 'seconds')
+print('Speedup :', time_lib_MS / time_my_MS , 'seconds')
+
+
 
 
 ################ CLEAN CUDA KERNEL ######################
@@ -89,4 +101,4 @@ for contour in contours:
 ax.axis('image')
 ax.set_xticks([])
 ax.set_yticks([])
-plt.show()
+#plt.show()
