@@ -5,6 +5,7 @@ from find_contours_cuda import _get_contour_segments
 
 from launch_cuda_kernel import launch_kernel
 import time
+from cuda import cuda, nvrtc
 
 from collections import deque
 

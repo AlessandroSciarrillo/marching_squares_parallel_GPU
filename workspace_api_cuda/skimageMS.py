@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+from cuda import cuda, nvrtc
 
 from skimage import measure
 from _find_contours import find_contours_full as my_find_contours_full
