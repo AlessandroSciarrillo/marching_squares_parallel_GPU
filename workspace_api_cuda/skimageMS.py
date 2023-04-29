@@ -8,6 +8,21 @@ from _find_contours import find_contours_full as my_find_contours_full
 from _find_contours import find_contours_splitted as my_find_contours_splitted
 
 
+
+
+def ASSERT_DRV(err):
+    if isinstance(err, cuda.CUresult):
+        if err != cuda.CUresult.CUDA_SUCCESS:
+            print("\nError string: ",cuda.cuGetErrorString(err),"\n")
+            raise RuntimeError("Cuda Error: {}".format(err))
+    elif isinstance(err, nvrtc.nvrtcResult):
+        if err != nvrtc.nvrtcResult.NVRTC_SUCCESS:
+            raise RuntimeError("Nvrtc Error: {}".format(err))
+    else:
+        raise RuntimeError("Unknown error type: {}".format(err))
+
+
+
 # Construct some test data
 #x, y = np.ogrid[-np.pi:np.pi:95j, -np.pi:np.pi:511j]
 #r = np.sin(np.exp((np.sin(x)**3 + np.cos(y)**2)))
@@ -45,6 +60,13 @@ st = time.time()
 for a in range(times):
     #contours = my_find_contours_full(r,0.5)
 
+    # For Illegal memory access error
+    err, = cuda.cuCtxSynchronize()
+    ASSERT_DRV(err)
+    err, = cuda.cuStreamSynchronize(stream)
+    ASSERT_DRV(err)
+
+    #print("launch: ",a)
     contours, elapsed_time_assemble_con, elapsed_time_kernel = my_find_contours_splitted(
         kernel, bufferSize, stream, args,
         result_1x, result_1y, result_2x, result_2y,
@@ -103,3 +125,5 @@ ax.axis('image')
 ax.set_xticks([])
 ax.set_yticks([])
 #plt.show()
+
+

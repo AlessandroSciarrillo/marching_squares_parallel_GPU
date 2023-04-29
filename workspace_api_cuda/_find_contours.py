@@ -149,7 +149,7 @@ def find_contours_splitted( kernel, bufferSize, stream, args,
     #segments = _get_contour_segments(image.astype(np.float64), float(level),
     #                                 fully_connected == 'high', mask=mask)
     #segments = _get_contour_segments(image.astype(np.float64), float(level))
-    segments, elapsed_time_kernel = launch_kernel(   kernel, bufferSize, stream, args,
+    segments, elapsed_time_kernel = launch_kernel( kernel, bufferSize, stream, args,
                                 result_1x, result_1y, result_2x, result_2y, 
                                 dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, 
                                 NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, 

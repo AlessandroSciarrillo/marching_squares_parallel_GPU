@@ -88,7 +88,7 @@ def load_kernel(image_size, image_shape_1, image_shape_0, level):
     err, stream = cuda.cuStreamCreate(0)
 
     # err, = cuda.cuMemcpyHtoDAsync(
-    #     dImageclass, image.ctypes.data, bufferSize, stream
+    #      dImageclass, image.ctypes.data, bufferSize, stream
     # )
 
     dImage = np.array([int(dImageclass)], dtype=np.uint64)
@@ -100,7 +100,7 @@ def load_kernel(image_size, image_shape_1, image_shape_0, level):
     args = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height]
     args = np.array([arg.ctypes.data for arg in args], dtype=np.uint64)
 
-    return (kernel, bufferSize, stream, args, 
+    return (kernel, bufferSize, np.array(stream, dtype=np.uint64), args, 
             result_1x, result_1y, result_2x, result_2y, 
             dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, 
             NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y,
