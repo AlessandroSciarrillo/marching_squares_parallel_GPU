@@ -82,21 +82,19 @@ def launch_kernel(  kernel, bufferSize, stream, args,
 
     
     #st = time.time()
-
     segments = []
     # for (x1, y1, x2, y2) in zip(result_1x, result_1y, result_2x, result_2y):  
     #     if x1 > 0.0 and y1 > 0.0 and x2 > 0.0 and y2 > 0.0 :
     #         point1 = (x1,y1)
     #         point2 = (x2,y2) 
     #         segments.append( (point1,point2) )
-
-
+    #
+    # Version with numpy
     # stacked = np.vstack((result_1x, result_1y, result_2x, result_2y))
-    # segments2 = stacked[:,np.sum(stacked<0, axis=0)==0].T
-    
+    # segments2 = stacked[:,np.sum(stacked<0, axis=0)==0].T  
     #et = time.time()
     #elapsed_time_zip_res = (et - st)
     #print('Zip Risultati:', elapsed_time_zip_res, 'seconds')
-
     #print(segments)
+
     return segments, elapsed_time_kernel
