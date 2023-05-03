@@ -6,6 +6,7 @@
 
 import time
 import numpy as np
+import matplotlib.pyplot as plt #WARNING: se viene rimosso Cuda genera Illegal Access Memory
 from cuda import cuda, nvrtc
 
 from load_cuda_kernel import load_kernel
@@ -13,6 +14,7 @@ from launch_cuda_kernel import launch_kernel
 
 from skimage import measure
 from _find_contours import find_contours_splitted as my_find_contours_splitted
+
 
 # For API Cuda error check
 def ASSERT_DRV(err):
@@ -45,37 +47,31 @@ module, context = load_kernel(r.size, r.shape[1], r.shape[0], 0.5)
 
 # Take skimage lib times
 st = time.time()
+for a in range(times):
 
-#
+    #placeholder
+    contours = measure.find_contours(r, 0.5)
 
 et = time.time()
-elapsed_time_lib = (et - st)/times
+elapsed_time_lib = (et - st)/times #TODO bisogna prendere solo il tempo di esecuzione del cython escudeldo la chiamata ad assembly_contours
 
 
 # Take my version times
 st = time.time()
 
 for a in range(times):
-    print("launch: ",a)
-
     # For Illegal memory access error
     err, = cuda.cuCtxSynchronize()
     ASSERT_DRV(err)
     err, = cuda.cuStreamSynchronize(stream)
     ASSERT_DRV(err)
 
-    # segments, _ = launch_kernel( kernel, bufferSize, stream, args,
-    #                                 result_1x, result_1y, result_2x, result_2y, 
-    #                                 dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, 
-    #                                 NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, 
-    #                                 r.astype(np.float64), float(0.5))
-    contours, elapsed_time_assemble_con, elapsed_time_kernel = my_find_contours_splitted(
-        kernel, bufferSize, stream, args,
-        result_1x, result_1y, result_2x, result_2y,
-        dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass,
-        dImageclass,
-        NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y,
-        r, 0.5) 
+    # Only kernel execution
+    segments, _ = launch_kernel( kernel, bufferSize, stream, args,
+                                    result_1x, result_1y, result_2x, result_2y, 
+                                    dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, 
+                                    NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, 
+                                    r.astype(np.float64), 0.5)
 
 et = time.time()
 elapsed_time_my = (et - st)/times
@@ -84,8 +80,8 @@ elapsed_time_my = (et - st)/times
 # Print times, difference and speedup
 print('MS execution time lib :', elapsed_time_lib, 'seconds')
 print('MS execution time my  :', elapsed_time_my, 'seconds')
-print('Difference :', time_lib_MS - time_my_MS, 'seconds')
-print('Speedup :', time_lib_MS / time_my_MS , 'seconds')
+print('Difference :', elapsed_time_lib - elapsed_time_my, 'seconds')
+print('Speedup :', elapsed_time_lib / elapsed_time_my , 'seconds')
 
 
 # Free Cuda Kernel memory
