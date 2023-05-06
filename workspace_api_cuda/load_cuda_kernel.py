@@ -61,7 +61,7 @@ def load_kernel(image_size, image_shape_1, image_shape_0, level):
     NUM_BLOCKS_y = (image_shape_0 + BLKDIM-1) / BLKDIM  # Blocks per grid  y
 
     #n = np.array(image_size, dtype=np.uint32) 
-    n = np.array(NUM_BLOCKS_x * NUM_BLOCKS_y * NUM_THREADS_x * NUM_THREADS_y , dtype=np.uint32) 
+    n = np.array(NUM_BLOCKS_x * NUM_BLOCKS_y * NUM_THREADS_x * NUM_THREADS_y , dtype=np.uint32) #TODO rimuovere memoria allocata in eccesso
     width = np.array(image_shape_1, dtype=np.uint32)
     height = np.array(image_shape_0, dtype=np.uint32)
     lev_np = np.array([level], dtype=np.float64)

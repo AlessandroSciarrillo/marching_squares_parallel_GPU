@@ -7,7 +7,7 @@
 import time
 import numpy as np
 import matplotlib.pyplot as plt #WARNING: se viene rimosso Cuda genera Illegal Access Memory
-from cuda import cuda, nvrtc
+from cuda import cuda, nvrtc, cudart # cudart only for GPUs info
 
 from load_cuda_kernel import load_kernel
 from launch_cuda_kernel import launch_kernel
@@ -28,12 +28,19 @@ def ASSERT_DRV(err):
     else:
         raise RuntimeError("Unknown error type: {}".format(err))
 
-# Set Benchmark parameters
-times = 1000;
 
-# Get a Real Input
-t = np.load('./heatmaps_00000001_00000001.npy');
-r = t[:,:,10];
+# Set Benchmark parameters
+times = 1000
+inputReal = True
+
+if (inputReal):
+    # Get a Real Input
+    t = np.load('./heatmaps_00000001_00000001.npy');
+    r = t[:,:,10];
+else:
+    # Construct artificial test data
+    x, y = np.ogrid[-np.pi:np.pi:95j, -np.pi:np.pi:511j]
+    r = np.sin(np.exp((np.sin(x)**3 + np.cos(y)**2)))
 
 
 # Load Cuda kernel
@@ -44,8 +51,31 @@ dImageclass, \
 NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, \
 module, context = load_kernel(r.size, r.shape[1], r.shape[0], 0.5)
 
+print(r.shape)
+
+# Print some benchmark and GPUs info
+print(" ______________________________________________________________________________")
+print("|__________________________________BENCHMARK___________________________________|")
+print("|")
+print("| INFO:")
+print("|    Input type         => ", "real" if(inputReal) else "artificial")
+print("|    Number of launches => ", times)
+print("|")
+err, nDevices = cuda.cuDeviceGetCount()
+print("| GPUs [", nDevices,"]:" )
+for device in range(nDevices):
+    err, prop = cudart.cudaGetDeviceProperties(device)
+    print("|    Device number                => ", device)
+    print("|    Device name                  => ", prop.name.decode("utf-8"))
+    print("|    Memory Clock Rate (KHz)      => ", prop.memoryClockRate)
+    print("|    Memory Bus Width (bits)      => ", prop.memoryBusWidth)
+    print("|    Peak Memory Bandwidth (GB/s) => ", 2.0*prop.memoryClockRate*(prop.memoryBusWidth/8)/1.0e6)
+    print("|")
+print("|______________________________________________________________________________\n")
+
 
 # Take skimage lib times
+print("Launch skimage version bench...  ", end = '')
 st = time.time()
 for a in range(times):
 
@@ -54,11 +84,12 @@ for a in range(times):
 
 et = time.time()
 elapsed_time_lib = (et - st)/times #TODO bisogna prendere solo il tempo di esecuzione del cython escudeldo la chiamata ad assembly_contours
+print("[" + u'\u2713' + "]")
 
 
 # Take my version times
+print("Launch API CUDA version bench... ", end = '')
 st = time.time()
-
 for a in range(times):
     # For Illegal memory access error
     err, = cuda.cuCtxSynchronize()
@@ -72,17 +103,9 @@ for a in range(times):
                                     dResult1Xclass, dResult1Yclass, dResult2Xclass, dResult2Yclass, dImageclass, 
                                     NUM_BLOCKS_x, NUM_BLOCKS_y, NUM_THREADS_x, NUM_THREADS_y, 
                                     r.astype(np.float64), 0.5)
-
 et = time.time()
 elapsed_time_my = (et - st)/times
-
-
-# Print times, difference and speedup
-print('MS execution time lib :', elapsed_time_lib, 'seconds')
-print('MS execution time my  :', elapsed_time_my, 'seconds')
-print('Difference :', elapsed_time_lib - elapsed_time_my, 'seconds')
-print('Speedup :', elapsed_time_lib / elapsed_time_my , 'seconds')
-
+print("[" + u'\u2713' + "]\n")
 
 # Free Cuda Kernel memory
 err, = cuda.cuStreamDestroy(stream)
@@ -93,3 +116,12 @@ err, = cuda.cuMemFree(dResult2Xclass)
 err, = cuda.cuMemFree(dResult2Yclass)
 err, = cuda.cuModuleUnload(module) 
 err, = cuda.cuCtxDestroy(context)  
+
+# Print times, difference and speedup
+print('RESULTS:')
+print('MS execution time lib:   ', elapsed_time_lib, 'seconds')
+print('MS execution time my:    ', elapsed_time_my, 'seconds')
+print('Difference:              ', elapsed_time_lib - elapsed_time_my, 'seconds')
+print('Speedup:                 ', elapsed_time_lib / elapsed_time_my , 'seconds\n')
+
+
