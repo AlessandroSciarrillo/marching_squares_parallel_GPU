@@ -234,6 +234,14 @@ int main( int argc, char *argv[] )
     const double elapsed = hpc_gettime() - tstart;
     printf("Elapsed time (including data movement): %f\n", elapsed / TIMES);
 
+    // check results
+    FILE *fptr;
+    fptr = fopen("res1.txt", "w");
+    for(int r=0; r<n; r++){
+        fprintf(fptr, "\n%f",result_1x[r]);
+    }      
+    fclose(fptr);
+
     cudaFree(d_input);
     free(input);
 
