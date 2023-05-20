@@ -115,6 +115,9 @@ ASSERT_DRV(err)
 # kernel 2
 err, kernel_2 = cuda.cuModuleGetFunction(module, b"reduce")
 ASSERT_DRV(err)
+# kernel 3
+err, kernel_3 = cuda.cuModuleGetFunction(module, b"prescan")
+ASSERT_DRV(err)
 
 
 # BLKDIM = 32   
@@ -137,10 +140,12 @@ bufferSize_image = n * lev_np.itemsize                  # n * sizeof( np.float64
 bufferSize_result_required_memory = n * n.itemsize      # n * sizeof( np.uint32)
 # kernel 2
 bufferSize_result_reduce = reduce_blocks * n.itemsize   # REDUCE_BLOCKS * sizeof( np.uint32)
+# kernel 3
+bufferSize_result_exc_scan = n * n.itemsize             # n * sizeof( np.uint32)
 
 result_required_memory = np.zeros(n).astype(dtype=np.uint32)
 result_reduce = np.zeros(reduce_blocks).astype(dtype=np.uint32)
-
+result_exc_scan =  np.zeros(n).astype(dtype=np.uint32)
 
 err, dImageclass = cuda.cuMemAlloc(bufferSize_image)
 ASSERT_DRV(err)
@@ -150,6 +155,9 @@ ASSERT_DRV(err)
 # kenel 2
 err, dResult_reduce_class = cuda.cuMemAlloc(bufferSize_result_reduce)
 ASSERT_DRV(err)
+# kenel 3
+err, dResult_exc_scan_class = cuda.cuMemAlloc(bufferSize_result_exc_scan)
+ASSERT_DRV(err)
 
 err, stream = cuda.cuStreamCreate(0)
 
@@ -158,6 +166,8 @@ dImage = np.array([int(dImageclass)], dtype=np.uint64)
 dResult_required_memorys = np.array([int(dResult_required_memorys_class)], dtype=np.uint64)
 # kernel 2
 dResult_reduce = np.array([int(dResult_reduce_class)], dtype=np.uint64)
+# kernel 3
+dResult_exc_scan = np.array([int(dResult_exc_scan_class)], dtype=np.uint64)
 
 # kernel 1
 args_1 = [dImage, dResult_required_memorys, lev_np, n, width, height]
@@ -165,6 +175,9 @@ args_1 = np.array([arg.ctypes.data for arg in args_1], dtype=np.uint64)
 # kernel 2
 args_2 = [dResult_required_memorys, dResult_reduce, n]
 args_2 = np.array([arg.ctypes.data for arg in args_2], dtype=np.uint64)
+# kernel 3
+args_3 = [dResult_required_memorys, dResult_exc_scan, n]
+args_3 = np.array([arg.ctypes.data for arg in args_3], dtype=np.uint64)
 
 image = image.ravel()
 
@@ -207,9 +220,9 @@ err, = cuda.cuStreamSynchronize(stream)
 ASSERT_DRV(err)
  
 NUM_THREADS_x = BLKDIM                  # Threads per block  x
-NUM_THREADS_y = 0                       # Threads per block  y
+NUM_THREADS_y = 1                       # Threads per block  y
 NUM_BLOCKS_x = REDUCE_BLOCKS            # Blocks per grid  x        (N + BLKDIM-1) / BLKDIM           
-NUM_BLOCKS_y = 0                        # Blocks per grid  y
+NUM_BLOCKS_y = 1                        # Blocks per grid  y
 
 # kernel 2
 err, = cuda.cuLaunchKernel(
@@ -233,15 +246,56 @@ ASSERT_DRV(err)
 err, = cuda.cuStreamSynchronize(stream)
 ASSERT_DRV(err)
 
+NUM_THREADS_x = BLKDIM                  # Threads per block  x
+NUM_THREADS_y = 1                       # Threads per block  y
+NUM_BLOCKS_x = (N + BLKDIM-1) / BLKDIM  # Blocks per grid  x                 
+NUM_BLOCKS_y = 1                        # Blocks per grid  y
+
+# kernel 3
+err, = cuda.cuLaunchKernel(
+    kernel_3,
+    NUM_BLOCKS_x,  # grid x dim
+    NUM_BLOCKS_y,  # grid y dim
+    1,  # grid z dim
+    NUM_THREADS_x,  # block x dim
+    NUM_THREADS_y,  # block y dim
+    1,  # block z dim
+    0,  # dynamic shared memory
+    stream,  # stream
+    args_3.ctypes.data,  # kernel arguments
+    0,  # extra (ignore)
+)
+ASSERT_DRV(err)
+
+# For Illegal memory access error
+err, = cuda.cuCtxSynchronize()
+ASSERT_DRV(err)
+err, = cuda.cuStreamSynchronize(stream)
+ASSERT_DRV(err)
+
 # kernel 1
 err, = cuda.cuMemcpyDtoHAsync( #TODO non serve riportarlo giù, fatto solo per check risultato
     result_required_memory.ctypes.data, dResult_required_memorys_class, bufferSize_result_required_memory, stream
 )
+ASSERT_DRV(err)
 # kernel 2
 err, = cuda.cuMemcpyDtoHAsync(
     result_reduce.ctypes.data, dResult_reduce_class, bufferSize_result_reduce, stream
 )
 ASSERT_DRV(err)
+
+# Calc final result reduce
+np_result_reduce = np.array(result_reduce) 
+np_result_reduce = np_result_reduce.sum()   #TODO fare questa somma su GPU sarebbe meglio
+
+# kernel 3
+err, = cuda.cuMemcpyDtoHAsync(
+    result_exc_scan.ctypes.data, dResult_exc_scan_class, bufferSize_result_exc_scan, stream
+)
+ASSERT_DRV(err)
+
+
+
 err, = cuda.cuStreamSynchronize(stream)
 ASSERT_DRV(err)
 
@@ -254,14 +308,20 @@ with open("res1.txt", "w") as txt_file:
     for val in result_required_memory:
         txt_file.write("{} \n".format(val))
 with open("res2.txt", "w") as txt_file:
-    for val in result_required_memory:
+    txt_file.write("Result reduce: {} \n\n".format(np_result_reduce))
+    for val in result_reduce:
         txt_file.write("{} \n".format(val))
+with open("res3.txt", "w") as txt_file:
+    for val in result_exc_scan:
+        txt_file.write("{} \n".format(val))
+
 
 # Free Cuda Kernel memory
 err, = cuda.cuStreamDestroy(stream)
 err, = cuda.cuMemFree(dImageclass)
 err, = cuda.cuMemFree(dResult_required_memorys_class)
 err, = cuda.cuMemFree(dResult_reduce_class)
+err, = cuda.cuMemFree(dResult_exc_scan_class)
 err, = cuda.cuModuleUnload(module) 
 err, = cuda.cuCtxDestroy(context)  
 

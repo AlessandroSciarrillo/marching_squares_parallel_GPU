@@ -66,3 +66,53 @@ void reduce(size_t *required_memory, size_t *result_reduce, size_t n)
         result_reduce[bindex] = temp[0];
     }
 }
+
+
+/*
+* Exclusive Scan
+* Source. https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda
+*/
+extern "C" __global__
+void prescan(size_t *required_memory, size_t *result_exclusive_scan, size_t n) 
+{ 
+    __shared__ size_t temp[32]; // BLKDIM=32 // allocated on invocation 
+    //size_t thid = threadIdx.x; 
+
+    const size_t lindex = threadIdx.x;
+    const size_t bindex = blockIdx.x;
+    const size_t gindex = blockIdx.x * blockDim.x + threadIdx.x;
+
+    size_t offset = 1; 
+    temp[2*lindex] = required_memory[2*gindex]; // load input into shared memory 
+    temp[2*lindex+1] = required_memory[2*gindex+1]; 
+ 	
+    for (size_t d = n>>1; d > 0; d >>= 1) // build sum in place up the tree 
+    { 
+        __syncthreads();    
+        if (lindex < d) { 
+            size_t ai = offset*(2*lindex+1)-1;     
+            size_t bi = offset*(2*lindex+2)-1;  
+            temp[bi] += temp[ai];    
+        }    
+        offset *= 2; 
+    } 
+
+    if (lindex == 0) { temp[lindex - 1] = 0; } // clear the last element  
+ 	
+    for (size_t d = 1; d < n; d *= 2){ // traverse down tree & build scan      
+        offset >>= 1;      
+        __syncthreads();      
+        if (lindex < d) { 
+            size_t ai = offset*(2*lindex+1)-1;     
+            size_t bi = offset*(2*lindex+2)-1; 
+ 	
+            size_t t = temp[ai]; 
+            temp[ai] = temp[bi]; 
+            temp[bi] += t;       
+        } 
+    }  
+    __syncthreads(); 
+
+    result_exclusive_scan[2*gindex] = temp[2*lindex]; // write results to device memory      
+    result_exclusive_scan[2*gindex+1] = temp[2*lindex+1]; 
+} 
