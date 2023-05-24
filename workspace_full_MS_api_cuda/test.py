@@ -142,10 +142,12 @@ bufferSize_result_required_memory = n * n.itemsize      # n * sizeof( np.uint32)
 bufferSize_result_reduce = reduce_blocks * n.itemsize   # REDUCE_BLOCKS * sizeof( np.uint32)
 # kernel 3
 bufferSize_result_exc_scan = n * n.itemsize             # n * sizeof( np.uint32)
+bufferSize_aux_exc_scan = n * n.itemsize             # n * sizeof( np.uint32)
 
 result_required_memory = np.zeros(n).astype(dtype=np.uint32)
 result_reduce = np.zeros(reduce_blocks).astype(dtype=np.uint32)
 result_exc_scan =  np.zeros(n).astype(dtype=np.uint32)
+aux_exc_scan =  np.zeros(n).astype(dtype=np.uint32)
 
 err, dImageclass = cuda.cuMemAlloc(bufferSize_image)
 ASSERT_DRV(err)
@@ -158,6 +160,8 @@ ASSERT_DRV(err)
 # kenel 3
 err, dResult_exc_scan_class = cuda.cuMemAlloc(bufferSize_result_exc_scan)
 ASSERT_DRV(err)
+err, dAux_exc_scan_class = cuda.cuMemAlloc(bufferSize_aux_exc_scan)
+ASSERT_DRV(err)
 
 err, stream = cuda.cuStreamCreate(0)
 
@@ -168,6 +172,7 @@ dResult_required_memorys = np.array([int(dResult_required_memorys_class)], dtype
 dResult_reduce = np.array([int(dResult_reduce_class)], dtype=np.uint64)
 # kernel 3
 dResult_exc_scan = np.array([int(dResult_exc_scan_class)], dtype=np.uint64)
+dAux_exc_scan = np.array([int(dAux_exc_scan_class)], dtype=np.uint64)
 
 # kernel 1
 args_1 = [dImage, dResult_required_memorys, lev_np, n, width, height]
@@ -176,7 +181,7 @@ args_1 = np.array([arg.ctypes.data for arg in args_1], dtype=np.uint64)
 args_2 = [dResult_required_memorys, dResult_reduce, n]
 args_2 = np.array([arg.ctypes.data for arg in args_2], dtype=np.uint64)
 # kernel 3
-args_3 = [dResult_required_memorys, dResult_exc_scan, n]
+args_3 = [dResult_required_memorys, dResult_exc_scan, n, dAux_exc_scan]
 args_3 = np.array([arg.ctypes.data for arg in args_3], dtype=np.uint64)
 
 image = image.ravel()
@@ -246,9 +251,9 @@ ASSERT_DRV(err)
 err, = cuda.cuStreamSynchronize(stream)
 ASSERT_DRV(err)
 
-NUM_THREADS_x = BLKDIM                  # Threads per block  x
+NUM_THREADS_x = BLKDIM / 2 # ATTENZIONE                 # Threads per block  x
 NUM_THREADS_y = 1                       # Threads per block  y
-NUM_BLOCKS_x = (N + BLKDIM-1) / BLKDIM  # Blocks per grid  x                 
+NUM_BLOCKS_x = (N) / BLKDIM  # Blocks per grid  x                 /*+ BLKDIM-1*/
 NUM_BLOCKS_y = 1                        # Blocks per grid  y
 
 # kernel 3
@@ -312,8 +317,13 @@ with open("res2.txt", "w") as txt_file:
     for val in result_reduce:
         txt_file.write("{} \n".format(val))
 with open("res3.txt", "w") as txt_file:
+    i32 = 0
     for val in result_exc_scan:
-        txt_file.write("{} \n".format(val))
+        txt_file.write("{}".format(val))
+        i32 = i32 +1
+        if(i32==32):
+            i32=0
+            txt_file.write("\n")
 
 
 # Free Cuda Kernel memory

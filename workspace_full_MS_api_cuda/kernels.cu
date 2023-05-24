@@ -70,49 +70,58 @@ void reduce(size_t *required_memory, size_t *result_reduce, size_t n)
 
 /*
 * Exclusive Scan
-* Source. https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda
+* Source1 : https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda
+* Source2 : https://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/scan/doc/scan.pdf
 */
-extern "C" __global__
-void prescan(size_t *required_memory, size_t *result_exclusive_scan, size_t n) 
-{ 
-    __shared__ size_t temp[32]; // BLKDIM=32 // allocated on invocation 
-    //size_t thid = threadIdx.x; 
 
-    const size_t lindex = threadIdx.x;
-    const size_t bindex = blockIdx.x;
-    const size_t gindex = blockIdx.x * blockDim.x + threadIdx.x;
+extern "C" __global__ 
+void prescan(int *input, int *output, size_t n, int *sums) { // n = elements_per_block
+    n = 32;
+	size_t blockID = blockIdx.x;
+	size_t threadID = threadIdx.x;
+	size_t blockOffset = blockID * n;
 
-    size_t offset = 1; 
-    temp[2*lindex] = required_memory[2*gindex]; // load input into shared memory 
-    temp[2*lindex+1] = required_memory[2*gindex+1]; 
- 	
-    for (size_t d = n>>1; d > 0; d >>= 1) // build sum in place up the tree 
-    { 
-        __syncthreads();    
-        if (lindex < d) { 
-            size_t ai = offset*(2*lindex+1)-1;     
-            size_t bi = offset*(2*lindex+2)-1;  
-            temp[bi] += temp[ai];    
-        }    
-        offset *= 2; 
-    } 
+	__shared__ int temp[32];
 
-    if (lindex == 0) { temp[lindex - 1] = 0; } // clear the last element  
- 	
-    for (size_t d = 1; d < n; d *= 2){ // traverse down tree & build scan      
-        offset >>= 1;      
-        __syncthreads();      
-        if (lindex < d) { 
-            size_t ai = offset*(2*lindex+1)-1;     
-            size_t bi = offset*(2*lindex+2)-1; 
- 	
-            size_t t = temp[ai]; 
-            temp[ai] = temp[bi]; 
-            temp[bi] += t;       
-        } 
-    }  
-    __syncthreads(); 
 
-    result_exclusive_scan[2*gindex] = temp[2*lindex]; // write results to device memory      
-    result_exclusive_scan[2*gindex+1] = temp[2*lindex+1]; 
-} 
+    temp[2 * threadID] = input[blockOffset + (2 * threadID)];
+    temp[2 * threadID + 1] = input[blockOffset + (2 * threadID) + 1];
+
+    size_t offset = 1;
+    for (size_t d = n >> 1; d > 0; d >>= 1) // build sum in place up the tree
+    {
+        __syncthreads();
+        if (threadID < d)
+        {
+            size_t ai = offset * (2 * threadID + 1) - 1;
+            size_t bi = offset * (2 * threadID + 2) - 1;
+            temp[bi] += temp[ai];
+        }
+        offset *= 2;
+    }
+    __syncthreads();
+
+
+    if (threadID == 0) {
+        sums[blockID] = temp[n - 1];
+        temp[n - 1] = 0;
+    }
+
+    for (size_t d = 1; d < n; d *= 2) // traverse down tree & build scan
+    {
+        offset >>= 1;
+        __syncthreads();
+        if (threadID < d)
+        {
+            size_t ai = offset * (2 * threadID + 1) - 1;
+            size_t bi = offset * (2 * threadID + 2) - 1;
+            size_t t = temp[ai];
+            temp[ai] = temp[bi];
+            temp[bi] += t;
+        }
+    }
+    __syncthreads();
+
+    output[blockOffset + (2 * threadID)] = temp[2 * threadID];
+    output[blockOffset + (2 * threadID) + 1] = temp[2 * threadID + 1];
+}
