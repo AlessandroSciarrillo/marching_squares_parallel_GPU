@@ -128,6 +128,7 @@ ASSERT_DRV(err)
 
 BLKDIM = 32  
 REDUCE_BLOCKS = (N + BLKDIM-1) / BLKDIM
+NUM_BLOCKS_x_kernel_3 = int( (N - (N%64)) / 64 )   
 
 # image è 95x511 con 48545 elementi 
 n = np.array( N , dtype=np.uint32) 
@@ -142,12 +143,12 @@ bufferSize_result_required_memory = n * n.itemsize      # n * sizeof( np.uint32)
 bufferSize_result_reduce = reduce_blocks * n.itemsize   # REDUCE_BLOCKS * sizeof( np.uint32)
 # kernel 3
 bufferSize_result_exc_scan = n * n.itemsize             # n * sizeof( np.uint32)
-bufferSize_aux_exc_scan = n * n.itemsize             # n * sizeof( np.uint32)
+bufferSize_aux_exc_scan = NUM_BLOCKS_x_kernel_3 * n.itemsize             # NUM_BLOCKS_x_kernel_3 * sizeof( np.uint32)
 
 result_required_memory = np.zeros(n).astype(dtype=np.uint32)
 result_reduce = np.zeros(reduce_blocks).astype(dtype=np.uint32)
 result_exc_scan =  np.zeros(n).astype(dtype=np.uint32)
-aux_exc_scan =  np.zeros(n).astype(dtype=np.uint32)
+aux_exc_scan =  np.zeros(NUM_BLOCKS_x_kernel_3).astype(dtype=np.uint32)
 
 err, dImageclass = cuda.cuMemAlloc(bufferSize_image)
 ASSERT_DRV(err)
@@ -251,9 +252,9 @@ ASSERT_DRV(err)
 err, = cuda.cuStreamSynchronize(stream)
 ASSERT_DRV(err)
 
-NUM_THREADS_x = BLKDIM / 2 # ATTENZIONE                 # Threads per block  x
+NUM_THREADS_x = BLKDIM   # ATTENZIONE                 # Threads per block  x
 NUM_THREADS_y = 1                       # Threads per block  y
-NUM_BLOCKS_x = (N) / BLKDIM  # Blocks per grid  x                 /*+ BLKDIM-1*/
+NUM_BLOCKS_x = NUM_BLOCKS_x_kernel_3          # Blocks per grid  x                 /*+ BLKDIM-1*/
 NUM_BLOCKS_y = 1                        # Blocks per grid  y
 
 # kernel 3
@@ -299,6 +300,11 @@ err, = cuda.cuMemcpyDtoHAsync(
 )
 ASSERT_DRV(err)
 
+err, = cuda.cuMemcpyDtoHAsync(
+    aux_exc_scan.ctypes.data, dAux_exc_scan_class, bufferSize_aux_exc_scan, stream
+)
+ASSERT_DRV(err)
+
 
 
 err, = cuda.cuStreamSynchronize(stream)
@@ -324,7 +330,14 @@ with open("res3.txt", "w") as txt_file:
         if(i32==32):
             i32=0
             txt_file.write("\n")
-
+with open("res3_sums.txt", "w") as txt_file:
+    i32 = 0
+    for val in aux_exc_scan:
+        txt_file.write("{} ".format(val))
+        i32 = i32 +1
+        if(i32==32):
+            i32=0
+            txt_file.write("\n")
 
 # Free Cuda Kernel memory
 err, = cuda.cuStreamDestroy(stream)

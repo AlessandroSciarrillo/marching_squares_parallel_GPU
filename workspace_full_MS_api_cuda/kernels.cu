@@ -72,16 +72,17 @@ void reduce(size_t *required_memory, size_t *result_reduce, size_t n)
 * Exclusive Scan
 * Source1 : https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda
 * Source2 : https://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/scan/doc/scan.pdf
+* Source3 : https://github.com/mattdean1/cuda
 */
 
 extern "C" __global__ 
 void prescan(int *input, int *output, size_t n, int *sums) { // n = elements_per_block
-    n = 32;
+    n = 64;
 	size_t blockID = blockIdx.x;
 	size_t threadID = threadIdx.x;
 	size_t blockOffset = blockID * n;
 
-	__shared__ int temp[32];
+	__shared__ size_t temp[64];
 
 
     temp[2 * threadID] = input[blockOffset + (2 * threadID)];
@@ -103,7 +104,7 @@ void prescan(int *input, int *output, size_t n, int *sums) { // n = elements_per
 
 
     if (threadID == 0) {
-        sums[blockID] = temp[n - 1];
+        sums[blockID] = temp[n - 1]; //TODO controllare grandezza sums sia corretta
         temp[n - 1] = 0;
     }
 
@@ -125,3 +126,46 @@ void prescan(int *input, int *output, size_t n, int *sums) { // n = elements_per
     output[blockOffset + (2 * threadID)] = temp[2 * threadID];
     output[blockOffset + (2 * threadID) + 1] = temp[2 * threadID + 1];
 }
+
+
+//TODO 
+/* This part is need
+
+https://github.com/mattdean1/cuda/blob/master/parallel-scan/Submission.cu
+
+void scanLargeEvenDeviceArray(int *d_out, int *d_in, int length, bool bcao) {
+	const int blocks = length / ELEMENTS_PER_BLOCK;
+	const int sharedMemArraySize = ELEMENTS_PER_BLOCK * sizeof(int);
+
+	int *d_sums, *d_incr;
+	cudaMalloc((void **)&d_sums, blocks * sizeof(int));
+	cudaMalloc((void **)&d_incr, blocks * sizeof(int));
+
+	if (bcao) {
+		prescan_large<<<blocks, THREADS_PER_BLOCK, 2 * sharedMemArraySize>>>(d_out, d_in, ELEMENTS_PER_BLOCK, d_sums);
+	}
+	else {
+		prescan_large_unoptimized<<<blocks, THREADS_PER_BLOCK, 2 * sharedMemArraySize>>>(d_out, d_in, ELEMENTS_PER_BLOCK, d_sums);
+	}
+
+    ======================== TODO questa parte non è
+    ||
+    V
+
+	const int sumsArrThreadsNeeded = (blocks + 1) / 2;
+	if (sumsArrThreadsNeeded > THREADS_PER_BLOCK) {
+		// perform a large scan on the sums arr
+		scanLargeDeviceArray(d_incr, d_sums, blocks, bcao);
+	}
+	else {
+		// only need one block to scan sums arr so can use small scan
+		scanSmallDeviceArray(d_incr, d_sums, blocks, bcao);
+	}
+
+	add<<<blocks, ELEMENTS_PER_BLOCK>>>(d_out, ELEMENTS_PER_BLOCK, d_incr);
+
+	cudaFree(d_sums);
+	cudaFree(d_incr);
+}
+
+*/
