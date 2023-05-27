@@ -16,6 +16,13 @@ def ASSERT_DRV(err):
     else:
         raise RuntimeError("Unknown error type: {}".format(err))
 
+def nextPowerOfTwo(x):
+	power = 1;
+	while (power < x):
+		power *= 2;
+	return int(power);
+
+
 
 # Set Benchmark parameters
 times = 1000
@@ -70,9 +77,11 @@ st = time.time()
 #     v0  |2|0|2|1| 
 # -3 lancio kernel che calcoli la somma dell'array con Reduce
 #     redude_res  [5]
-# -4 lancio kernel che faccia la Exclusive scan sull'array con la quantità di spazio occupato
+# -4 lancio kernel che faccia la Exclusive scan sull'array con la quantità di spazio occupato (GRANDEZZA > 2048)
 #     v1 |0|2|2|4|
-# -5 lancio kernel che scriva i propri valori su un nuovo array res di lunghezza redude_res partendo dalla posizione scritta su v1
+# -5 lancio kernel che faccia la Exclusive scan sull'array con la quantità di spazio occupato (GRANDEZZA < 2048)
+#     v1 |0|2|2|4|
+# -6 lancio kernel che scriva i propri valori su un nuovo array res di lunghezza redude_res partendo dalla posizione scritta su v1
 #     res |t0|t0|t2|t2|t3|
 #
 # NOTE: unire kernel step 2 e 3
@@ -118,6 +127,12 @@ ASSERT_DRV(err)
 # kernel 3
 err, kernel_3 = cuda.cuModuleGetFunction(module, b"prescan")
 ASSERT_DRV(err)
+# kernel 4
+err, kernel_4 = cuda.cuModuleGetFunction(module, b"prescan_small")
+ASSERT_DRV(err)
+# kernel 5
+err, kernel_5 = cuda.cuModuleGetFunction(module, b"add")
+ASSERT_DRV(err)
 
 
 # BLKDIM = 32   
@@ -129,13 +144,18 @@ ASSERT_DRV(err)
 BLKDIM = 32  
 REDUCE_BLOCKS = (N + BLKDIM-1) / BLKDIM
 NUM_BLOCKS_x_kernel_3 = int( (N - (N%64)) / 64 )   
+POWEROFTWO_kernel_4 = nextPowerOfTwo(NUM_BLOCKS_x_kernel_3)
+
+print(POWEROFTWO_kernel_4)
 
 # image è 95x511 con 48545 elementi 
 n = np.array( N , dtype=np.uint32) 
 reduce_blocks = np.array( REDUCE_BLOCKS , dtype=np.uint32) 
+powerOfTwo = np.array(POWEROFTWO_kernel_4, dtype=np.uint32)
 width = np.array( w , dtype=np.uint32)
 height = np.array( h , dtype=np.uint32)
 lev_np = np.array([level], dtype=np.float64)
+
 bufferSize_image = n * lev_np.itemsize                  # n * sizeof( np.float64)
 # kernel 1
 bufferSize_result_required_memory = n * n.itemsize      # n * sizeof( np.uint32)
@@ -144,11 +164,13 @@ bufferSize_result_reduce = reduce_blocks * n.itemsize   # REDUCE_BLOCKS * sizeof
 # kernel 3
 bufferSize_result_exc_scan = n * n.itemsize             # n * sizeof( np.uint32)
 bufferSize_aux_exc_scan = NUM_BLOCKS_x_kernel_3 * n.itemsize             # NUM_BLOCKS_x_kernel_3 * sizeof( np.uint32)
+bufferSize_incr_exc_scan = NUM_BLOCKS_x_kernel_3 * n.itemsize 
 
 result_required_memory = np.zeros(n).astype(dtype=np.uint32)
 result_reduce = np.zeros(reduce_blocks).astype(dtype=np.uint32)
 result_exc_scan =  np.zeros(n).astype(dtype=np.uint32)
 aux_exc_scan =  np.zeros(NUM_BLOCKS_x_kernel_3).astype(dtype=np.uint32)
+incr_exc_scan =  np.zeros(NUM_BLOCKS_x_kernel_3).astype(dtype=np.uint32)
 
 err, dImageclass = cuda.cuMemAlloc(bufferSize_image)
 ASSERT_DRV(err)
@@ -163,6 +185,9 @@ err, dResult_exc_scan_class = cuda.cuMemAlloc(bufferSize_result_exc_scan)
 ASSERT_DRV(err)
 err, dAux_exc_scan_class = cuda.cuMemAlloc(bufferSize_aux_exc_scan)
 ASSERT_DRV(err)
+# kenel 4
+err, dIncr_exc_scan_class = cuda.cuMemAlloc(bufferSize_incr_exc_scan)
+ASSERT_DRV(err)
 
 err, stream = cuda.cuStreamCreate(0)
 
@@ -174,6 +199,8 @@ dResult_reduce = np.array([int(dResult_reduce_class)], dtype=np.uint64)
 # kernel 3
 dResult_exc_scan = np.array([int(dResult_exc_scan_class)], dtype=np.uint64)
 dAux_exc_scan = np.array([int(dAux_exc_scan_class)], dtype=np.uint64)
+# kenel 4
+dIncr_exc_scan = np.array([int(dIncr_exc_scan_class)], dtype=np.uint64)
 
 # kernel 1
 args_1 = [dImage, dResult_required_memorys, lev_np, n, width, height]
@@ -182,8 +209,14 @@ args_1 = np.array([arg.ctypes.data for arg in args_1], dtype=np.uint64)
 args_2 = [dResult_required_memorys, dResult_reduce, n]
 args_2 = np.array([arg.ctypes.data for arg in args_2], dtype=np.uint64)
 # kernel 3
-args_3 = [dResult_required_memorys, dResult_exc_scan, n, dAux_exc_scan]
+args_3 = [dResult_exc_scan, dResult_required_memorys, n, dAux_exc_scan]
 args_3 = np.array([arg.ctypes.data for arg in args_3], dtype=np.uint64)
+# kernel 4
+args_4 = [dIncr_exc_scan, dAux_exc_scan, n, powerOfTwo]
+args_4 = np.array([arg.ctypes.data for arg in args_4], dtype=np.uint64) 
+# kernel 5
+args_5 = [dResult_exc_scan, n, dIncr_exc_scan]
+args_5 = np.array([arg.ctypes.data for arg in args_5], dtype=np.uint64) 
 
 image = image.ravel()
 
@@ -279,6 +312,60 @@ ASSERT_DRV(err)
 err, = cuda.cuStreamSynchronize(stream)
 ASSERT_DRV(err)
 
+NUM_THREADS_x = (NUM_BLOCKS_x_kernel_3 + 1) // 2               # Threads per block  x
+NUM_THREADS_y = 1                       # Threads per block  y
+NUM_BLOCKS_x = 1         # Blocks per grid  x                 /*+ BLKDIM-1*/
+NUM_BLOCKS_y = 1                        # Blocks per grid  y
+
+# kernel 4
+err, = cuda.cuLaunchKernel(
+    kernel_4,
+    NUM_BLOCKS_x,  # grid x dim
+    NUM_BLOCKS_y,  # grid y dim
+    1,  # grid z dim
+    NUM_THREADS_x,  # block x dim
+    NUM_THREADS_y,  # block y dim
+    1,  # block z dim
+    0,  # dynamic shared memory
+    stream,  # stream
+    args_4.ctypes.data,  # kernel arguments
+    0,  # extra (ignore)
+)
+ASSERT_DRV(err)
+
+NUM_THREADS_x = 64             # Threads per block  x
+NUM_THREADS_y = 1                       # Threads per block  y
+NUM_BLOCKS_x = NUM_BLOCKS_x_kernel_3         # Blocks per grid  x                 /*+ BLKDIM-1*/
+NUM_BLOCKS_y = 1                        # Blocks per grid  y
+
+# kernel 5
+err, = cuda.cuLaunchKernel(
+    kernel_5,
+    NUM_BLOCKS_x,  # grid x dim
+    NUM_BLOCKS_y,  # grid y dim
+    1,  # grid z dim
+    NUM_THREADS_x,  # block x dim
+    NUM_THREADS_y,  # block y dim
+    1,  # block z dim
+    0,  # dynamic shared memory
+    stream,  # stream
+    args_5.ctypes.data,  # kernel arguments
+    0,  # extra (ignore)
+)
+ASSERT_DRV(err)
+
+# For Illegal memory access error
+err, = cuda.cuCtxSynchronize()
+ASSERT_DRV(err)
+err, = cuda.cuStreamSynchronize(stream)
+ASSERT_DRV(err)
+
+# For Illegal memory access error
+err, = cuda.cuCtxSynchronize()
+ASSERT_DRV(err)
+err, = cuda.cuStreamSynchronize(stream)
+ASSERT_DRV(err)
+
 # kernel 1
 err, = cuda.cuMemcpyDtoHAsync( #TODO non serve riportarlo giù, fatto solo per check risultato
     result_required_memory.ctypes.data, dResult_required_memorys_class, bufferSize_result_required_memory, stream
@@ -305,6 +392,11 @@ err, = cuda.cuMemcpyDtoHAsync(
 )
 ASSERT_DRV(err)
 
+# kernel 4
+err, = cuda.cuMemcpyDtoHAsync(
+    incr_exc_scan.ctypes.data, dIncr_exc_scan_class, bufferSize_incr_exc_scan, stream
+)
+ASSERT_DRV(err)
 
 
 err, = cuda.cuStreamSynchronize(stream)
@@ -325,7 +417,7 @@ with open("res2.txt", "w") as txt_file:
 with open("res3.txt", "w") as txt_file:
     i32 = 0
     for val in result_exc_scan:
-        txt_file.write("{}".format(val))
+        txt_file.write("{} ".format(val))
         i32 = i32 +1
         if(i32==32):
             i32=0
@@ -333,6 +425,14 @@ with open("res3.txt", "w") as txt_file:
 with open("res3_sums.txt", "w") as txt_file:
     i32 = 0
     for val in aux_exc_scan:
+        txt_file.write("{} ".format(val))
+        i32 = i32 +1
+        if(i32==32):
+            i32=0
+            txt_file.write("\n")
+with open("res4.txt", "w") as txt_file:
+    i32 = 0
+    for val in incr_exc_scan:
         txt_file.write("{} ".format(val))
         i32 = i32 +1
         if(i32==32):

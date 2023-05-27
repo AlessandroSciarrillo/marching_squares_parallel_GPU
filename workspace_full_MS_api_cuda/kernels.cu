@@ -76,7 +76,7 @@ void reduce(size_t *required_memory, size_t *result_reduce, size_t n)
 */
 
 extern "C" __global__ 
-void prescan(int *input, int *output, size_t n, int *sums) { // n = elements_per_block
+void prescan(int *output, int *input, size_t n, int *sums) { // n = elements_per_block
     n = 64;
 	size_t blockID = blockIdx.x;
 	size_t threadID = threadIdx.x;
@@ -127,7 +127,6 @@ void prescan(int *input, int *output, size_t n, int *sums) { // n = elements_per
     output[blockOffset + (2 * threadID) + 1] = temp[2 * threadID + 1];
 }
 
-
 //TODO 
 /* This part is need
 
@@ -169,3 +168,63 @@ void scanLargeEvenDeviceArray(int *d_out, int *d_in, int length, bool bcao) {
 }
 
 */
+extern "C" __global__ 
+void prescan_small(int *output, int *input, int n, int powerOfTwo) {
+	extern __shared__ int temp[1024];  //TODO make dynamic from kernel launch call // allocated on invocation
+	int threadID = threadIdx.x;
+
+	if (threadID < n) {
+		temp[2 * threadID] = input[2 * threadID]; // load input into shared memory
+		temp[2 * threadID + 1] = input[2 * threadID + 1];
+	}
+	else {
+		temp[2 * threadID] = 0;
+		temp[2 * threadID + 1] = 0;
+	}
+
+
+	int offset = 1;
+	for (int d = powerOfTwo >> 1; d > 0; d >>= 1) // build sum in place up the tree
+	{
+		__syncthreads();
+		if (threadID < d)
+		{
+			int ai = offset * (2 * threadID + 1) - 1;
+			int bi = offset * (2 * threadID + 2) - 1;
+			temp[bi] += temp[ai];
+		}
+		offset *= 2;
+	}
+
+	if (threadID == 0) { temp[powerOfTwo - 1] = 0; } // clear the last element
+
+	for (int d = 1; d < powerOfTwo; d *= 2) // traverse down tree & build scan
+	{
+		offset >>= 1;
+		__syncthreads();
+		if (threadID < d)
+		{
+			int ai = offset * (2 * threadID + 1) - 1;
+			int bi = offset * (2 * threadID + 2) - 1;
+			int t = temp[ai];
+			temp[ai] = temp[bi];
+			temp[bi] += t;
+		}
+	}
+	__syncthreads();
+
+	if (threadID < n) {
+		output[2 * threadID] = temp[2 * threadID]; // write results to device memory
+		output[2 * threadID + 1] = temp[2 * threadID + 1];
+	}
+}
+
+extern "C" __global__ 
+void add(int *output, int length, int *n) {
+    length = 64;
+	int blockID = blockIdx.x;
+	int threadID = threadIdx.x;
+	int blockOffset = blockID * length;
+
+	output[blockOffset + threadID] += n[blockID];
+}
