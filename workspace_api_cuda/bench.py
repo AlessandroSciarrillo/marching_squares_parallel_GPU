@@ -119,7 +119,7 @@ err, = cuda.cuCtxDestroy(context)
 
 # Print times, difference and speedup
 print('RESULTS:')
-print('MS execution time lib:   ', elapsed_time_lib, 'seconds')
+print('MS execution time lib:   ', elapsed_time_lib, 'seconds   WARNING: full time with the ending data recostruction!')
 print('MS execution time my:    ', elapsed_time_my, 'seconds')
 print('Difference:              ', elapsed_time_lib - elapsed_time_my, 'seconds')
 print('Speedup:                 ', elapsed_time_lib / elapsed_time_my , 'seconds\n')
