@@ -169,17 +169,17 @@ bufferSize_result_exc_scan = n * n.itemsize             # n * sizeof( np.uint32)
 bufferSize_aux_exc_scan = NUM_BLOCKS_x_kernel_3 * n.itemsize             # NUM_BLOCKS_x_kernel_3 * sizeof( np.uint32)
 bufferSize_incr_exc_scan = NUM_BLOCKS_x_kernel_3 * n.itemsize 
 # kernel 6
-bufferSize_resultsMS = n * lev_np.itemsize # TODO importante farlo solo delle dimanensioni del risultato della reduce
+# bufferSize_resultsMS = n * lev_np.itemsize # TODO importante farlo solo delle dimanensioni del risultato della reduce
 
 result_required_memory = np.zeros(n).astype(dtype=np.uint32)
 result_reduce = np.zeros(reduce_blocks).astype(dtype=np.uint32)
 result_exc_scan =  np.zeros(n).astype(dtype=np.uint32)
 aux_exc_scan =  np.zeros(NUM_BLOCKS_x_kernel_3).astype(dtype=np.uint32)
 incr_exc_scan =  np.zeros(NUM_BLOCKS_x_kernel_3).astype(dtype=np.uint32)
-result_1x = np.zeros(n).astype(dtype=np.float64)
-result_1y = np.zeros(n).astype(dtype=np.float64)
-result_2x = np.zeros(n).astype(dtype=np.float64)
-result_2y = np.zeros(n).astype(dtype=np.float64)
+# result_1x = np.zeros(n).astype(dtype=np.float64)
+# result_1y = np.zeros(n).astype(dtype=np.float64)
+# result_2x = np.zeros(n).astype(dtype=np.float64)
+# result_2y = np.zeros(n).astype(dtype=np.float64)
 
 
 err, dImageclass = cuda.cuMemAlloc(bufferSize_image)
@@ -199,14 +199,14 @@ ASSERT_DRV(err)
 err, dIncr_exc_scan_class = cuda.cuMemAlloc(bufferSize_incr_exc_scan)
 ASSERT_DRV(err)
 # kernel 6
-err, dResult1Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
-ASSERT_DRV(err)
-err, dResult1Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
-ASSERT_DRV(err)
-err, dResult2Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
-ASSERT_DRV(err)
-err, dResult2Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
-ASSERT_DRV(err)
+# err, dResult1Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+# ASSERT_DRV(err)
+# err, dResult1Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+# ASSERT_DRV(err)
+# err, dResult2Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+# ASSERT_DRV(err)
+# err, dResult2Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+# ASSERT_DRV(err)
 
 err, stream = cuda.cuStreamCreate(0)
 
@@ -221,10 +221,10 @@ dAux_exc_scan = np.array([int(dAux_exc_scan_class)], dtype=np.uint64)
 # kenel 4
 dIncr_exc_scan = np.array([int(dIncr_exc_scan_class)], dtype=np.uint64)
 # kernel 6
-dResult_1x = np.array([int(dResult1Xclass)], dtype=np.uint64)
-dResult_1y = np.array([int(dResult1Yclass)], dtype=np.uint64)
-dResult_2x = np.array([int(dResult2Xclass)], dtype=np.uint64)
-dResult_2y = np.array([int(dResult2Yclass)], dtype=np.uint64)
+# dResult_1x = np.array([int(dResult1Xclass)], dtype=np.uint64)
+# dResult_1y = np.array([int(dResult1Yclass)], dtype=np.uint64)
+# dResult_2x = np.array([int(dResult2Xclass)], dtype=np.uint64)
+# dResult_2y = np.array([int(dResult2Yclass)], dtype=np.uint64)
 
 # kernel 1
 args_1 = [dImage, dResult_required_memorys, lev_np, n, width, height]
@@ -242,8 +242,8 @@ args_4 = np.array([arg.ctypes.data for arg in args_4], dtype=np.uint64)
 args_5 = [dResult_exc_scan, n, dIncr_exc_scan]
 args_5 = np.array([arg.ctypes.data for arg in args_5], dtype=np.uint64) 
 # kernel 6
-args_6 = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height, dResult_exc_scan]
-args_6 = np.array([arg.ctypes.data for arg in args_6], dtype=np.uint64)
+# args_6 = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height, dResult_exc_scan]
+# args_6 = np.array([arg.ctypes.data for arg in args_6], dtype=np.uint64)
 
 image = image.ravel()
 
@@ -397,6 +397,38 @@ for i_time in range(times):
     ASSERT_DRV(err)
     err, = cuda.cuStreamSynchronize(stream)
     ASSERT_DRV(err)
+
+    # use the result of the reduce for allocate the correct amount of memory
+    err, = cuda.cuMemcpyDtoHAsync(
+        result_reduce.ctypes.data, dResult_reduce_class, bufferSize_result_reduce, stream
+    )
+    ASSERT_DRV(err)
+    np_result_reduce = np.array(result_reduce) 
+    N_RES = np_result_reduce.sum()   #TODO fare questa somma su GPU sarebbe meglio
+
+    bufferSize_resultsMS = N_RES * lev_np.itemsize 
+
+    result_1x = np.zeros(N_RES).astype(dtype=np.float64)
+    result_1y = np.zeros(N_RES).astype(dtype=np.float64)
+    result_2x = np.zeros(N_RES).astype(dtype=np.float64)
+    result_2y = np.zeros(N_RES).astype(dtype=np.float64)
+
+    err, dResult1Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+    ASSERT_DRV(err)
+    err, dResult1Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+    ASSERT_DRV(err)
+    err, dResult2Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+    ASSERT_DRV(err)
+    err, dResult2Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+    ASSERT_DRV(err)
+
+    dResult_1x = np.array([int(dResult1Xclass)], dtype=np.uint64)
+    dResult_1y = np.array([int(dResult1Yclass)], dtype=np.uint64)
+    dResult_2x = np.array([int(dResult2Xclass)], dtype=np.uint64)
+    dResult_2y = np.array([int(dResult2Yclass)], dtype=np.uint64)
+
+    args_6 = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height, dResult_exc_scan]
+    args_6 = np.array([arg.ctypes.data for arg in args_6], dtype=np.uint64)
 
     image_shape_1 = w
     image_shape_0 = h
