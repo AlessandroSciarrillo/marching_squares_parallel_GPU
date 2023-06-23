@@ -162,17 +162,17 @@ def bench_marching_squares_gpu(image, times):
     bufferSize_aux_exc_scan = NUM_BLOCKS_x_kernel_3 * n.itemsize             # NUM_BLOCKS_x_kernel_3 * sizeof( np.uint32)
     bufferSize_incr_exc_scan = NUM_BLOCKS_x_kernel_3 * n.itemsize 
     # kernel 6
-    # bufferSize_resultsMS = n * lev_np.itemsize # TODO importante farlo solo delle dimanensioni del risultato della reduce
+    bufferSize_resultsMS = n * lev_np.itemsize # TODO importante farlo solo delle dimanensioni del risultato della reduce
 
     result_required_memory = np.zeros(n).astype(dtype=np.uint32)
     result_reduce = np.zeros(reduce_blocks).astype(dtype=np.uint32)
     result_exc_scan =  np.zeros(n).astype(dtype=np.uint32)
     aux_exc_scan =  np.zeros(NUM_BLOCKS_x_kernel_3).astype(dtype=np.uint32)
     incr_exc_scan =  np.zeros(NUM_BLOCKS_x_kernel_3).astype(dtype=np.uint32)
-    # result_1x = np.zeros(n).astype(dtype=np.float64)
-    # result_1y = np.zeros(n).astype(dtype=np.float64)
-    # result_2x = np.zeros(n).astype(dtype=np.float64)
-    # result_2y = np.zeros(n).astype(dtype=np.float64)
+    result_1x = np.zeros(n).astype(dtype=np.float64)
+    result_1y = np.zeros(n).astype(dtype=np.float64)
+    result_2x = np.zeros(n).astype(dtype=np.float64)
+    result_2y = np.zeros(n).astype(dtype=np.float64)
 
 
     err, dImageclass = cuda.cuMemAlloc(bufferSize_image)
@@ -192,14 +192,14 @@ def bench_marching_squares_gpu(image, times):
     err, dIncr_exc_scan_class = cuda.cuMemAlloc(bufferSize_incr_exc_scan)
     ASSERT_DRV(err)
     # kernel 6
-    # err, dResult1Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
-    # ASSERT_DRV(err)
-    # err, dResult1Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
-    # ASSERT_DRV(err)
-    # err, dResult2Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
-    # ASSERT_DRV(err)
-    # err, dResult2Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
-    # ASSERT_DRV(err)
+    err, dResult1Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+    ASSERT_DRV(err)
+    err, dResult1Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+    ASSERT_DRV(err)
+    err, dResult2Xclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+    ASSERT_DRV(err)
+    err, dResult2Yclass = cuda.cuMemAlloc(bufferSize_resultsMS)
+    ASSERT_DRV(err)
 
     err, stream = cuda.cuStreamCreate(0)
 
@@ -214,10 +214,10 @@ def bench_marching_squares_gpu(image, times):
     # kenel 4
     dIncr_exc_scan = np.array([int(dIncr_exc_scan_class)], dtype=np.uint64)
     # kernel 6
-    # dResult_1x = np.array([int(dResult1Xclass)], dtype=np.uint64)
-    # dResult_1y = np.array([int(dResult1Yclass)], dtype=np.uint64)
-    # dResult_2x = np.array([int(dResult2Xclass)], dtype=np.uint64)
-    # dResult_2y = np.array([int(dResult2Yclass)], dtype=np.uint64)
+    dResult_1x = np.array([int(dResult1Xclass)], dtype=np.uint64)
+    dResult_1y = np.array([int(dResult1Yclass)], dtype=np.uint64)
+    dResult_2x = np.array([int(dResult2Xclass)], dtype=np.uint64)
+    dResult_2y = np.array([int(dResult2Yclass)], dtype=np.uint64)
 
     # kernel 1
     args_1 = [dImage, dResult_required_memorys, lev_np, n, width, height]
@@ -235,8 +235,8 @@ def bench_marching_squares_gpu(image, times):
     args_5 = [dResult_exc_scan, n, dIncr_exc_scan]
     args_5 = np.array([arg.ctypes.data for arg in args_5], dtype=np.uint64) 
     # kernel 6
-    # args_6 = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height, dResult_exc_scan]
-    # args_6 = np.array([arg.ctypes.data for arg in args_6], dtype=np.uint64)
+    args_6 = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height, dResult_exc_scan]
+    args_6 = np.array([arg.ctypes.data for arg in args_6], dtype=np.uint64)
 
     image = image.ravel()
 
@@ -456,37 +456,37 @@ def bench_marching_squares_gpu(image, times):
         ASSERT_DRV(err)
 
         #TODO non serve riportare giù i risultati dei kernel precedenti all ultimo, fatto solo per check risultato, da commentare per misurazione tempi
-        # kernel 1
-        # err, = cuda.cuMemcpyDtoHAsync( 
-        #     result_required_memory.ctypes.data, dResult_required_memorys_class, bufferSize_result_required_memory, stream
-        # )
-        # ASSERT_DRV(err)
-        # # kernel 2
-        # err, = cuda.cuMemcpyDtoHAsync(
-        #     result_reduce.ctypes.data, dResult_reduce_class, bufferSize_result_reduce, stream
-        # )
-        # ASSERT_DRV(err)
+        #kernel 1
+        err, = cuda.cuMemcpyDtoHAsync( 
+            result_required_memory.ctypes.data, dResult_required_memorys_class, bufferSize_result_required_memory, stream
+        )
+        ASSERT_DRV(err)
+        # kernel 2
+        err, = cuda.cuMemcpyDtoHAsync(
+            result_reduce.ctypes.data, dResult_reduce_class, bufferSize_result_reduce, stream
+        )
+        ASSERT_DRV(err)
 
-        # # Calc final result reduce
-        # np_result_reduce = np.array(result_reduce) 
-        # np_result_reduce = np_result_reduce.sum()   #TODO fare questa somma su GPU sarebbe meglio
+        # Calc final result reduce
+        np_result_reduce = np.array(result_reduce) 
+        np_result_reduce = np_result_reduce.sum()  
 
-        # # kernel 3
-        # err, = cuda.cuMemcpyDtoHAsync(
-        #     result_exc_scan.ctypes.data, dResult_exc_scan_class, bufferSize_result_exc_scan, stream
-        # )
-        # ASSERT_DRV(err)
+        # kernel 3
+        err, = cuda.cuMemcpyDtoHAsync(
+            result_exc_scan.ctypes.data, dResult_exc_scan_class, bufferSize_result_exc_scan, stream
+        )
+        ASSERT_DRV(err)
 
-        # err, = cuda.cuMemcpyDtoHAsync(
-        #     aux_exc_scan.ctypes.data, dAux_exc_scan_class, bufferSize_aux_exc_scan, stream
-        # )
-        # ASSERT_DRV(err)
+        err, = cuda.cuMemcpyDtoHAsync(
+            aux_exc_scan.ctypes.data, dAux_exc_scan_class, bufferSize_aux_exc_scan, stream
+        )
+        ASSERT_DRV(err)
 
-        # # kernel 4
-        # err, = cuda.cuMemcpyDtoHAsync(
-        #     incr_exc_scan.ctypes.data, dIncr_exc_scan_class, bufferSize_incr_exc_scan, stream
-        # )
-        # ASSERT_DRV(err)
+        # kernel 4
+        err, = cuda.cuMemcpyDtoHAsync(
+            incr_exc_scan.ctypes.data, dIncr_exc_scan_class, bufferSize_incr_exc_scan, stream
+        )
+        ASSERT_DRV(err)
 
         # kernel 6
         err, = cuda.cuMemcpyDtoHAsync(
@@ -515,37 +515,42 @@ def bench_marching_squares_gpu(image, times):
     elapsed_time_my = (et - st)/times
 
     # check results
-    # with open("res1.txt", "w") as txt_file:
-    #     for val in result_required_memory:
-    #         txt_file.write("{} \n".format(val))
-    # with open("res2.txt", "w") as txt_file:
-    #     txt_file.write("Result reduce: {} \n\n".format(np_result_reduce))
-    #     for val in result_reduce:
-    #         txt_file.write("{} \n".format(val))
-    # with open("res3.txt", "w") as txt_file:
-    #     i32 = 0
-    #     for val in result_exc_scan:
-    #         txt_file.write("{} ".format(val))
-    #         i32 = i32 +1
-    #         if(i32==32):
-    #             i32=0
-    #             txt_file.write("\n")
-    # with open("res3_sums.txt", "w") as txt_file:
-    #     i32 = 0
-    #     for val in aux_exc_scan:
-    #         txt_file.write("{} ".format(val))
-    #         i32 = i32 +1
-    #         if(i32==32):
-    #             i32=0
-    #             txt_file.write("\n")
-    # with open("res4.txt", "w") as txt_file:
-        # i32 = 0
-        # for val in incr_exc_scan:
-        #     txt_file.write("{} ".format(val))
-        #     i32 = i32 +1
-        #     if(i32==32):
-        #         i32=0
-        #         txt_file.write("\n")
+    with open("res1_result_required_memor.txt", "w") as txt_file:
+        i32 = 0
+        for val in result_required_memory:
+            txt_file.write("{} ".format(val))
+            i32 = i32 +1
+            if(i32==32):
+                i32=0
+                txt_file.write("\n")
+    with open("res2_result_reduce.txt", "w") as txt_file:
+        txt_file.write("Result reduce: {} \n\n".format(np_result_reduce))
+        for val in result_reduce:
+            txt_file.write("{} \n".format(val))
+    with open("res3_result_exc_scan.txt", "w") as txt_file:
+        i32 = 0
+        for val in result_exc_scan:
+            txt_file.write("{} ".format(val))
+            i32 = i32 +1
+            if(i32==32):
+                i32=0
+                txt_file.write("\n")
+    with open("res3_sums_aux_exc_scan.txt", "w") as txt_file:
+        i32 = 0
+        for val in aux_exc_scan:
+            txt_file.write("{} ".format(val))
+            i32 = i32 +1
+            if(i32==32):
+                i32=0
+                txt_file.write("\n")
+    with open("res4_incr_exc_scan.txt", "w") as txt_file:
+        i32 = 0
+        for val in incr_exc_scan:
+            txt_file.write("{} ".format(val))
+            i32 = i32 +1
+            if(i32==32):
+                i32=0
+                txt_file.write("\n")
     with open("resMS_1x.txt", "w") as txt_file:
         i32 = 0
         for val in result_1x:

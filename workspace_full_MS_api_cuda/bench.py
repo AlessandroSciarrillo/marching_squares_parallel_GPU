@@ -25,17 +25,30 @@ def ASSERT_DRV(err):
         raise RuntimeError("Unknown error type: {}".format(err))
 
 # Set Benchmark parameters
-times = 50000
+times = 100
 inputReal = False
 
 if (inputReal):
     # Get a Real Input
-    t = np.load('./heatmaps_00000001_00000001.npy');
-    image = t[:,:,10];
+    t = np.load('./heatmaps_00000001_00000001.npy').astype(np.float64)
+    image = t[...,0]
+    
 else:
     # Construct artificial test data
     x, y = np.ogrid[-np.pi:np.pi:95j, -np.pi:np.pi:511j]
     image = np.sin(np.exp((np.sin(x)**3 + np.cos(y)**2)))
+    
+    # test for case 2
+    image[0,0]=1
+    image[1,1]=1
+    
+    
+    # image = np.zeros_like(image)
+    # image[1,1]=1
+    # image[2,2]=1
+    # image[3,3]=0
+print(image.shape,image.dtype)
+    
 
 # Print some benchmark and GPUs info
 print(" ______________________________________________________________________________")

@@ -51,6 +51,7 @@ def find_contours(image, level=None,
 
 
 def _assemble_contours(segments):
+    
     current_index = 0
     contours = {}
     starts = {}

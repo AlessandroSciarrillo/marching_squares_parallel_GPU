@@ -21,7 +21,7 @@ void required_memory(double *image, size_t *result_required_memory, double level
         double ll = image[ r1 * width + c0 ];
         double lr = image[ r1 * width + c1 ];
 
-        width = width - 1;
+        //width = width - 1;
 
         square_case = 0;
         if (ul > level) square_case += 1;
@@ -232,15 +232,15 @@ void add(int *output, int length, int *n) {
 extern "C" __global__
 void marching_squares(double *image, double *result_1x, double *result_1y, double *result_2x, double *result_2y, double level, size_t n, size_t width, size_t height, int *positions)
 {        
-    size_t square_case;
-    size_t r0 = blockIdx.y * blockDim.y + threadIdx.y;
-    size_t c0 = blockIdx.x * blockDim.x + threadIdx.x;
-    size_t r1 = r0 + 1;
-    size_t c1 = c0 + 1;
+    int square_case;
+    int r0 = blockIdx.y * blockDim.y + threadIdx.y;
+    int c0 = blockIdx.x * blockDim.x + threadIdx.x;
+    int r1 = r0 + 1;
+    int c1 = c0 + 1;
 
     struct tuple {
-        size_t x;
-        size_t y;
+        double x;
+        double y;
     } top, bottom, left, right;
     
     // height e width -1: altrimenti r1 e c1 escono dal dominio
@@ -253,8 +253,7 @@ void marching_squares(double *image, double *result_1x, double *result_1y, doubl
     //                 need : 510 (0 - max val: 509)
     if( r0 < height-1 && c0 < width-1 ){ 
 
-        // skip mask
-        
+        // skip mask      
         //               need : 511
         double ul = image[ r0 * width + c0 ]; 
         double ur = image[ r0 * width + c1 ];
@@ -262,7 +261,7 @@ void marching_squares(double *image, double *result_1x, double *result_1y, doubl
         double lr = image[ r1 * width + c1 ];
 
         // for dom_res need: [r0 * width + c0], width = 510
-        width = width - 1;
+        //width = width - 1;
 
         // skip control for NaN values
 
@@ -273,7 +272,7 @@ void marching_squares(double *image, double *result_1x, double *result_1y, doubl
         if (lr > level) square_case += 8; 
 
         // determinate the position of the result array where to write the number of values every thread needs
-        size_t g_pos = positions[r0 * width + c0];
+        int g_pos = positions[r0 * width + c0];
 
 
         if (square_case != 0 && square_case != 15){
