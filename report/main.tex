@@ -1,0 +1,41 @@
+\documentclass[a4paper,12pt]{report}
+\AddToHook{cmd/tableofcontents/after}{\clearpage}
+
+\usepackage{graphicx} % Required for inserting images
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage{float}
+\usepackage{pgfplots} 
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage[english,italian]{babel}
+
+\date{}
+\begin{document}
+{
+    \begin{center}
+        ALMA MATER STUDIORUM - UNIVERSITA' DI BOLOGNA\\
+        CAMPUS DI CESENA\\[10pt]
+    
+        \hline \\[10pt]
+        DIPARTIMENTO DI INFORMATICA – SCIENZA E INGEGNERIA\\[20pt]
+    
+        Corso di Laurea in Ingegneria e Scienze Informatiche\\[80pt]
+        
+        \textbf{PARALLELIZZAZIONE SU GPU DELL'ALGORITMO MARCHING SQUARES IN AMBITO INDUSTRIALE}\\[80pt]
+        
+        Elaborato in:\\
+        High Performance Computing\\[50pt]
+    \end{center}
+    \textbf{Relatore: \hfill Presentata da: \\
+    Prof. Moreno Marzolla \hfill Alessandro Sciarrillo\\[5pt]
+    \raggedright{Correlatore:\\Dott. Matteo Roffilli}\\[50pt]}
+    
+    
+    \begin{center}
+        Anno Accademico 2022/2023
+    \end{center}
+    \hypersetup{linkcolor=black}
+    \tableofcontents
+}
+\end{document}
