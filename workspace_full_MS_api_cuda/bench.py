@@ -26,7 +26,7 @@ def ASSERT_DRV(err):
 
 # Set Benchmark parameters
 times = 100
-inputReal = False
+inputReal = True
 
 if (inputReal):
     # Get a Real Input

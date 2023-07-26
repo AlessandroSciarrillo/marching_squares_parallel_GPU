@@ -86,7 +86,7 @@ def bench_marching_squares_gpu(image, times):
     N = image.size
     h = image.shape[0]
     w = image.shape[1]
-    level = 0.5
+    level = 0.9
 
     with open('kernels.cu', 'r') as file:
         saxpy = file.read()
@@ -238,7 +238,7 @@ def bench_marching_squares_gpu(image, times):
     args_6 = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height, dResult_exc_scan]
     args_6 = np.array([arg.ctypes.data for arg in args_6], dtype=np.uint64)
 
-    image = image.ravel()
+    image_flat = image.ravel()
 
     gpu_info()
 
@@ -248,7 +248,7 @@ def bench_marching_squares_gpu(image, times):
     for i_time in range(times):
 
         err, = cuda.cuMemcpyHtoDAsync(
-            dImageclass, image.ctypes.data, bufferSize_image, stream
+            dImageclass, image_flat.ctypes.data, bufferSize_image, stream
         )
         ASSERT_DRV(err)
 
@@ -612,23 +612,41 @@ def bench_marching_squares_gpu(image, times):
 
 
     #########################TEST results
-    #cv.drawContours()
+
+    import matplotlib.pyplot as plt
+
+    # plt.scatter(result_1x[1:], result_1y[1:], marker="+", linewidths=0.1)
+    # plt.scatter(result_2x[1:], result_2y[1:], marker="+", linewidths=0.1)
+    # plt.show() 
     
-    #import cv2
     
-    #contours, _ = cv2.findContours(np.uint8(image > 0.5) if 0.5 > 0 else image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Display the image and plot all contours found
+    fig, ax = plt.subplots()
+    ax.imshow(image, cmap=plt.cm.gray)
+
+    # from skimage import measure
+    # contours = measure.find_contours(image, 0.5)
+    # print(contours[:2])
+    # for contour in contours:
+    #     ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
     
-    #print(contours)
     
-    #color_img = cv2.merge( (image,image,image) )
+    result_1x = result_1x[1:]
+    result_1y = result_1y[1:]
+    result_2x = result_2x[1:]
+    result_2y = result_2y[1:]
     
-    #color_img = cv2.drawContours(color_img, contours, -1, (0, 255, 0), 3)
+    contours = []
+    for i in range(len(result_1x)-1):  
+        contours.append( np.array([[ result_1x[i], result_1y[i]], [result_2x[i], result_2y[i] ]]) )
     
-    # print(image)
-    # cv2.imshow("Contours",image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-    
+    for contour in contours:
+        ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
+
+    ax.axis('image')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    plt.show()
     
     ############################
      
