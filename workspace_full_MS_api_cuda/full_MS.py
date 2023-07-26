@@ -421,6 +421,31 @@ def bench_marching_squares_gpu(image, times):
         dResult_1y = np.array([int(dResult1Yclass)], dtype=np.uint64)
         dResult_2x = np.array([int(dResult2Xclass)], dtype=np.uint64)
         dResult_2y = np.array([int(dResult2Yclass)], dtype=np.uint64)
+        
+        ############################ TEST serial exclusive scan    
+        # with open("before_SERIAL_required_memory.txt", "w") as txt_file:
+        #     i32 = 0
+        #     for val in result_required_memory:
+        #         txt_file.write("{} ".format(val))
+        #         i32 = i32 +1
+        #         if(i32==32):
+        #             i32=0
+        #             txt_file.write("\n")
+        
+        # result_exc_scan[0] = 0
+        # for pos in range(len(result_required_memory)-1):
+        #     result_exc_scan[pos+1] = result_exc_scan[pos] + result_required_memory[pos]
+        
+        # with open("SERIAL_exc_scan.txt", "w") as txt_file:
+        #     i32 = 0
+        #     for val in result_exc_scan:
+        #         txt_file.write("{} ".format(val))
+        #         i32 = i32 +1
+        #         if(i32==32):
+        #             i32=0
+        #             txt_file.write("\n")
+        ##########################################################
+        
 
         args_6 = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height, dResult_exc_scan]
         args_6 = np.array([arg.ctypes.data for arg in args_6], dtype=np.uint64)
@@ -584,6 +609,29 @@ def bench_marching_squares_gpu(image, times):
                 i32=0
                 txt_file.write("\n")
 
+
+
+    #########################TEST results
+    #cv.drawContours()
+    
+    #import cv2
+    
+    #contours, _ = cv2.findContours(np.uint8(image > 0.5) if 0.5 > 0 else image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    #print(contours)
+    
+    #color_img = cv2.merge( (image,image,image) )
+    
+    #color_img = cv2.drawContours(color_img, contours, -1, (0, 255, 0), 3)
+    
+    # print(image)
+    # cv2.imshow("Contours",image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    
+    
+    ############################
+     
     # Free Cuda Kernel memory
     err, = cuda.cuStreamDestroy(stream)
     err, = cuda.cuMemFree(dImageclass)

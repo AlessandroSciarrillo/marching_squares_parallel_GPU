@@ -230,7 +230,7 @@ void add(int *output, int length, int *n) {
 }
 
 extern "C" __global__
-void marching_squares(double *image, double *result_1x, double *result_1y, double *result_2x, double *result_2y, double level, size_t n, size_t width, size_t height, int *positions)
+void marching_squares(double *image, double *result_1x, double *result_1y, double *result_2x, double *result_2y, double level, size_t n, size_t width, size_t height, size_t *positions)
 {        
     int square_case;
     int r0 = blockIdx.y * blockDim.y + threadIdx.y;
