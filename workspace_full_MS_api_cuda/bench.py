@@ -26,7 +26,7 @@ def ASSERT_DRV(err):
 
 # Set Benchmark parameters
 times = 100
-inputReal = True
+inputReal = False
 
 if (inputReal):
     # Get a Real Input
@@ -36,6 +36,8 @@ if (inputReal):
 else:
     # Construct artificial test data
     x, y = np.ogrid[-np.pi:np.pi:95j, -np.pi:np.pi:511j]
+    #x, y = np.ogrid[-np.pi:np.pi:100j, -np.pi:np.pi:100j]
+    
     image = np.sin(np.exp((np.sin(x)**3 + np.cos(y)**2)))
     
     # test for case 2

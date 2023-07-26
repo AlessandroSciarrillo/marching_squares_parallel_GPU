@@ -141,7 +141,7 @@ def bench_marching_squares_gpu(image, times):
 
     BLKDIM = 32  
     REDUCE_BLOCKS = (N + BLKDIM-1) / BLKDIM
-    NUM_BLOCKS_x_kernel_3 = int( (N - (N%64)) / 64 )   
+    NUM_BLOCKS_x_kernel_3 = int( (N - (N%64)) / 64 ) 
     POWEROFTWO_kernel_4 = nextPowerOfTwo(NUM_BLOCKS_x_kernel_3)
 
     # image è 95x511 con 48545 elementi 
@@ -339,7 +339,7 @@ def bench_marching_squares_gpu(image, times):
         err, = cuda.cuStreamSynchronize(stream)
         ASSERT_DRV(err)
 
-        NUM_THREADS_x = (NUM_BLOCKS_x_kernel_3 + 1) // 2               # Threads per block  x
+        NUM_THREADS_x = (NUM_BLOCKS_x_kernel_3 + 1) // 2              # Threads per block  x
         NUM_THREADS_y = 1                       # Threads per block  y
         NUM_BLOCKS_x = 1         # Blocks per grid  x                 /*+ BLKDIM-1*/
         NUM_BLOCKS_y = 1                        # Blocks per grid  y
@@ -446,7 +446,6 @@ def bench_marching_squares_gpu(image, times):
         #             txt_file.write("\n")
         ##########################################################
         
-
         args_6 = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np, n, width, height, dResult_exc_scan]
         args_6 = np.array([arg.ctypes.data for arg in args_6], dtype=np.uint64)
 
