@@ -1,28 +1,86 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[italian]{babel}
+\usepackage{newlfont}
+\usepackage{graphicx}
+\usepackage{version}
+
+\textwidth=450pt\oddsidemargin=0pt
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+{{\Large{\textsc{Alma Mater Studiorum $\cdot$ Universit\`a di
+Bologna}}}} \rule[0.1cm]{15.8cm}{0.1mm}
+\rule[0.5cm]{15.8cm}{0.6mm}
+{\small{\bf DIPARTIMENTO DI INFORMATICA – SCIENZA E INGEGNERIA\\
+Corso di Laurea in Ingegneria e Scienze Informatiche }}
+\end{center}
+\vspace{15mm}
+\begin{center}
+{\LARGE{\bf PARALLELIZZAZIONE SU GPU}}\\
+\vspace{3mm}
+{\LARGE{\bf ALGORITMO MARCHING SQUARES}}\\
+\vspace{3mm}
+{\LARGE{\bf PER APPLICAZIONE INDUSTRIALE}}\\
+\vspace{25mm}
+
+Elaborato in:\\
+High Performance Computing\\
+\end{center}
+\vspace{25mm}
+\par
+\noindent
+\begin{minipage}[t]{0.47\textwidth}
+{\large{\bf Relatore:\\
+Chiar.mo Prof.\\
+Moreno Marzolla\\}}
+{\large{\bf \\Correlatore:\\
+Dott.\\
+Matteo Roffilli}}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.47\textwidth}\raggedleft
+{\large{\bf Presentata da:\\
+Alessandro Sciarrillo}}
+\end{minipage}
+\vspace{30mm}
+\begin{center}
+{\large{\bf 
+%Sessione\\%inserire il numero della sessione in cui ci si laurea
+Anno Accademico 2022/2023}}%inserire l'anno accademico a cui si Ë iscritti
+\end{center}
+\end{titlepage}
+
+\begin{comment}
+
 \documentclass[a4paper,12pt]{report}
 \AddToHook{cmd/tableofcontents/after}{\clearpage}
 
 \usepackage{graphicx} % Required for inserting images
 \usepackage{newtxtext}
-\usepackage{newtxmath}
-\usepackage{float}
-\usepackage{pgfplots} 
 \usepackage{hyperref}
 \usepackage{tabularx}
 \usepackage[english,italian]{babel}
 
 \date{}
-\begin{document}
+% \begin{document}
 {
     \begin{center}
         ALMA MATER STUDIORUM - UNIVERSITA' DI BOLOGNA\\
         CAMPUS DI CESENA\\[10pt]
     
-        \hline \\[10pt]
+        %\hline \\[10pt]
+
+        \par\noindent\rule{\textwidth}{0.4pt}
+        \par\noindent\rule{\textwidth}{1.6pt} \\[10pt]
+        
         DIPARTIMENTO DI INFORMATICA – SCIENZA E INGEGNERIA\\[20pt]
     
         Corso di Laurea in Ingegneria e Scienze Informatiche\\[80pt]
         
-        \textbf{PARALLELIZZAZIONE SU GPU DELL'ALGORITMO MARCHING SQUARES IN AMBITO INDUSTRIALE}\\[80pt]
+        \textbf{PARALLELIZZAZIONE SU GPU DELL'ALGORITMO MARCHING SQUARES PER APPLICAZIONE INDUSTRIALE}\\[80pt]
         
         Elaborato in:\\
         High Performance Computing\\[50pt]
@@ -38,4 +96,29 @@
     \hypersetup{linkcolor=black}
     \tableofcontents
 }
+\end{comment}
+
+\chapter{Abstract}
+% una vista rapida della tesi 1/2 facciate, cosa si andrà a fare, quale è il problema, cosa si fa per risolverlo e quali risultati si otterranno. 
+% keyword: cosa siANDRà a fare, OTTERREMO
+
+\chapter{Introduzione}
+% spiegare il problema e la sua utilità, obbiettivo
+
+\chapter{Introduzione alla programmazione Parallela}
+% guardare altre tesi per vedere in che ordine metterlo
+
+\chapter{Tentativi Svolti}
+% valutare cambio nome
+% spiegare tutti i tentativi svolti, 1 o più capitoli per ogni veersione o test
+
+
+\chapter{Risultati Ottenuti}
+% speedup, ecc.. In sostanza si descrivono e commentano i grafici ottenuti
+% se si vuole misurare tempo di 2° paarte di find_contours() poi meglio lasciare distinte le due misurazioni (lib completa e assemble contours) in modo di dare a chi legge la possibilità di valutare la precisione non perfetta della misura
+
+\chapter{Conclusioni}
+% speculare all'abstract, si dicono le stesse cose ma invece che "andremo a fare"  si dirà "abbiamo fatto"
+% keyword: ABBIAMO fatto
+
 \end{document}
