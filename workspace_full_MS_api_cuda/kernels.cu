@@ -6,7 +6,7 @@ float get_fraction(double from_value, double to_value, double level){
 }
 
 extern "C" __global__
-void required_memory(double *image, size_t *result_required_memory, double level, size_t n, size_t width, size_t height)
+void required_memory(double *image, int *result_required_memory, double level, int n, int width, int height)
 {  
     size_t square_case;
     size_t r0 = blockIdx.y * blockDim.y + threadIdx.y;
@@ -45,7 +45,7 @@ void required_memory(double *image, size_t *result_required_memory, double level
 }
 
 extern "C" __global__
-void reduce(size_t *required_memory, size_t *result_reduce, size_t n)
+void reduce(int *required_memory, int *result_reduce, size_t n)
 { 
     __shared__ size_t temp[32]; // BLKDIM=32
     const size_t lindex = threadIdx.x;
@@ -230,7 +230,7 @@ void add(int *output, int length, int *n) {
 }
 
 extern "C" __global__
-void marching_squares(double *image, double *result_1x, double *result_1y, double *result_2x, double *result_2y, double level, size_t n, size_t width, size_t height, size_t *positions)
+void marching_squares(double *image, double *result_1x, double *result_1y, double *result_2x, double *result_2y, double level, int n, int width, int height, int *positions)
 {        
     int square_case;
     int r0 = blockIdx.y * blockDim.y + threadIdx.y;

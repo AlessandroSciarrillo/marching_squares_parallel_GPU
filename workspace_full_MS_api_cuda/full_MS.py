@@ -86,7 +86,7 @@ def bench_marching_squares_gpu(image, times):
     N = image.size
     h = image.shape[0]
     w = image.shape[1]
-    level = 0.9
+    level = 0.5
 
     with open('kernels.cu', 'r') as file:
         saxpy = file.read()
@@ -140,7 +140,7 @@ def bench_marching_squares_gpu(image, times):
     ASSERT_DRV(err)
 
     BLKDIM = 32  
-    REDUCE_BLOCKS = (N + BLKDIM-1) / BLKDIM
+    REDUCE_BLOCKS = int( (N + BLKDIM-1) / BLKDIM )
     NUM_BLOCKS_x_kernel_3 = int( (N - (N%64)) / 64 ) 
     POWEROFTWO_kernel_4 = nextPowerOfTwo(NUM_BLOCKS_x_kernel_3)
 
@@ -260,10 +260,10 @@ def bench_marching_squares_gpu(image, times):
 
         NUM_THREADS_x = BLKDIM                  # Threads per block  x
         NUM_THREADS_y = BLKDIM                  # Threads per block  y
-        NUM_BLOCKS_x = (w + BLKDIM-1) / BLKDIM  # Blocks per grid  x
-        NUM_BLOCKS_y = (h + BLKDIM-1) / BLKDIM  # Blocks per grid  y
+        NUM_BLOCKS_x = (w + BLKDIM-1) // BLKDIM  # Blocks per grid  x
+        NUM_BLOCKS_y = (h + BLKDIM-1) // BLKDIM  # Blocks per grid  y
 
-        # kernel 1
+        # kernel 1  [ required_memory ]
         err, = cuda.cuLaunchKernel(
             kernel_1,
             NUM_BLOCKS_x,  # grid x dim
@@ -290,7 +290,7 @@ def bench_marching_squares_gpu(image, times):
         NUM_BLOCKS_x = REDUCE_BLOCKS            # Blocks per grid  x        (N + BLKDIM-1) / BLKDIM           
         NUM_BLOCKS_y = 1                        # Blocks per grid  y
 
-        # kernel 2
+        # kernel 2 [ reduce ]
         err, = cuda.cuLaunchKernel(
             kernel_2,
             NUM_BLOCKS_x,  # grid x dim
@@ -316,8 +316,8 @@ def bench_marching_squares_gpu(image, times):
         NUM_THREADS_y = 1                       # Threads per block  y
         NUM_BLOCKS_x = NUM_BLOCKS_x_kernel_3          # Blocks per grid  x                 /*+ BLKDIM-1*/
         NUM_BLOCKS_y = 1                        # Blocks per grid  y
-
-        # kernel 3
+        
+        # kernel 3 [ prescan ]
         err, = cuda.cuLaunchKernel(
             kernel_3,
             NUM_BLOCKS_x,  # grid x dim
@@ -399,9 +399,9 @@ def bench_marching_squares_gpu(image, times):
         )
         ASSERT_DRV(err)
         np_result_reduce = np.array(result_reduce) 
-        N_RES = np_result_reduce.sum()   #TODO fare questa somma su GPU sarebbe meglio
+        N_RES = np_result_reduce.sum()  #TODO fare questa somma su GPU sarebbe meglio
 
-        bufferSize_resultsMS = N_RES * lev_np.itemsize 
+        bufferSize_resultsMS = N_RES * lev_np.itemsize
 
         result_1x = np.zeros(N_RES).astype(dtype=np.float64)
         result_1y = np.zeros(N_RES).astype(dtype=np.float64)
@@ -630,10 +630,10 @@ def bench_marching_squares_gpu(image, times):
     #     ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
     
     
-    result_1x = result_1x[1:]
-    result_1y = result_1y[1:]
-    result_2x = result_2x[1:]
-    result_2y = result_2y[1:]
+    # result_1x = result_1x[1:]
+    # result_1y = result_1y[1:]
+    # result_2x = result_2x[1:]
+    # result_2y = result_2y[1:]
     
     contours = []
     for i in range(len(result_1x)-1):  
