@@ -26,9 +26,9 @@ https://numba.readthedocs.io/en/stable/cuda/index.html
 |               |    PC    |   server   |
 | ------------- | -------- | ---------- |
 | api_cuda_test |    OK    | 	 OK	|
-| jupyter_test  |    X     |     X      |
-| api_cuda	|  RUN*(1) |     X      |
-| nvc++		|    X     |   RUN*(2)  |
+| jupyter_test (aborted) |    X     |     X      |
+| api_cuda	|    OK    |     ?      |
+| nvc++ (aborted)		|    X     |     X      |
 
 *(1) illegal memory access + tempo per "zip" risultati
 
