@@ -53,54 +53,22 @@ Anno Accademico 2022/2023}}%inserire l'anno accademico a cui si Ë iscritti
 \end{center}
 \end{titlepage}
 
-\begin{comment}
-
-\documentclass[a4paper,12pt]{report}
-\AddToHook{cmd/tableofcontents/after}{\clearpage}
-
-\usepackage{graphicx} % Required for inserting images
-\usepackage{newtxtext}
-\usepackage{hyperref}
-\usepackage{tabularx}
-\usepackage[english,italian]{babel}
-
-\date{}
-% \begin{document}
-{
-    \begin{center}
-        ALMA MATER STUDIORUM - UNIVERSITA' DI BOLOGNA\\
-        CAMPUS DI CESENA\\[10pt]
-    
-        %\hline \\[10pt]
-
-        \par\noindent\rule{\textwidth}{0.4pt}
-        \par\noindent\rule{\textwidth}{1.6pt} \\[10pt]
-        
-        DIPARTIMENTO DI INFORMATICA – SCIENZA E INGEGNERIA\\[20pt]
-    
-        Corso di Laurea in Ingegneria e Scienze Informatiche\\[80pt]
-        
-        \textbf{PARALLELIZZAZIONE SU GPU DELL'ALGORITMO MARCHING SQUARES PER APPLICAZIONE INDUSTRIALE}\\[80pt]
-        
-        Elaborato in:\\
-        High Performance Computing\\[50pt]
-    \end{center}
-    \textbf{Relatore: \hfill Presentata da: \\
-    Prof. Moreno Marzolla \hfill Alessandro Sciarrillo\\[5pt]
-    \raggedright{Correlatore:\\Dott. Matteo Roffilli}\\[50pt]}
-    
-    
-    \begin{center}
-        Anno Accademico 2022/2023
-    \end{center}
-    \hypersetup{linkcolor=black}
-    \tableofcontents
-}
-\end{comment}
-
 \chapter{Abstract}
 % una vista rapida della tesi 1/2 facciate, cosa si andrà a fare, quale è il problema, cosa si fa per risolverlo e quali risultati si otterranno. 
 % keyword: cosa siANDRà a fare, OTTERREMO
+Marching Squares(MS) é un algoritmo per la generazione di contorni in un campo scalare a bidimensionale, viene ampiamente utilizzato nel Machine Vision in ambito industriale. Nella applicazione pratica in questione viene utilizzato su fotografie scattate da macchine per la selezione automatica della frutta per trovare i contorni di aree dell'immagine dove vengono riconosciuti dei difetti nel frutto. L'algoritmo viene applicato all'output di una CNN (Convolutional Neural Network) che é composto da una mappatura dei pixel dell'immagine in input alla rispettiva probabilitá di appartenere ad una certa classe di difetto, vengono costruiti i contorni delle aree che hanno una probabilitá maggiore di una certa soglia di contenere una certa classe. Le classi di difetto sono ad esempio: marcio, ruggine, danno da grandine fresca, danno da grandine cicatrizzato, danno da raccolta, danno da trasporto ecc.. \newline
+Per ogni frutto che deve essere smistato correttamente dalle macchine in base alle sue condizioni vengono scattate piú foto mentre viene trasportato su dei rulli che lo fanno roteare e permettono quindi alle fotocamere di raccogliere un insieme di scatti in cui il frutto é stato catturato in tutte le sue facce. Per ognuna delle foto scattate al frutto vengono generate delle matrici di probabilitá per ogni classe di difetto, il risultato del processo di selezione é quindi l'insieme delle immagini dei vari lati di quel preciso frutto con i vari difetti classificati racchiusi da un contorno che li identifica. \newline La costruzione di questo contorno viene attualmente effettuato da Python tramite il metodo findContours della libreria skimage che utilizza una implementazione seriale dell'algoritmo Marching Squares, lo scopo di questa ricerca é di implementare una versione parallela su GPU dell'algoritmo in modo da ridurre i tempi di esecuzione che risultano un fattore di importanza fondamnetale in quanto ogni frazione di secondo risparmiata puó essere utilizzata per aumentare il numero di frutti classificati i una unitá di tempo o per dedicare quel tempo ad altre elaborazioni per migliorare il risultato. 
+Il metodo findContours di skimage é scritto in Python ma la parte principale di MS é stato scritto in Cython per migliorare i tempi di esecuzione, puó essere quindi considerata come una versione seriale giá particolarmente ottimizzata. L'obbiettivo è di parallelizzare proprio la stessa parte dell'algoritmo che skimage mantiene in Cython che è l'unica porzione di codice parallelizzabile dell'algoritmo MS. \newline
+Le principali strategie che verranno esplorate sono due:
+\begin{itemize}
+\item utilizzo dell'ultima versione di nvc++ per la parallelizzazione in fase di compilazione del codice Cython
+\item utilizzo delle direttive OpenMP per la parallelizzazione del codice C derivato dal codice Cython
+\item utilizzo delle API Cuda-Python per il lancio di kernel Cuda (scritti manualmente) da Python 
+\end{itemize}
+Il metodo migliore che verrà poi utilizzato per la soluzione finale sarà quello che sfrutta le API Cuda-Python e i kernel Cuda scritti manualmente, riuscirà ad ottenere uno Speedup di circa x5 rispetto al corrispondente codice seriale della libreria skimage. Verrà anche analizzato l'overhead nel lancio dei kernel Cuda introdotto da Python rispetto a una verione scritta in C. \newline
+Nella soluzione finale viene inoltre implementata una elaborata versione parallela di exlusive scan implementata con più kernel che risulta di particolare interesse nell'ambito dell'High Performance Computing.
+
+
 
 \chapter{Introduzione}
 % spiegare il problema e la sua utilità, obbiettivo
