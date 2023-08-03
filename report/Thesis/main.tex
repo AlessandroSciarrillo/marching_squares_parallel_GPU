@@ -1,0 +1,133 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[italian]{babel}
+\usepackage{newlfont}
+\usepackage{graphicx}
+\usepackage{version}
+\usepackage{chngcntr}
+\usepackage{float}
+
+\textwidth=450pt\oddsidemargin=0pt
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+{{\Large{\textsc{Alma Mater Studiorum $\cdot$ Universit\`a di
+Bologna}}}} \rule[0.1cm]{15.8cm}{0.1mm}
+\rule[0.5cm]{15.8cm}{0.6mm}
+{\small{\bf DIPARTIMENTO DI INFORMATICA – SCIENZA E INGEGNERIA\\
+Corso di Laurea in Ingegneria e Scienze Informatiche }}
+\end{center}
+\vspace{15mm}
+\begin{center}
+{\LARGE{\bf PARALLELIZZAZIONE SU GPU}}\\
+\vspace{3mm}
+{\LARGE{\bf ALGORITMO MARCHING SQUARES}}\\
+\vspace{3mm}
+{\LARGE{\bf PER APPLICAZIONE INDUSTRIALE}}\\
+\vspace{25mm}
+
+Elaborato in:\\
+High Performance Computing\\
+\end{center}
+\vspace{25mm}
+\par
+\noindent
+\begin{minipage}[t]{0.47\textwidth}
+{\large{\bf Relatore:\\
+Chiar.mo Prof.\\
+Moreno Marzolla\\}}
+{\large{\bf \\Correlatore:\\
+Dott.\\
+Matteo Roffilli}}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.47\textwidth}\raggedleft
+{\large{\bf Presentata da:\\
+Alessandro Sciarrillo}}
+\end{minipage}
+\vspace{30mm}
+\begin{center}
+{\large{\bf 
+%Sessione\\%inserire il numero della sessione in cui ci si laurea
+Anno Accademico 2022/2023}}%inserire l'anno accademico a cui si Ë iscritti
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\chapter{Abstract}
+% una vista rapida della tesi 1/2 facciate, cosa si andrà a fare, quale è il problema, cosa si fa per risolverlo e quali risultati si otterranno. 
+% keyword: cosa siANDRà a fare, OTTERREMO
+Marching Squares(MS) é un algoritmo per la generazione di contorni in un campo scalare bidimensionale che viene ampiamente utilizzato nel Machine Vision in ambito industriale. Nella applicazione pratica in questione viene utilizzato su fotografie scattate da macchine per la selezione automatica della frutta per trovare i contorni di aree dell'immagine dove vengono riconosciuti dei difetti nel frutto. L'algoritmo viene applicato all'output di una CNN (Convolutional Neural Network) che é composto da una mappatura dei pixel dell'immagine in input nella rispettiva probabilitá di appartenere ad una certa classe di difetto, vengono costruiti i contorni delle aree che hanno una probabilitá maggiore di una certa soglia di contenere una certa classe. Le classi di difetto sono ad esempio: marcio, ruggine, danno da grandine fresca, danno da grandine cicatrizzato, danno da raccolta, danno da trasporto ecc.. \newline
+Per ogni frutto che deve essere smistato correttamente dalle macchine in base alle sue condizioni vengono scattate piú foto mentre viene trasportato su dei rulli che lo fanno roteare e permettono quindi alle fotocamere di raccogliere un insieme di scatti in cui il frutto é stato catturato in tutte le sue facce. Per ognuna delle foto scattate al frutto vengono generate delle matrici di probabilitá per ogni classe di difetto, il risultato del processo di selezione é quindi l'insieme delle immagini dei vari lati di quel preciso frutto con i vari difetti racchiusi da un contorno che li identifica. \newline La costruzione di questo contorno viene attualmente effettuato da Python tramite il metodo findContours della libreria skimage che utilizza un'implementazione seriale dell'algoritmo Marching Squares, lo scopo di questa ricerca é di implementare una versione parallela su GPU dell'algoritmo in modo da ridurre i tempi di esecuzione che risultano un fattore di importanza fondamnetale in quanto ogni frazione di secondo risparmiata puó essere utilizzata per aumentare il numero di frutti classificati in una unitá di tempo o per dedicare quel tempo ad altre elaborazioni per migliorare il risultato. 
+Il metodo findContours di skimage é scritto in Python ma la parte principale di MS é stata scritta in Cython (codice Python-like che viene compilato in codice C) per migliorare i tempi di esecuzione, puó essere quindi considerata come una versione seriale giá particolarmente ottimizzata. \newline L'obbiettivo è di parallelizzare proprio la stessa parte dell'algoritmo che skimage mantiene in Cython che è l'unica porzione di codice parallelizzabile dell'algoritmo MS. \newline
+Le principali strategie che verranno esplorate sono:
+\begin{itemize}
+\item utilizzo dell'ultima versione di nvc++ per la parallelizzazione in fase di compilazione del codice Cython
+\item utilizzo delle direttive OpenMP per la parallelizzazione del codice C derivato dal codice Cython
+\item utilizzo delle API Cuda-Python per il lancio di kernel Cuda (scritti manualmente) da Python 
+\end{itemize}
+Il metodo migliore che verrà poi utilizzato per la soluzione finale sarà quello che sfrutta le API Cuda-Python e i kernel Cuda scritti manualmente, riuscirà ad ottenere uno Speedup di circa x5 rispetto al corrispondente codice seriale della libreria skimage. Verrà anche analizzato l'overhead nel lancio dei kernel Cuda introdotto da Python rispetto a una verione scritta in C. \newline
+Nella soluzione finale viene inoltre implementata una elaborata versione parallela di exlusive scan composta da più kernel che risulta di particolare interesse nell'ambito dell'High Performance Computing.
+
+\chapter{Introduzione alla programmazione Parallela}
+% guardare altre tesi per vedere in che ordine metterlo
+% valutare se tenerlo o meno
+
+\chapter{Introduzione}
+% spiegare il problema e la sua utilità, obbiettivo
+\section{Marching Squares (MS)} %valutare di farlo diventare capitolo
+L'algoritmo Marching Squares genera contorni per un campo scalare a due dimensioni, data una matrice di valori e una soglia é in grado di trovare un insieme di segmenti che delimiti le aree della matrice in cui il valore contenuto dalle singole celle é maggiore della soglia data. \newline
+Una delle elaborazioni piú utilizzate viene effettuata considerando separatamente ogni gruppo di quattro elementi della matrice disposti a forma di quadrato, ognuno di questi quadrati puó ricadere in uno di sedici diversi casi possibili ben definiti. Per definire a quale tipo appartiene un certo quadrato bisogna prima binarizzare i valori dei quattro spigoli in base alla soglia data, la posizione dei valori negli spigoli é importante poiché i sedici casi sono definiti con una orientazione ben precisa. Nella figura 3.1 é possibile vedere una possibile rappresentazione dei sedici casi possibili nella versione piú comune di Marching Squares.
+In questa versione vengono considerate delle Isolinee ma esiste anche una variante in cui vengono considerate delle Isobande che sono costruite con l'aggiunta alle barre di contorno di upper e lower thresholds come rappresentato nell'immagine 3.2. \newline Esistono anche versioni che utilizzano triangoli che sono utilizzate per l'individuazione di meshes triangolari.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.27]{img/Marching_squares_isolines.svg.png}
+    \caption{Sedici casi possibili in cui possono ricadere i quadrati composti dai quattro valori.}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.15]{img/Marching_squares_isobands.svg.png}
+    \caption{Casi possibili nella versione con isobande in cui possono ricadere i quadrati composti dai quattro valori.}
+\end{figure}
+
+%embarassingly parallel
+% problema di classificazione tipo in modo indipendente ma ricostruzione contorno unito in modo seriale/congiunto
+L'algoritmo é embarassingly parallel per quanto rigurda la classificazione per tipo di ogni cella (quadrato con valori negli spigoli) poiché puó essere svolta in modo indipendente tra le celle. \newline
+La fase di ricostruzione dei contorni invece puó essere svolta sia in parallelo che in seriale utilizzando tecniche e modalitá diferenti che dipendono dall'utilizzo finale a cui il codice é destinato. \newline
+
+%utilizzi reali, utilitá
+MS è utilizzato in molte applicazioni pratiche in settori di particolare interesse come ad esempio:
+\begin{itemize}
+\item Computer Graphics per generare immagini 3D da dati 2D.
+\item Rilevamento remoto in immagini satellitari o radar.
+\item Medicina per analizzare scansioni CT o immagini MRI dove possono essere identificare anomalie come tumori.
+\item Scienze naturali per l'analisi di dati metereologici e oceanici nell'identificazione di aree di pioggia o di correnti forti.
+\item Cartografia per la generazione di mappe relative a paesi o città da dati 2D.
+\end{itemize}
+
+\section{Problema Reale}
+
+
+\section{Obbiettivo}
+
+
+
+
+
+\chapter{Tentativi Svolti}
+% valutare cambio nome
+% spiegare tutti i tentativi svolti, 1 o più capitoli per ogni veersione o test
+
+
+\chapter{Risultati Ottenuti}
+% speedup, ecc.. In sostanza si descrivono e commentano i grafici ottenuti
+% se si vuole misurare tempo di 2° paarte di find_contours() poi meglio lasciare distinte le due misurazioni (lib completa e assemble contours) in modo di dare a chi legge la possibilità di valutare la precisione non perfetta della misura
+
+\chapter{Conclusioni}
+% speculare all'abstract, si dicono le stesse cose ma invece che "andremo a fare"  si dirà "abbiamo fatto"
+% keyword: ABBIAMO fatto
+
+\end{document}
