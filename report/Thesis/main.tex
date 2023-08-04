@@ -109,17 +109,49 @@ MS è utilizzato in molte applicazioni pratiche in settori di particolare intere
 \end{itemize}
 
 \section{Problema Reale}
+Bioretics è l'azienda con cui è stara svolta la ricerca, uno dei settori in cui opera è quello della selezione automatica della frutta. La selezione della frutta è un processo svolto in questo caso da macchine dotate di rulli e fotocamere, i frutti entrano nella macchina all'interno di tazze e vengono fatti roteare da dei rulli in modo da poter acquisire con delle camere fissate all'interno della macchina delle immagini di tutta la superficie dei frutti. Le immagini scattate per ogni frutto vengono processate e passate ad una CNN che restituisce delle matrici della stessa dimensioni delle immagini scattate, una per ogni classe che di difetto che si vuole valutare, aventi come valore delle celle la probabilità che il rispettivo pixel appartenga a quella classe. \newline
 
+L'azienda offre in sostanza un prodotto software che viene eseguito da macchine per la selezione della frutta e include l’utilizzo dell’algoritmo Marching Squares (MS). La sfida proposta dall’azienda è quella di ridurre i tempi di esecuzione di MS che è utilizzato nella fase di segmentazione dei difetti.
+Le macchine per la selezione gestiscono un flusso di circa 10 frutti al secondo, ne consegue che ci sia approssimativamente 0.1s a disposizione per ogni frutto. Quindi un’implementazione parallela dell’algoritmo MS, che riesca a ottenere uno speedup anche solo di 1.1 sarebbe considerato un risultato positivo per l’azienda.
+Scendendo più nel merito degli aspetti tecnici, all’interno delle macchine vengono scattate immagini dei frutti da camere fissate e calibrate che sono poi elaborate da una CNN che a sua volta restituisce un tensore WxHxC, dove ogni canale rappresenta una classe (esempio: picciolo, ammaccatura, muffa). I canali vengono poi passati singolarmente al MS che definisce i contorni di ogni classe in base ad un valore di soglia specificato. Il risultato del processo è visibile dall’immagine della figura 3.3 dove si possono notare le varie classi delimitate da colori differenti.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.25]{img/marching_squares_00000052_00000001.png}
+    \caption{Immagine scattata da macchina per la selezione della frutta senza elaborazioni applicate.}
+\end{figure}
+
+L’implementazione di MS che è attualmente utilizzata dall’azienda deriva dalla libreria scikit-image che offre una versione seriale dell’algoritmo. Il metodo della libreria che viene chiamato è scritto in Python ma la parte principale è stata scritta in Cython.
+Il codice in Cython deve essere compilato prima di essere eseguito, nel complesso però riduce i tempi di esecuzione rispetto all’equivalente in Python. Bisogna quindi considerare che il tempo totale di esecuzione di MS è stato già in parte ridotto dagli autori della libreria. \newline
+In tutte le macchine sulle quali esegue il codice dell'azienda sono montate schede video di fascia alta per quanto riguarda le prestazioni, del codice parallelo su GPU può essere quindi ampiamente sfruttato per ridurre i tempi di esecuzione e sollevare del carico che altrimenti ricadrebbe sulla CPU con esecuzioni seriali che in confronto sono estremamente dispendiose in termini di tempo.
 
 \section{Obbiettivo}
+L'obbiettivo concordato con l'azienda è quello di implementare una versione parallela su GPU (scheda video) dell'algoritmo Marching Squares, l'ottenimento di uno speedup rispetto alla versione utilizzata attualemente ovvero il metodo findContours della libreria skimage sarebbe considerata un successo. \newline
+Il software dell'azienda che attualmente richiama la funzione findContours è scritta in Python, è necessario quindi riuscire trovare un metodo per poter sfruttre l'esecuzione parallela su GPU da Python, operazione non comune dato che solitamente i kernel Cuda sono lanciati da codice C o C++ ovvero a un livello di astrazione molto più basso di Python e con strutture dati come puntatori compatibili con quelli di Cuda. \newline
+L'implementazione finale può essere rappresentata dallo schema in figura 3.4 ovvero una componente software che può essere richiamata direttamente da codice Python ovvero un altro componente Python e delle parti aggiuntive di codice più a basso livello che siano in grado di lanciare ed eseguire codice sulla GPU in parallelo. L'unica parte della soluzione per cui la scelta del linguaggio da utilizzare riusulta automatica è quella con cui si interfaccerà il codice dell'azienda, sarà quindi un modulo Python da cui poi si cercherà una strategia per arrivare all'esecuzione su GPU.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.8]{img/Diagram_Python_GPU.drawio.png}
+    \caption{Immagine scattata da macchina per la selezione della frutta senza elaborazioni applicate.}
+\end{figure}
 
+\section{Analisi implementazione seriale}
+% analisi del metodo findContours
+% analisi parte core in Cython
+% confronto prestazione Python<-->Cython
+% osservazine --> tempi libreria già stretti
 
-
+\section{Limiti e Problemi programmazione parallela}
+% intro generale ai problemi della prog parallela
+% spiegare che parte più dispendiosa in questo caso sarebbe caricamnto e scrittura dati visto che l'esecuzione di immagini di queste dimensioni è esigua
+% osservazione --> dimensioni immagini
 
 \chapter{Tentativi Svolti}
 % valutare cambio nome
 % spiegare tutti i tentativi svolti, 1 o più capitoli per ogni veersione o test
+\section{Compilatore nvc++} % far diventare capitolo
+\section{API Cuda-Python} % far diventare capitolo
 
 
 \chapter{Risultati Ottenuti}

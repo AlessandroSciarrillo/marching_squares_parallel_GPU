@@ -6,4 +6,4 @@ heatmaps_npy.7z
 heatmaps_shapes.7z
 workspace_api_cuda/__pycache__
 bioretics_material
-
+.DS_Store
