@@ -61,15 +61,15 @@ Anno Accademico 2022/2023}}%inserire l'anno accademico a cui si Ë iscritti
 % una vista rapida della tesi 1/2 facciate, cosa si andrà a fare, quale è il problema, cosa si fa per risolverlo e quali risultati si otterranno. 
 % keyword: cosa siANDRà a fare, OTTERREMO
 Marching Squares(MS) é un algoritmo per la generazione di contorni in un campo scalare bidimensionale che viene ampiamente utilizzato nel Machine Vision in ambito industriale. Nella applicazione pratica in questione viene utilizzato su fotografie scattate da macchine per la selezione automatica della frutta per trovare i contorni di aree dell'immagine dove vengono riconosciuti dei difetti nel frutto. L'algoritmo viene applicato all'output di una CNN (Convolutional Neural Network) che é composto da una mappatura dei pixel dell'immagine in input nella rispettiva probabilitá di appartenere ad una certa classe di difetto, vengono costruiti i contorni delle aree che hanno una probabilitá maggiore di una certa soglia di contenere una certa classe. Le classi di difetto sono ad esempio: marcio, ruggine, danno da grandine fresca, danno da grandine cicatrizzato, danno da raccolta, danno da trasporto ecc.. \newline
-Per ogni frutto che deve essere smistato correttamente dalle macchine in base alle sue condizioni vengono scattate piú foto mentre viene trasportato su dei rulli che lo fanno roteare e permettono quindi alle fotocamere di raccogliere un insieme di scatti in cui il frutto é stato catturato in tutte le sue facce. Per ognuna delle foto scattate al frutto vengono generate delle matrici di probabilitá per ogni classe di difetto, il risultato del processo di selezione é quindi l'insieme delle immagini dei vari lati di quel preciso frutto con i vari difetti racchiusi da un contorno che li identifica. \newline La costruzione di questo contorno viene attualmente effettuato da Python tramite il metodo findContours della libreria skimage che utilizza un'implementazione seriale dell'algoritmo Marching Squares, lo scopo di questa ricerca é di implementare una versione parallela su GPU dell'algoritmo in modo da ridurre i tempi di esecuzione che risultano un fattore di importanza fondamnetale in quanto ogni frazione di secondo risparmiata puó essere utilizzata per aumentare il numero di frutti classificati in una unitá di tempo o per dedicare quel tempo ad altre elaborazioni per migliorare il risultato. 
-Il metodo findContours di skimage é scritto in Python ma la parte principale di MS é stata scritta in Cython (codice Python-like che viene compilato in codice C) per migliorare i tempi di esecuzione, puó essere quindi considerata come una versione seriale giá particolarmente ottimizzata. \newline L'obbiettivo è di parallelizzare proprio la stessa parte dell'algoritmo che skimage mantiene in Cython che è l'unica porzione di codice parallelizzabile dell'algoritmo MS. \newline
+Per ogni frutto che deve essere smistato correttamente dalle macchine in base alle sue condizioni vengono scattate piú foto mentre viene trasportato su dei rulli che lo fanno roteare e permettono quindi alle fotocamere di raccogliere un insieme di scatti in cui il frutto é stato catturato in tutte le sue facce. Per ognuna delle foto scattate al frutto vengono generate delle matrici di probabilitá per ogni classe di difetto, il risultato del processo di selezione é quindi l'insieme delle immagini dei vari lati di quel preciso frutto con i vari difetti racchiusi da un contorno che li identifica. \newline La costruzione di questo contorno viene attualmente effettuato da Python tramite il metodo \verb|findContours| della libreria skimage che utilizza un'implementazione seriale dell'algoritmo Marching Squares, lo scopo di questa ricerca é di implementare una versione parallela su GPU dell'algoritmo in modo da ridurre i tempi di esecuzione che risultano un fattore di importanza fondamnetale in quanto ogni frazione di secondo risparmiata puó essere utilizzata per aumentare il numero di frutti classificati in una unitá di tempo o per dedicare quel tempo ad altre elaborazioni per migliorare il risultato. 
+Il metodo \verb|findContours| di skimage é scritto in Python ma la parte principale di MS é stata scritta in Cython (codice Python-like che viene compilato in codice C) per migliorare i tempi di esecuzione, puó essere quindi considerata come una versione seriale giá particolarmente ottimizzata. \newline L'obbiettivo è di parallelizzare proprio la stessa parte dell'algoritmo che skimage mantiene in Cython che è l'unica porzione di codice parallelizzabile dell'algoritmo MS. \newline
 Le principali strategie che verranno esplorate sono:
 \begin{itemize}
 \item utilizzo dell'ultima versione di nvc++ per la parallelizzazione in fase di compilazione del codice Cython
 \item utilizzo delle direttive OpenMP per la parallelizzazione del codice C derivato dal codice Cython
 \item utilizzo delle API Cuda-Python per il lancio di kernel Cuda (scritti manualmente) da Python 
 \end{itemize}
-Il metodo migliore che verrà poi utilizzato per la soluzione finale sarà quello che sfrutta le API Cuda-Python e i kernel Cuda scritti manualmente, riuscirà ad ottenere uno Speedup di circa x5 rispetto al corrispondente codice seriale della libreria skimage. Verrà anche analizzato l'overhead nel lancio dei kernel Cuda introdotto da Python rispetto a una verione scritta in C. \newline
+Il metodo migliore che verrà poi utilizzato per la soluzione finale sarà quello che sfrutta le API Cuda-Python e i kernel Cuda scritti manualmente, riuscirà ad ottenere uno Speedup di circa x5**[TODO scrivere specifiche macchina] rispetto al corrispondente codice seriale della libreria skimage. Verrà anche analizzato l'overhead nel lancio dei kernel Cuda introdotto da Python rispetto a una verione scritta in C. \newline
 Nella soluzione finale viene inoltre implementata una elaborata versione parallela di exlusive scan composta da più kernel che risulta di particolare interesse nell'ambito dell'High Performance Computing.
 
 \chapter{Introduzione alla programmazione Parallela}
@@ -126,9 +126,10 @@ Il codice in Cython deve essere compilato prima di essere eseguito, nel compless
 In tutte le macchine sulle quali esegue il codice dell'azienda sono montate schede video di fascia alta per quanto riguarda le prestazioni, del codice parallelo su GPU può essere quindi ampiamente sfruttato per ridurre i tempi di esecuzione e sollevare del carico che altrimenti ricadrebbe sulla CPU con esecuzioni seriali che in confronto sono estremamente dispendiose in termini di tempo.
 
 \section{Obbiettivo}
-L'obbiettivo concordato con l'azienda è quello di implementare una versione parallela su GPU (scheda video) dell'algoritmo Marching Squares, l'ottenimento di uno speedup rispetto alla versione utilizzata attualemente ovvero il metodo findContours della libreria skimage sarebbe considerata un successo. \newline
-Il software dell'azienda che attualmente richiama la funzione findContours è scritta in Python, è necessario quindi riuscire trovare un metodo per poter sfruttre l'esecuzione parallela su GPU da Python, operazione non comune dato che solitamente i kernel Cuda sono lanciati da codice C o C++ ovvero a un livello di astrazione molto più basso di Python e con strutture dati come puntatori compatibili con quelli di Cuda. \newline
-L'implementazione finale può essere rappresentata dallo schema in figura 3.4 ovvero una componente software che può essere richiamata direttamente da codice Python ovvero un altro componente Python e delle parti aggiuntive di codice più a basso livello che siano in grado di lanciare ed eseguire codice sulla GPU in parallelo. L'unica parte della soluzione per cui la scelta del linguaggio da utilizzare riusulta automatica è quella con cui si interfaccerà il codice dell'azienda, sarà quindi un modulo Python da cui poi si cercherà una strategia per arrivare all'esecuzione su GPU.
+L'obbiettivo concordato con l'azienda è quello di implementare una versione parallela su GPU (scheda video) dell'algoritmo Marching Squares, l'ottenimento di uno speedup rispetto alla versione utilizzata attualemente ovvero il metodo \verb|findContours| della libreria skimage sarebbe considerata un successo. \newline
+Il software dell'azienda che attualmente richiama la funzione \verb|findContours| è scritta in Python, è necessario quindi riuscire trovare un metodo per poter sfruttre l'esecuzione parallela su GPU da Python, operazione non comune dato che solitamente i kernel Cuda sono lanciati da codice C o C++ ovvero a un livello di astrazione molto più basso di Python e con strutture dati come puntatori compatibili con quelli di Cuda. \newline
+L'implementazione finale può essere rappresentata dallo schema in figura 3.4 ovvero una componente software che può essere richiamata direttamente da codice Python ovvero un altro componente Python e delle parti aggiuntive di codice più a basso livello che siano in grado di lanciare ed eseguire codice sulla GPU in parallelo. L'unica parte della soluzione per cui la scelta del linguaggio da utilizzare riusulta automatica è quella con cui si interfaccerà il codice dell'azienda, sarà quindi un modulo Python da cui poi si cercherà una strategia per arrivare all'esecuzione su GPU. \newline
+
 
 \begin{figure}[H]
     \centering
@@ -138,20 +139,43 @@ L'implementazione finale può essere rappresentata dallo schema in figura 3.4 ov
 
 \section{Analisi implementazione seriale}
 % analisi del metodo findContours
+Il metodo \verb|findContours| di skimage composto da due fasi principali, nella prima viene richiamato un metodo \verb|_get_contour_segments| che trova le coordinate dei segmenti che costituiscono i contorni e una seconda parte in cui viene richiamato \verb|_assemble_contours| che dall'output di \verb|_get_contour_segments| unisce i segmenti che si intersecano sui bordi delle celle formando singole linee spezzate. \newline
 % analisi parte core in Cython
+Il metodo \verb|_get_contour_segments| è contenuto nel file \verb|_find_contours_cy.pyx| che è scritto in codice Cython, questo linguaggio è un superset di Python che permette di scrivere codice Python-like che effettua chiamate a funzioni C e può dichiarare tipi di dato del C, queste caratteristiche permettono al compilatore di generare codice ottimizzato come tempi di esecuzione rispetto all'equivalente in Python. \newline
 % confronto prestazione Python<-->Cython
-% osservazine --> tempi libreria già stretti
+Non è semplice stabilire lo speedup del codice Cython rispetto al Python poichè il confronto dipende fortemente dalle strutture dati usate, il numero di funzioni C e python richiamate e altri fattori che influiscono fortemente sulla differenza tra i tempi di esecuzione dei due linguaggi. Indubbiamente le chiamate a funzioni C da codice Cython introducono un overhead rispetto alla stessa chiamata effettuata da C e le funzioni Python impiegheranno un tempo sicuramente al massimo uguale e non minore delle stesse funzioni richiamate da codice Python nativo. \newline
+Nel complesso però se il codice Cython viene scritto con particolari accortezze nell'utilizzo di soli tipi di dato C e richiamando funzioni Python solo se indispensabili il codice che ne deriva risulta estremamente più veloce della versione Python, come tempi di esecuzione si avvicina alla versione C che teoricamente può essere considerata un suo lower bound. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.9]{img/cython-vs-c.png}
+    % Image Source: http://ibm.co/20XSZ4F
+    \caption{Grafico che mette in comparazione i tempi di esecuzione di Pyhon, C e Cython su un task di esempio. [TODO: valutare di rifarlo manualmente o trovare altra fonte]}
+\end{figure}
 
-\section{Limiti e Problemi programmazione parallela}
+Il codice del metodo Cython \verb|_get_contour_segments| risulta particolarmente ottimizzato in quanto utilizza unicamente variabili di tipo C e richiama un solo metodo di Python ovvero \verb|append| che viene eseguita una volta per ogni quadrato considerato. 
+% osservazine --> tempi libreria già stretti
+Il codice del metodo findContours può essere considerato quindi già particolarmente ottimizzato per essere un metodo Python, in quanto il suo tempo di esecuzione si può avvicinare molto ad una versione scritta in C. \newline
+Con una immagine 511x95 il metodo findContours impiega in media circa \verb|0.0024s|**[TODO specifiche macchina] ovvero neanche tre millesimi di secondo.
+
+\section{Limiti della programmazione parallela}
 % intro generale ai problemi della prog parallela
 % spiegare che parte più dispendiosa in questo caso sarebbe caricamnto e scrittura dati visto che l'esecuzione di immagini di queste dimensioni è esigua
 % osservazione --> dimensioni immagini
+Nelle architettura Von Neumann la latenza introdotta dagli accessi alla memoria sono ordini di grandezza maggiori rispetto a un ciclo di clock e creano bottleneck che influiscono molto sui tempi di esecuzione di una versione di codice parallela.
+Nella applicazione pratica proposta dall'azienda le immagini da elaborare sono di dimensioni 511x95, con una versione parallela del Marching Squares idealmente ogni Cuda Core si occuperebbe di un singolo quadrato, con immagini di queste dimensioni servirebbero 47940 esecuzioni (ovvero il numero di quadrati) che una GPU di fascia alta riesce a coprire utilizzando tutti i suoi Cuda Core in parallelo reiterando il procedimento qualche volta. \newline
+Indipendentemente da come può essere gestito il lancio e l'esecuzione del MS su GPU è indispensabile che l'immagine sia letta dalla memoria principale della macchina e caricata sulla memoria della GPU e il processo opposto sul risultato ottenuto sulla GPU.
+Queste operazioni sono estremamente dispendiose relativamente ai tempi di esecuzione delle istruzioni che un possibile kernel Cuda può impiegare, questo rischia di essere uno dei maggiori problemi e limiti da affrontare per raggiungere uno speedup in quanto sicuramente una vesione di codice parallelo ha il potenziale di essere più veloce del rispettivo seriale, ma al tempo del codice parallelo va sommato il tempo per caricare e scaricare i dati dalla GPU che influiranno in gran parte sul tempo di esecuzione finale. \newline
+Se l'immagine fosse di dimensioni maggiori il tempo dovuto al bottleneck potrebbe essere ammortizzato maggiormente e la versione parallela avrebbe più margine su quella seriale, nel nostro caso invece la grandezza dell'immagine non richiede un tempo di esecuzione sufficientemente grande da far passare in secondo piano quello dei trasferimenti tra memorie. \newline
+Il caso peggiore che si può presentare è che il rapporto dati da trasportare e le operazioni da effettuarci sia così sbilanciato che solamente il tempo di upload e download dei dati dalla GPU sia maggiore del tempo di esecuzione della versione seriale.
+
+
 
 \chapter{Tentativi Svolti}
 % valutare cambio nome
 % spiegare tutti i tentativi svolti, 1 o più capitoli per ogni veersione o test
 \section{Compilatore nvc++} % far diventare capitolo
 \section{API Cuda-Python} % far diventare capitolo
+% problema dell'append in Cython non convertibile direttamente in Cuda ==> utilizzo array
 
 
 \chapter{Risultati Ottenuti}
