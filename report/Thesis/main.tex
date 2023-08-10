@@ -160,7 +160,7 @@ Nel complesso però se il codice Cython viene scritto con particolari accortezze
 %TODO valutare di rifarlo manualmente o trovare altra fonte]
 }
 \end{figure} \newpage
-Il codice del metodo Cython \verb|_get_contour_segments| risulta particolarmente ottimizzato in quanto utilizza unicamente variabili di tipo C e richiama una sola funzione di Python ovvero \verb|append| che può essere eseguita solitamente 0,1 o al massimo 2 volte per ogni quadrato considerato. 
+Il codice del metodo Cython \verb|_get_contour_segments| risulta particolarmente ottimizzato in quanto utilizza unicamente variabili di tipo C e richiama una sola funzione di Python ovvero \verb|append| che può essere eseguita solitamente 0, 1 o al massimo 2 volte per ogni quadrato considerato. 
 % osservazine --> tempi libreria già stretti
 Il codice del metodo findContours può essere considerato quindi già particolarmente ottimizzato per essere un metodo Python, in quanto il suo tempo di esecuzione si può avvicinare molto ad una versione scritta in C. \newline
 Con una immagine 511x95 il metodo findContours impiega in media circa \verb|0.0024s|**[NOTA: sulla mia macchina,  attendo test su server azienda per aggiornare valore e inserire specifiche macchina] %TODO specifiche macchina
