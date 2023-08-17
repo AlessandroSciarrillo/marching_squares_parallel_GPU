@@ -310,18 +310,88 @@ La principale criticità riscontrabile nel metodo è l'utilizzo di una lista e d
 % valutare cambio nome
 % spiegare tutti i tentativi svolti, 1 o più capitoli per ogni veersione o test
 \chapter{Versione parallela con nvc++} 
-La prima strategia esplorata consiste nel compilare il codice Cython con le ultime versioni del compilatore nvc++ che supportano dei flag per la parallelizzazione automatica su GPU.  Nvidia ha recentemente aggiornato \verb|stdpar,|  un flag che promette di riuscir a parallelizzare automaticamente codice C++ su GPU utilizzando il compilatore nvc++. \newline
-Il processo parte da del codice Cython che tramite il proprio compilatore viene trasformato in codice C++,  a questo punto si compila il codice C++ utilizzando nvc++ e una serie di flag per la parallelizzazione parallela compreso \verb|stdpar|. \newline
-Il processo completo documentato da Nvidia è descritto nella figura 4.1.
+La prima strategia esplorata consiste nel compilare il codice Cython con le ultime versioni del compilatore nvc++ che supporta dei flag per la parallelizzazione automatica su GPU.  Nvidia ha recentemente aggiornato \verb|stdpar,|  un flag che promette di riuscir a parallelizzare automaticamente codice C++ su GPU utilizzando il compilatore nvc++. \newline
+Il processo parte da del codice Cython che tramite il proprio compilatore viene trasformato in codice C++,  a questo punto si compila il codice C++ utilizzando nvc++ e una serie di flag per la parallelizzazione su GPU tra cui \verb|stdpar|, infine si può richiamare il codice parallelizzato da Python tramite l'importazione del modulo generato. \newline
+Il processo documentato da Nvidia è descritto in forma schematica nella figura 4.1.
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
     \ffigbox[\FBwidth]{\caption{\small{Schema di descrizione processo per utilizzo nvc++ in parallelizzazione codice Cython prodotto a Nvidia.}}}{\includegraphics[scale=0.9]{img/extension-module.png}}
 \end{floatrow}
-\end{figure}
+\end{figure} \newpage
 
-\section{Risultati ottenuti}
- 
+\section{Requisiti utilizzo nvc++}
+Per poter utilizzare il flag stdpar con una versione aggiornata di nvc++ è necessario installare \verb|Nvidia High Performance Computing Software Development Kit (HPC SDK)| sulla macchina su cui verrà effettuata la compilazione e l'esecuzione. Le opzioni disponibili per ottenere HPC SDK sono installarlo direttamente sulla macchina oppure utilizzare un container Docker configurato da Nvidia con tutte le dipendenze di nvc++ installate. \newline
+L'azienda Bioretics ha messo a disposizione un server con una scheda video RTX 2060 Super, per evitare tutte le problematiche legate alle dipendenze, le loro versioni e il loro mantenimento è stato valutato di utilizzare la soluzione con Docker. \newline
+L'utilizzo del container docker fornito da Nvidia si è rivelato però particolarmente ostico da utilizzare poiché per il suo avvio è stata necessaria un configurazione molto articolata che non era descritta nella guida all'utilizzo. Per il corretto funzionamento del container e del compilatore nvc++ è stata necessaria una particolare configurazione che permettesse al container di utilizzare la scheda video e i suoi driver con permessi specifici. 
+L'ambiente ottenuto sul server con la configurazione del container è rappresentato dalla figura 4.2.
+
+\begin{figure}[H]
+\centering
+\begin{floatrow}[1]
+    \ffigbox[\FBwidth]{\caption{\small{Schema componenti hardware e software sul server dell'azienda in seguito alla configurazione del container Nvidia HPC SDK.}}}{\includegraphics[scale=0.9]{img/Docker_HPC-SDK.drawio.png}}
+\end{floatrow}
+\end{figure} \newpage
+
+
+\section{Potenziali risultati}
+
+I risultati promessi da Nvidia sembrano avere un potenziale altissimo, ma vanno ben contestualizzati ai task eseguiti e all'hardware utilizzato. \newline
+I benchmarks effettuati sono sull'ordinamento di una serie di numeri e su iterazioni del metodo di Jacobi due funzioni facilmente parallelizzabili, largamente studiate ed estremamente ottimizzate nelle implementazioni delle principali librerie.
+Per ognuno dei due task sono state utilizzate 3 versioni:
+\begin{itemize}
+\item versione che utilizza la funzione seriale.
+\item versione parallela su CPU che utilizza le policy di esecuzione parallela ed è compilata con g++.
+\item versione parallela su GPU che utilizza sempre le policy di esecuzione parallela ma è compilata con nvc++ e l'opzione \verb|-stdpar|.
+\end{itemize}
+
+Nei test sull'ordinamento di numeri presentati in figura 4.3 è rappresentato lo speedup delle 3 versioni rispetto all'implementazione di Numpy della funzione .sort(). Si può notare uno speedup di circa 20x nel test con il numero maggiore di elementi della versione parallelizzata su GPU da nvc++ con -stdpar rispetto al .sort() di Numpy, risultato apparentemente molto promettente. Nei test con un basso numero di elementi risultano però migliori le versioni su CPU seriali e parallele, fenomeno dovuto all'overhead introdotto da una esecuzione parallela su GPU che comprende il trasferimento di dati sulle memorie, questo problema è lo stesso discusso in precedenza in relazione alle dimensioni ridotte delle immagini utilizzate nella applicazione reale oggetto di questa ricerca.
+
+\begin{figure}[H]
+\centering
+\begin{floatrow}[1]
+    \ffigbox[\FBwidth]{\caption{\small{Speedup ottenuto a confronto con Numpy nell'ordinamento di una sequenza di interi. I benchmarks su GPU sono stati eseguiti su un sistema con Intel Xeon Gold 6128 CPU, quelli su GPU invece su una NVIDIA A100.}}}{\includegraphics[scale=0.5]{img/speedup-vs-numpy-integer-sequence-1.png}}
+\end{floatrow}
+\end{figure} 
+
+Nei test sulle iterazione del metodo di Jacobi il fenomeno riscontrato con .sort() non si presente come osservabile nella figura 4.4, il test con il numero di elementi minore è però di dimensioni nettamente maggiori ed è quindi già in grado di ammortizzare il costo impiegato per l'esecuzione parallela su GPU.
+I risultati ottenuti in questi benchmarks sono ancora più eclatanti, tanto da insospettirsi sul fatto che siano realmente ottenibili anche su altre funzioni di utilizzo reale. \newline
+Bisogna considerare infatti che tutti i risultati ottenuti in questi test con il compilatore nvc++ e la direttiva \verb|-stdpar| sono stati eseguiti su una macchina con componenti hardware di fascia altissima che permettono di avere una potenza di calcolo che non è estremamente lontano da quella della maggior parte delle macchine utilizzate in ambito Enterprise. Infatti la GPU utilizzata ovvero una Nvidia A100 è una scheda che si trova in configurazioni con decine di GB di memoria a costi di anche 10 volte maggiori a quelli di una GPU di fascia alta. \newline
+Oltre all'hardware bisogna anche considerare che i task su cui sono stati effettuati i test comprendevano esclusivamente esecuzione di codice interamente parallelizzabile, strutturalmente quindi molto distante dal codice da implementare per questo progetto.
+
+\begin{figure}[H]
+\centering
+\begin{floatrow}[1]
+    \ffigbox[\FBwidth]{\caption{\small{Speedup ottenuto a confronto con Numpy in iterazione di Jacobiano. I benchmarks su GPU sono stati eseguiti su un sistema con Intel Xeon Gold 6128 CPU, quelli su GPU invece su una NVIDIA A100.}}}{\includegraphics[scale=0.5]{img/speedup-vs-numpy-jacobi.png}}
+\end{floatrow}
+\end{figure} \newpage
+
+\section{Marching Squares con nvc++ e -stdpar}
+Il risultato migliore che potrebbe essere raggiunto è quello di riuscire a ottenere anche solo una frazione dello speedup riportato da nvidia con nvc++ e -stdpar utilizzandoli con il codice Cython di skimage in cui è implementato MS.\newline
+La strategia scelta per arrivare a questo risultato è quella di partire da una versione di codice basica e poi evolverla in quella finale a piccoli step in modo da risolvere in modo incrementale i problemi che inevitabilmente si presentano in implementazioni di questo tipo dove sono compresi codice di linguaggi diversi e compilatori. \newline 
+I risultati ottenuti dal team developer di Nvidia si sono subito rivelati un lontano traguardo da raggiungere con hardware di fascia media infatti testando lo stesso codice con cui erano stati effettuati i benchmarks i risultati ottenuti non erano neanche simili ma anzi sempre peggiori delle versioni seriali e parallele su CPU. Ovviamente risulta difficile pensare di ottenere certi risultati sul proprio progetto se neanche il codice fornito da Nvidia perfettamente ottimizzato riesce a raggiungerli sulla macchina su cui poi verrà utilizzato il codice. Dato che al successo del progetto però sarebbe bastato riuscire a parallelizzare su GPU anche solo una piccola parte del codice e ottenere uno speedup questa strada è stata considerata ancora valida. \newline
+Il codice proposto da Nvidia era particolarmente semplice e da poche righe totali, la compilazione aveva quindi poche pretese, questo non vale per il codice Cython di skimage che comprende importazioni da librerie esterne e il loro utilizzo. Per concludere senza errori la compilazione del codice di skimage è stato quindi necessario modificare la struttura e il contenuto delle opzioni di compilazione nel file \verb|setup.py|. \newline
+Il processo parte dalla trasformazione del codice Cython in C++ con \\[10pt]
+\noindent\rule[0.5ex]{\linewidth}{2pt}
+\small{\textbf{Cythonizzazione}} \\
+\noindent\rule[0.5ex]{\linewidth}{1pt}
+\begin{lstlisting}
+$ cythonize -i _find_contours_cy.pyx
+\end{lstlisting}
+\noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
+Il codice C++ ottenuto viene poi compilato con \\[10pt]
+\noindent\rule[0.5ex]{\linewidth}{2pt}
+\small{\textbf{Compilazione con nvc++ e -stdpar}} \\
+\noindent\rule[0.5ex]{\linewidth}{1pt}
+\begin{lstlisting}
+$ CC=nvc++ python setup.py build_ext --inplace
+\end{lstlisting}
+\noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
+che restituisce un modulo importabile da python. Nel file \verb|setup.py| sono specificate tutte le direttive per la compilazione e viene gestito in collegamento di tutte le librerie necessarie. Una libreria necessaria al codice del MS di skimage è Numpy, perché fosse possibile importarla dal codice Cython è stato necessario modificare la lista delle librerie aggiungendola. \newline
+
+\section{Problemi riscontrati}
+Purtroppo tutti i tentativi effettuati non hanno portato ad una versione parallela funzionante su GPU. Il principale problema riscontrato è la complessità e disordine del codice C++ risultato dal processo di cythonizzazione del codice cython, il codice in output è infatti di dimensioni ordini di grandezza maggiori. Da un centinaio di righe in cython il codice C++ risultante passa a decine di migliaia che risultano quindi ingestibili dato che ci andrebbero aggiunte manualmente le policy di esecuzione parallela per ogni singolo metodo della libreria standard che si vuole parallelizzare su GPU. Inoltre anche inserendo le policy per la parallelizzazione l'esecuzione falliva a causa delle strutture dati generate dalla cythonizzazione come puntatori a strutture che non sono riconosciute nativamente da C++ e quindi considerate come un insieme di byte. La parallelizzazione automatica su GPU di nvc++ con \verb|-stdpar| sul codice C++ derivato dal Cython si è rivelata quindi estremamente difficile da utilizzare con codice più complesso di quello proposto da Nvidia che comprendeva praticamente solo qualche funzione base della libreria standard C++. \newline
+In seguito a queste conclusioni è stato valutato di non proseguire con questa strada ma intraprenderne una più complessa in termini di implementazione su cui però si può avere più controllo sul processo di parallelizzazione su GPU (descritto nel capitolo 5).
 
 \chapter{Versione parallela con API Cuda-Python} 
 % problema dell'append in Cython non convertibile direttamente in Cuda ==> utilizzo array
@@ -332,6 +402,7 @@ Il processo completo documentato da Nvidia è descritto nella figura 4.1.
 \chapter{Risultati a Confronto}
 % speedup, ecc.. In sostanza si descrivono e commentano i grafici ottenuti
 % se si vuole misurare tempo di 2° paarte di find_contours() poi meglio lasciare distinte le due misurazioni (lib completa e assemble contours) in modo di dare a chi legge la possibilità di valutare la precisione non perfetta della misura
+% mostrare overhead lancio kernel da python rispetto a C
 
 \chapter{Conclusioni}
 % speculare all'abstract, si dicono le stesse cose ma invece che "andremo a fare"  si dirà "abbiamo fatto"
