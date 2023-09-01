@@ -647,6 +647,14 @@ def bench_marching_squares_gpu(image, times):
     ax.set_yticks([])
     plt.show()
     
+    # for calculate assemble_contours time
+    segments = []
+    for (x1, y1, x2, y2) in zip(result_1x, result_1y, result_2x, result_2y):  
+        if x1 > 0.0 and y1 > 0.0 and x2 > 0.0 and y2 > 0.0 :
+            point1 = (x1,y1)
+            point2 = (x2,y2) 
+            segments.append( (point1,point2) )
+    
     ############################
      
     # Free Cuda Kernel memory
@@ -667,4 +675,4 @@ def bench_marching_squares_gpu(image, times):
     print("WARNING: Number of last elements out of exclusive scan process: ",N%64)
     # print('MS execution time my:    ', elapsed_time_my, 'seconds')
 
-    return elapsed_time_my
+    return segments, elapsed_time_my

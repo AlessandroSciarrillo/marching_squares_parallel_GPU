@@ -30,7 +30,7 @@ def ASSERT_DRV(err):
 
 
 # Set Benchmark parameters
-times = 10000
+times = 1000
 inputReal = False
 
 if (inputReal):
