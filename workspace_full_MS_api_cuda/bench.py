@@ -91,8 +91,8 @@ def _assemble_contours(segments):
     return [np.array(contour) for _, contour in sorted(contours.items())]
 
 # Set Benchmark parameters
-times = 1
-inputReal = False
+times = 1000
+inputReal = True
 
 if (inputReal):
     # Get a Real Input

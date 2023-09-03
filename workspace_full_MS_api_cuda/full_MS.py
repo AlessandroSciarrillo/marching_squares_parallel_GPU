@@ -481,6 +481,7 @@ def bench_marching_squares_gpu(image, times):
 
         #TODO non serve riportare giù i risultati dei kernel precedenti all ultimo, fatto solo per check risultato, da commentare per misurazione tempi
         #kernel 1
+        ''' 
         err, = cuda.cuMemcpyDtoHAsync( 
             result_required_memory.ctypes.data, dResult_required_memorys_class, bufferSize_result_required_memory, stream
         )
@@ -511,7 +512,7 @@ def bench_marching_squares_gpu(image, times):
             incr_exc_scan.ctypes.data, dIncr_exc_scan_class, bufferSize_incr_exc_scan, stream
         )
         ASSERT_DRV(err)
-
+        '''
         # kernel 6
         err, = cuda.cuMemcpyDtoHAsync(
             result_1x.ctypes.data, dResult1Xclass, bufferSize_resultsMS, stream
@@ -639,6 +640,7 @@ def bench_marching_squares_gpu(image, times):
     for i in range(len(result_1x)-1):  
         contours.append( np.array([[ result_1x[i], result_1y[i]], [result_2x[i], result_2y[i] ]]) )
     
+    contours = []
     for contour in contours:
         ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
 
