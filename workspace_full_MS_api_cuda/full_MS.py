@@ -640,7 +640,6 @@ def bench_marching_squares_gpu(image, times):
     for i in range(len(result_1x)-1):  
         contours.append( np.array([[ result_1x[i], result_1y[i]], [result_2x[i], result_2y[i] ]]) )
     
-    contours = []
     for contour in contours:
         ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
 
