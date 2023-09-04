@@ -164,8 +164,8 @@ print('MS execution time lib:   ', elapsed_time_lib, 'seconds   WARNING: full ti
 print('MS execution time my:    ', elapsed_time_my, 'seconds')
 print('(Estimate assemble_contours execution time:  ', elapsed_time_assemble_contours, 'seconds)')
 print('Difference (all):        ', elapsed_time_lib - elapsed_time_my, 'seconds')
-print('Speedup (all):           ', elapsed_time_lib / elapsed_time_my , 'seconds')
-print('Speedup (excluded a_c):  ', (elapsed_time_lib - elapsed_time_assemble_contours) / elapsed_time_my , 'seconds\n')
+print('Speedup (all):           ', elapsed_time_lib / elapsed_time_my )
+print('Speedup (excluded a_c):  ', (elapsed_time_lib - elapsed_time_assemble_contours) / elapsed_time_my , '\n')
 
 
 
