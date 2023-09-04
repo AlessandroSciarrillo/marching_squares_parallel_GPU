@@ -175,7 +175,7 @@ void fill(double *input, int w, int h){
     int i, j;
     for (i=0; i<h; i++) {
         for (j=0; j<w; j++) {
-            input[i*w+j] = rand() / (RAND_MAX + 1.);
+            input[i*w+j] = rand() / (RAND_MAX + 0.55);
         }
     }
 }
@@ -188,7 +188,7 @@ int main( int argc, char *argv[] )
     const size_t n = 48545;
     const size_t w = 511;
     const size_t h = 95;
-    const size_t size = n*sizeof(*input);
+    const size_t size = n*sizeof(*input); //TODO utilizzare altri kernel per ottenere dimensione necessaria e posizionii di scrittura
     const int TIMES = 1000;
     int k = 0;
     
@@ -231,7 +231,8 @@ int main( int argc, char *argv[] )
         cudaMemcpy(result_2y, d_result_2y, size, cudaMemcpyDeviceToHost);
     } 
 
-    const double elapsed = hpc_gettime() - tstart;
+    const double tend = hpc_gettime();
+    const double elapsed = tend - tstart;
     printf("Elapsed time (including data movement): %f\n", elapsed / TIMES);
 
     // check results

@@ -641,7 +641,7 @@ def bench_marching_squares_gpu(image, times):
         contours.append( np.array([[ result_1x[i], result_1y[i]], [result_2x[i], result_2y[i] ]]) )
     
     for contour in contours:
-        ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
+        ax.plot(contour[:, 1], contour[:, 0], linewidth=6)
 
     ax.axis('image')
     ax.set_xticks([])
