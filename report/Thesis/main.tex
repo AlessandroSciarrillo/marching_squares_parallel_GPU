@@ -78,7 +78,7 @@ Le principali strategie che verranno esplorate sono:
 \end{itemize}
 Il metodo migliore che verrà poi utilizzato per la soluzione finale sarà quello che sfrutta le API Cuda-Python e i kernel Cuda scritti manualmente, riuscirà infatti ad ottenere uno Speedup di circa 2.6 volte %TODO scrivere specifiche macchina
  rispetto al corrispondente codice seriale della libreria skimage. Verrà anche analizzato l'overhead nel lancio dei kernel Cuda introdotto da Python rispetto a una versione scritta in C. \newline
-Nella soluzione finale viene inoltre implementata una versione parallela di exlusive scan composta da più kernel che risulta di particolare interesse nell'ambito dell'High Performance Computing.
+Nella soluzione finale viene inoltre implementata una versione parallela di exclusive scan composta da più kernel che risulta di particolare interesse nell'ambito dell'High Performance Computing.
 
 \chapter{Introduzione alla programmazione Parallela}
 % guardare altre tesi per vedere in che ordine metterlo
@@ -118,7 +118,7 @@ In questa versione vengono considerate delle isolinee ma esiste anche una varian
 \end{figure}
 
 Per una più comprensione più accurata della logica sottostante all'algoritmo MS è utile osservare il suo pseudocodice che è riportato in seguito. \newline
-Il metodo principale è \verb|_get_contour_segments| dove la parte più importante dell'algoritmo è implementata, è stato riportato anche il metodo \verb|_get_fraction| per completezza dato che viene richiamato nella costruzione delle coordinate (righe 30-33). 
+Il metodo principale è \verb|_get_contour_segments| dove la parte più importante dell'algoritmo è implementata, è stato riportato per completezza anche il metodo \verb|_get_fraction| dato che viene richiamato nella costruzione delle coordinate (righe 30-33). 
 \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Pseudocodice Marching Squares}} \\
@@ -285,9 +285,9 @@ Il caso peggiore che si può presentare è che il rapporto dati da trasportare e
 \section{Analisi versione seriale di MS}
 La libreria \verb|scikit-image| (skimage) è un pilastro per quanto riguarda l'elaborazione di immagini in ambito Open-Source essendo largamente utilizzata sia in piccoli progetti che in contesti industriali.  Il codice delle funzioni più utilizzate è solido e ottimizzato pur mantenendo un'ampia compatibilità con una vasta lista di ambienti. 
 Tra queste funzioni ricade anche findContours che infatti presenta buone prestazioni per essere una funzione seriale lanciata da Python.\newline
-Dal codice di findContours che è riportato nella sezione di codice 1, proveniente dal file \verb|scikit-image/skimage/measure/_find_contours.py|, si può notare facilmente che vengono richiamati due metodi \verb|_get_contour_segments| e \verb|_assemble_contours| che costituiscono le due fasi di costruzione del risultato, la prima di pura ricerca algoritmica dei segmenti che costituiscono i contorni e la successiva di congiunzione dei contorni confinanti in linee spezzate. \\[10pt]
+Dal codice di findContours che è riportato nella sezione di codice seguente, proveniente dal file \verb|scikit-image/skimage/measure/_find_contours.py|, si può notare facilmente che vengono richiamati due metodi \verb|_get_contour_segments| e \verb|_assemble_contours| che costituiscono le due fasi di costruzione del risultato, la prima di pura ricerca algoritmica dei segmenti che costituiscono i contorni e la successiva di congiunzione dei contorni confinanti in linee spezzate. \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
-\small{\textbf{Codice 1: Metodo find\_contours di scikit-image}} \\
+\small{\textbf{Metodo find\_contours di scikit-image}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
 \begin{lstlisting}
 def find_contours(image,  level=None,  fully_connected='low', 
@@ -309,9 +309,9 @@ def find_contours(image,  level=None,  fully_connected='low',
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
 Il metodo \verb|_get_contour_segments| non è compreso nello stesso modulo di  \verb|find_contours| ma nel file \verb|scikit-image/skimage/measure/_find_contours_cy.pyx| che come si può notare termina con \verb|.pyx|, estensione che contraddistingue file contenenti codice Cython.  Come già accennato infatti \verb|_get_contour_segments| è stato scritto in Cython poiché è la parte computazionalmente più impegnativa dell'intero metodo \verb|find_contours|.  \newline
-La maggior parte dei tipi di dati sono derivati dal C++ e altri dal Python come riportato nel seguente estratto di codice 2 del metodo Cython.  \newpage
+La maggior parte dei tipi di dati sono derivati dal C++ e altri dal Python come riportato nel seguente estratto di codice del metodo Cython.  \newpage
 \noindent\rule[0.5ex]{\linewidth}{2pt}
-\small{\textbf{Codice 2: Estratto dal Metodo \_get\_contour\_segments di scikit-image}} \\
+\small{\textbf{Estratto dal Metodo \_get\_contour\_segments di scikit-image}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
 \begin{lstlisting}
 cimport numpy as cnp
@@ -355,9 +355,9 @@ Nell'aggiornamento dei segmenti trovati possono presentarsi tre diversi casi per
 
 \end{itemize}
 % spiegare codice Cython per algoritmo MS
-Ad ogni iterazione una volta definito a quale tipo appartiene un quadrato vengono aggiunti alla lista \verb|segments| i relativi segmenti trovati che possono essere 0, 1 o 2 come appena specificato.  Per ogni segmento trovato viene aggiunta a  \verb|segments| una tupla contenente altre due tuple in cui sono memorizzate le coordinate x e y del punto di inizio e fine del segmento, nel seguente estratto del metodo  \verb|_get_contour_segments| (Codice 3) viene riportata l'assegnazione delle coordinate per i punti che potranno essere aggiunti alla lista come estremi dei segmenti individuati.\newpage
+Ad ogni iterazione una volta definito a quale tipo appartiene un quadrato vengono aggiunti alla lista \verb|segments| i relativi segmenti trovati che possono essere 0, 1 o 2 come appena specificato.  Per ogni segmento trovato viene aggiunta a  \verb|segments| una tupla contenente altre due tuple in cui sono memorizzate le coordinate x e y del punto di inizio e fine del segmento, nel seguente estratto del metodo  \verb|_get_contour_segments| viene riportata l'assegnazione delle coordinate per i punti che potranno essere aggiunti alla lista come estremi dei segmenti individuati.\newpage
 \noindent\rule[0.5ex]{\linewidth}{2pt}
-\small{\textbf{Codice 3: Estratto dal Metodo \_get\_contour\_segments di scikit-image}} \\
+\small{\textbf{Estratto dal Metodo \_get\_contour\_segments di scikit-image}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
 \begin{lstlisting}
 cdef inline cnp.float64_t _get_fraction(cnp.float64_t from_value,
@@ -374,7 +374,7 @@ right = r0 + _get_fraction(ur, lr, level), c1
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
 Ognuno dei 16 casi deve essere gestito separatamente poiché le loro composizioni sono eterogenee per quanto riguarda i valori sugli spigoli e le coordinate da salvare.  
-I segmenti vengono aggiunti alla lista  \verb|segments| tramite la funzione  \verb|append| che permette di costruire la lista di segmenti finale in modo incrementale senza dover conoscere a priori quale sarà la lunghezza finale della lista o quanti segmenti sarà necessario scrivere per ogni quadrato.  Per i casi 0 e 15 non è necessario aggiungere nessun segmento a segments quindi si passa direttamente all'iterazione successiva, per gli altri casi invece si aggiungono 1 o 2 segmenti in base al caso in cui si ricade.\\[10pt]
+I segmenti vengono aggiunti alla lista  \verb|segments| tramite la funzione  \verb|append| che permette di costruire la lista di segmenti finale in modo incrementale senza dover conoscere a priori quale sarà la lunghezza finale della lista o quanti segmenti sarà necessario scrivere per ogni quadrato.  Per i casi 0 e 15 non è necessario aggiungere nessun segmento a \verb|segments| quindi si passa direttamente all'iterazione successiva, per gli altri casi invece si aggiungono 1 o 2 segmenti in base al caso in cui si ricade.\\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Estratto dal Metodo \_get\_contour\_segments di scikit-image}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
@@ -397,13 +397,13 @@ elif (square_case == 6):
 % spiegare problema append per la parallelizzazione su GPU e le strutture dati
 \subsection{Predisposizione alla parallelizzazione}
 L'algoritmo Marching Squares essendo embarassingly parallel è teoricamente predisposto ad una parallelizzazione. Le soluzioni parallele però hanno necessità specifiche che il codice seriale non ha bisogno di rispettare,  per riuscire a raggiungere questi requisiti partendo dal codice di  \verb|_get_contour_segments| è necessario effettuare radicali modifiche alle strutture dati utilizzate e al loro utilizzo. \newline
-La principale criticità riscontrabile nel metodo è l'utilizzo di una lista e del metodo \verb|append| che non è possibile trasformare direttamente in ad esempio codice di un kernel Cuda poichè la dimensione finale della lista non è nota a priori e il metodo  \verb|append| non è disponibile in Cuda.  La funzione \verb|append| non potrebbe neanche essere utilizzata in una versione parallela ottimizzata poiché implica un accesso serializzato alla struttura dati lista per aggiungere il nuovo elemento in una nuova e ultima posizione della lista, questa operazione non può quindi essere effettuata contemporaneamente da più Cuda Core.  Per una versione parallela su GPU dato che il tipo dei quadrati e l'aggiunta dei segmenti verrebbe eseguita contemporaneamente sarebbe necessario avere un accesso indipendente e non vincolato alla risorsa di output su cui scrivere,  questo comporta la necessità di una struttura dati con un numero di posizioni già definito ma anche il numero di segmenti che ogni Cuda Core (ovvero per ogni quadrato valutato) necessita di scrivere.
+La principale criticità riscontrabile nel metodo è l'utilizzo di una lista e del metodo \verb|append| che non è possibile trasformare direttamente in ad esempio codice di un kernel Cuda poiché la dimensione finale della lista non è nota a priori e il metodo  \verb|append| non è disponibile in Cuda.  La funzione \verb|append| non potrebbe neanche essere utilizzata in una versione parallela ottimizzata poiché implica un accesso serializzato alla struttura dati lista per aggiungere il nuovo elemento in una nuova e ultima posizione della lista, questa operazione non può quindi essere effettuata contemporaneamente da più Cuda Core.  Per una versione parallela su GPU dato che il tipo dei quadrati e l'aggiunta dei segmenti verrebbe eseguita contemporaneamente sarebbe necessario avere un accesso indipendente e non vincolato alla risorsa di output su cui scrivere,  questo comporta la necessità di una struttura dati con un numero di posizioni già definito ma anche il numero di segmenti che ogni Cuda Core (ovvero per ogni quadrato valutato) necessita di scrivere.
 
 % \chapter{Tentativi Svolti}
 % valutare cambio nome
 % spiegare tutti i tentativi svolti, 1 o più capitoli per ogni veersione o test
 \chapter{Versione parallela con nvc++} 
-La prima strategia esplorata consiste nel compilare il codice Cython con le ultime versioni del compilatore nvc++ che supporta dei flag per la parallelizzazione automatica su GPU.  Nvidia ha recentemente aggiornato \verb|stdpar,|  un flag che promette di riuscire a parallelizzare automaticamente codice C++ su GPU utilizzando il compilatore nvc++. \newline
+La prima strategia esplorata consiste nel compilare il codice Cython con le ultime versioni del compilatore nvc++ che supporta dei flag per la parallelizzazione automatica su GPU.  Nvidia ha recentemente aggiornato \verb|stdpar,|  un flag che promette di parallelizzare automaticamente codice C++ su GPU utilizzando il compilatore nvc++. \newline
 Il processo parte da del codice Cython che tramite il proprio compilatore viene trasformato in codice C++,  a questo punto si compila il codice C++ utilizzando nvc++ e una serie di flag per la parallelizzazione su GPU tra cui \verb|stdpar|, infine si può richiamare il codice parallelizzato da Python tramite l'importazione del modulo generato. \newline
 Il processo documentato da Nvidia è descritto in forma schematica nella figura 4.1.
 \begin{figure}[H]
@@ -415,7 +415,7 @@ Il processo documentato da Nvidia è descritto in forma schematica nella figura 
 
 \section{Requisiti utilizzo nvc++}
 Per poter utilizzare il flag stdpar con una versione aggiornata di nvc++ è necessario installare \verb|Nvidia High Performance Computing Software Development Kit (HPC SDK)| sulla macchina su cui verrà effettuata la compilazione e l'esecuzione. Le opzioni disponibili per ottenere HPC SDK sono installarlo direttamente sulla macchina oppure utilizzare un container Docker configurato da Nvidia con tutte le dipendenze di nvc++ installate. \newline
-L'azienda Bioretics ha messo a disposizione un server con una scheda video RTX 2060 Super, per evitare tutte le problematiche legate alle dipendenze, le loro versioni e il loro mantenimento è stato valutato di utilizzare la soluzione con Docker. \newline
+L'azienda Bioretics ha messo a disposizione un server con una scheda video RTX 2060 Super. Per evitare tutte le problematiche legate alle dipendenze come le loro versioni e il loro mantenimento è stato valutato di utilizzare la soluzione con Docker. \newline
 L'utilizzo del container Docker fornito da Nvidia si è rivelato però particolarmente ostico da utilizzare poiché per il suo avvio è stata necessaria una configurazione molto articolata che non era descritta nella guida all'utilizzo. Per il corretto funzionamento del container e del compilatore nvc++ è stata necessaria una particolare configurazione che permettesse al container di utilizzare la scheda video e i suoi driver con permessi specifici. 
 L'ambiente ottenuto sul server con la configurazione del container è rappresentato dalla figura 4.2.
 
@@ -429,41 +429,41 @@ L'ambiente ottenuto sul server con la configurazione del container è rappresent
 
 \section{Potenziali risultati}
 
-I risultati promessi da Nvidia con l'utilizzo di nvc++ e \verb|-stdpar| sembrano avere un potenziale altissimo, ma vanno ben contestualizzati ai task eseguiti e all'hardware utilizzato. \newline
-I benchmarks effettuati dal team developer Nvidia sono sull'ordinamento di una serie di numeri e su iterazioni del metodo di Jacobi, entrambe sono due funzioni facilmente parallelizzabili, largamente studiate ed estremamente ottimizzate nelle implementazioni delle principali librerie.
+I risultati promessi da Nvidia con l'utilizzo di nvc++ e \verb|-stdpar| sembrano avere un alto potenziale ma vanno ben contestualizzati ai task eseguiti e all'hardware utilizzato. \newline
+I benchmark effettuati dal team developer Nvidia sono sull'ordinamento di una serie di numeri e su iterazioni del metodo di Jacobi; entrambe sono due funzioni facilmente parallelizzabili, largamente studiate ed estremamente ottimizzate nelle implementazioni delle principali librerie.
 Per ognuno dei due task sono state utilizzate 3 versioni:
 \begin{itemize}
-\item versione che utilizza la funzione seriale.
-\item versione parallela su CPU che utilizza le policy di esecuzione parallela ed è compilata con g++.
-\item versione parallela su GPU che utilizza sempre le policy di esecuzione parallela ma è compilata con nvc++ e l'opzione \verb|-stdpar|.
+\item Versione che utilizza la funzione seriale.
+\item Versione parallela su CPU che utilizza le policy di esecuzione parallela ed è compilata con g++.
+\item Versione parallela su GPU che utilizza sempre le policy di esecuzione parallela ma è compilata con nvc++ e l'opzione \verb|-stdpar|.
 \end{itemize}
 
-Nei test sull'ordinamento di numeri presentati in figura 4.3 è rappresentato lo speedup delle 3 versioni rispetto all'implementazione di Numpy della funzione .sort(). Si può notare uno speedup di circa 20x nel test con il numero maggiore di elementi della versione parallelizzata su GPU da nvc++ con -stdpar rispetto al .sort() di Numpy, risultato apparentemente molto promettente. Nei test con un basso numero di elementi risultano però migliori le versioni su CPU seriali e parallele, fenomeno dovuto all'overhead introdotto da un'esecuzione parallela su GPU che comporta il trasferimento di dati sulle memorie, questo problema è lo stesso discusso in precedenza in relazione alle dimensioni ridotte delle immagini utilizzate nell'applicazione reale oggetto di questa ricerca.
+Nei test sull'ordinamento di numeri presentati in figura 4.3 è rappresentato lo speedup delle 3 versioni rispetto all'implementazione di Numpy della funzione sort(). Si può notare uno speedup di circa 20 volte nel test con il numero maggiore di elementi per la versione parallelizzata su GPU da nvc++ con -stdpar; risultato apparentemente molto promettente. Nei test con un basso numero di elementi risultano però migliori le 2 versioni su CPU (seriali e parallele). Questo fenomeno è dovuto all'overhead introdotto da un'esecuzione parallela su GPU che comporta il trasferimento di dati sulle memorie. Il problema è lo stesso discusso precedentemente in relazione alle dimensioni ridotte delle immagini utilizzate nell'applicazione reale oggetto di questa ricerca.
 
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
-    \ffigbox[\FBwidth]{\caption{\small{Speedup ottenuto a confronto con Numpy nell'ordinamento di una sequenza di interi. I benchmarks su GPU sono stati eseguiti su un sistema con Intel Xeon Gold 6128 CPU, quelli su GPU invece su una NVIDIA A100.}}}{\includegraphics[scale=0.5]{img/speedup-vs-numpy-integer-sequence-1.png}}
+    \ffigbox[\FBwidth]{\caption{\small{Speedup ottenuto a confronto con Numpy nell'ordinamento di una sequenza di interi. I benchmark su GPU sono stati eseguiti su un sistema con Intel Xeon Gold 6128 CPU, quelli su GPU invece su una NVIDIA A100.}}}{\includegraphics[scale=0.5]{img/speedup-vs-numpy-integer-sequence-1.png}}
 \end{floatrow}
 \end{figure} 
 
-Nei test sulle iterazione del metodo di Jacobi il fenomeno riscontrato con .sort() non si presenta come osservabile nella figura 4.4, il test con il numero di elementi minore è di dimensioni nettamente maggiori rispetto a quello del test precedente ed è quindi già in grado di ammortizzare il costo impiegato per l'esecuzione parallela su GPU.
-I risultati ottenuti in questi benchmarks sono ancora più eclatanti, tanto da insospettirsi sul fatto che siano realmente ottenibili anche su altre funzioni di utilizzo reale. \newline
-Bisogna considerare infatti che tutti i risultati ottenuti in questi test con il compilatore nvc++ e la direttiva \verb|-stdpar| sono stati eseguiti su una macchina con componenti hardware di fascia altissima che permettono di avere una potenza di calcolo che è estremamente lontana da quella della maggior parte delle macchine utilizzate in ambito enterprise. Infatti la GPU utilizzata è una Nvidia A100 ovvero una scheda che si trova in configurazioni con decine di GB di memoria a costi di anche 10 volte maggiori a quelli di una GPU di fascia alta. \newline
-Oltre all'hardware bisogna anche considerare che i task su cui sono stati effettuati i test comprendevano esclusivamente esecuzione di codice interamente parallelizzabile, strutturalmente quindi molto distante dal codice utilizzato come base per questo progetto.
+Nei test sulle iterazione del metodo di Jacobi il fenomeno riscontrato con .sort() non si presenta come osservabile nella figura 4.4. Il test con il numero di elementi minore comporta un carico di lavoro nettamente maggiore rispetto a quello del test precedente ed è quindi già in grado di ammortizzare il costo impiegato per l'esecuzione parallela su GPU.
+I risultati ottenuti in questi benchmark sono ancora più eclatanti, tanto da insospettirsi sul fatto che siano realmente ottenibili anche su altre funzioni di utilizzo reale. \newline
+Bisogna considerare infatti che tutti i risultati ottenuti in questi test con il compilatore nvc++ e la direttiva \verb|-stdpar| sono stati eseguiti su una macchina con componenti hardware di fascia altissima che sviluppano una potenza di calcolo estremamente lontana da quella della maggior parte delle macchine utilizzate in ambito enterprise. Infatti la GPU utilizzata da Nvidia per questi test è una Nvidia A100 ovvero una scheda che si trova in configurazioni con decine di GB di memoria a costi di anche 10 volte maggiori a quelli di una generica GPU di fascia alta. \newline
+Oltre all'hardware bisogna anche considerare che i task su cui sono stati effettuati i test comprendevano esclusivamente esecuzione di codice interamente parallelizzabile; strutturalmente quindi molto distante dal codice utilizzato come base per questo progetto.
 
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
-    \ffigbox[\FBwidth]{\caption{\small{Speedup ottenuto a confronto con Numpy in iterazione di Jacobiano. I benchmarks su GPU sono stati eseguiti su un sistema con Intel Xeon Gold 6128 CPU, quelli su GPU invece su una NVIDIA A100.}}}{\includegraphics[scale=0.5]{img/speedup-vs-numpy-jacobi.png}}
+    \ffigbox[\FBwidth]{\caption{\small{Speedup ottenuto a confronto con Numpy in iterazione di Jacobiano. I benchmark su GPU sono stati eseguiti su un sistema con Intel Xeon Gold 6128 CPU, quelli su GPU invece su una NVIDIA A100.}}}{\includegraphics[scale=0.5]{img/speedup-vs-numpy-jacobi.png}}
 \end{floatrow}
 \end{figure} \newpage
 
 \section{Marching Squares con nvc++ e -stdpar}
-Il risultato migliore che potrebbe essere raggiunto è quello di riuscire a ottenere anche solo una frazione dello speedup riportato da Nvidia con nvc++ e -stdpar utilizzandoli con il codice Cython di skimage in cui è implementato MS.\newline
-La strategia scelta per arrivare a questo risultato è quella di partire da una versione di codice basica e poi evolverla in quella finale a piccoli step in modo da risolvere in modo incrementale i problemi che inevitabilmente si presentano in implementazioni di questo tipo dove sono compresi codice di linguaggi diversi e compilatori complessi. \newline 
-I risultati ottenuti dal team developer di Nvidia si sono subito rivelati un lontano traguardo da raggiungere con hardware di fascia media infatti testando lo stesso codice con cui erano stati effettuati i benchmarks sono stati ottenuti risultati che non erano neanche simili ma anzi peggiori delle versioni seriali e parallele su CPU. Ovviamente risulta difficile pensare di ottenere certi risultati sulla macchina su cui poi verrà utilizzato il codice con il proprio progetto se neanche il codice fornito da Nvidia perfettamente ottimizzato riesce a raggiungerli. Dato che per il successo del progetto però è sufficiente riuscire a parallelizzare su GPU anche solo una piccola parte del codice e ottenere uno speedup questa strada è stata considerata ancora valida. \newline
-Il codice proposto da Nvidia era particolarmente semplice e da poche righe totali, la compilazione aveva quindi poche pretese, questo non vale per il codice Cython di skimage che comprende importazioni da librerie esterne e il loro utilizzo. Nel file \verb|setup.py| sono specificate tutte le direttive per la compilazione e viene gestito in collegamento di tutte le librerie necessarie. Per concludere senza errori la compilazione del codice di skimage è stato quindi necessario modificare la struttura e il contenuto delle opzioni di compilazione nel file \verb|setup.py| che viene passato a nvc++ per definire tutte le opzioni di compilazione e le librerie da includere. \newline
+Il risultato migliore che potrebbe essere raggiunto è quello di riuscire a ottenere anche solo una frazione dello speedup riportato da Nvidia con nvc++ e -stdpar utilizzandoli con il codice Cython.\newline
+La strategia scelta per arrivare a questo risultato è quella di partire da una versione di codice basica e poi evolverla in quella finale a piccoli step, in modo da risolvere in modo incrementale i problemi che inevitabilmente si presentano in implementazioni di questo tipo dove sono compresi linguaggi diversi e compilatori complessi. \newline 
+I risultati ottenuti dal team developer di Nvidia si sono subito rivelati un lontano traguardo da raggiungere con hardware di fascia media. Testando infatti lo stesso codice con cui erano stati effettuati i benchmark, sono stati ottenuti risultati che non erano neanche simili ma anzi peggiori delle versioni seriali e parallele su CPU. Ovviamente risulta difficile ottenere certi risultati sulla macchina su cui poi verrà utilizzato il codice con il proprio progetto se neanche il codice fornito da Nvidia (perfettamente ottimizzato) riesce a raggiungerli. Dato che per il successo del progetto però è sufficiente riuscire a parallelizzare su GPU anche solo una piccola parte del codice e ottenere uno speedup, questa strada è stata considerata ancora valida. \newline
+Il codice proposto da Nvidia era particolarmente semplice e da poche righe totali, la compilazione aveva quindi poche pretese. Lo stesso non vale per il codice Cython di skimage che comprende importazioni da librerie esterne e il loro utilizzo. Nel file \verb|setup.py| sono specificate tutte le direttive per la compilazione con nvc++ e viene gestito in collegamento di tutte le librerie necessarie. Per concludere senza errori la compilazione del codice di skimage è stato quindi necessario modificare la struttura e il contenuto delle opzioni di compilazione nel file \verb|setup.py| che viene passato a nvc++ per definire tutte le opzioni di compilazione e le librerie da includere. \newline
 Il processo parte dalla trasformazione del codice Cython in C++ con \verb|cythonize|. \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Cythonizzazione}} \\
@@ -484,39 +484,42 @@ Il risultato di questo processo è un modulo importabile da Python utilizzabile 
 %Una libreria necessaria al codice del MS di skimage è Numpy, perché fosse possibile importarla dal codice Cython è stato necessario aggiungerla alla lista delle librerie nel file \verb|setup.py|. \newline
 
 \section{Problemi riscontrati}
-Purtroppo tutti i tentativi effettuati non hanno portato ad una versione parallela funzionante su GPU. Il principale problema riscontrato è la complessità e disordine del codice C++ derivato dal processo di cythonizzazione del codice Cython, il codice in output è infatti come dimensioni di ordini di grandezza maggiori. Da un centinaio di righe in Cython il codice C++ risultante passa a decine di migliaia che risultano quindi ingestibili dato che ci andrebbero aggiunte manualmente le policy di esecuzione parallela per ogni singolo metodo della libreria standard che si vuole parallelizzare su GPU. Nei test effettuati anche inserendo le policy per la parallelizzazione l'esecuzione fallisce a causa delle strutture dati generate dalla cythonizzazione come puntatori a strutture che non sono riconosciute nativamente da C++ e quindi considerate come un insieme di byte. La parallelizzazione automatica su GPU di nvc++ con \verb|-stdpar| sul codice C++ derivato dal Cython si è rivelata quindi estremamente difficile da utilizzare con codice più complesso di quello proposto da Nvidia che comprendeva praticamente solo qualche funzione base della libreria standard C++. \newline
-In seguito a queste conclusioni è stato valutato di non proseguire con questa strada ma intraprenderne una più complessa in termini di implementazione su cui però si può avere più controllo sul processo di parallelizzazione su GPU (descritto nel capitolo 5).
+Purtroppo tutti i tentativi effettuati non hanno portato ad una versione parallela funzionante su GPU. Il principale problema riscontrato è la complessità e disordine del codice C++ derivato dal processo di cythonizzazione del codice Cython: il codice in output ha infatti dimensioni di ordini di grandezza maggiori. Da un centinaio di righe in Cython il codice C++ risultante passa a decine di migliaia che risultano quindi ingestibili dato che ci andrebbero aggiunte manualmente le policy di esecuzione parallela per ogni singolo metodo della libreria standard che si vuole parallelizzare su GPU. Nei test effettuati, anche inserendo le policy per la parallelizzazione, l'esecuzione fallisce a causa delle strutture dati generate dalla cythonizzazione come puntatori a strutture che non sono riconosciute nativamente da C++ e quindi considerate come un insieme di byte. La parallelizzazione automatica su GPU di nvc++ con \verb|-stdpar| sul codice C++ derivato dal Cython si è rivelata quindi estremamente difficile da utilizzare con codice più complesso di quello proposto da Nvidia che comprendeva praticamente solo qualche funzione base della libreria standard C++. \newline
+In seguito a queste conclusioni è stato valutato di non proseguire con questa strada ma intraprenderne una più complessa in termini di implementazione su cui però si può avere più controllo nel processo di parallelizzazione su GPU (descritto nel capitolo 5).
 
 \chapter{Versione parallela con API CUDA-Python} 
 
 \section{API Cuda-Python}
-Cuda-Python è un progetto nato per unificare l'ecosistema di utilizzo di CUDA da Python con un insieme di interfacce a basso livello in grado di mettere a disposizione una copertura completa all'accesso da Python alle API dell'host CUDA. Il principale obbiettivo è quello di agevolare per i programmatori l'utilizzo di GPU Nvidia da codice Python.
+Cuda-Python è un progetto nato per unificare l'ecosistema di utilizzo di CUDA da Python con un insieme di interfacce a basso livello in grado di mettere a disposizione una copertura completa all'accesso da codice Python alle API dell'host CUDA. Il principale obbiettivo è quello di agevolare i programmatori Python nell'utilizzo di GPU Nvidia.
 
 \subsection{Requisiti Hardware e Software}
-Per poter utilizzare le API Cuda-Python è necessario il CUDA Toolkit (dalla versione 12.0 alla 12.2) e predisporre una macchina che abbia una versione aggiornata sia di Python (da 3.8 a 3.11) che dei propri Driver Nvidia specifici per le proprie schede video. \newline
+Per poter utilizzare le API Cuda-Python è necessario il CUDA Toolkit (dalla versione 12.0 alla 12.2) e predisporre una macchina che abbia una versione aggiornata sia di Python (da 3.8 a 3.11) che dei Driver Nvidia specifici per le proprie schede video. \newline
 Dal CUDA Toolkit è richiesto solamente il componente NVRTC che è utilizzato a runtime per la compilazione di codice CUDA C++. \newline
-La scheda video della macchina su cui viene utilizzato deve essere Nvidia ed essere compatibile con l'utilizzo di CUDA.
+La scheda video della macchina su cui viene utilizzato deve essere Nvidia e compatibile con l'utilizzo di CUDA.
 
 \subsection{CUDA Python workflow}
-Il codice scritto in Cuda deve essere compilato per poter esser eseguito su una GPU, Python invece è un linguaggio interpretato che non necessita di una previa compilazione ma viene eseguito riga per riga. Per riuscire a richiamare un metodo Cuda da Python è necessario compilare il codice del device in PTX (Parallel Thread Execution) ed estrarne la funzione che potrà poi essere richiamata dall'applicazione python. PTX è una macchina virtuale per esecuzione di thread paralleli a basso livello che comprende un ISA (Instruction Set Architecture) ossia un insieme di istruzioni macchina. \newline
-In pratica il codice del device (codice Cuda che verrà eseguito su GPU) viene scritto in una stringa python e compilato con NVRTC che è una libreria di compilazione runtime per CUDA C++. \newline
-Il processo di esecuzione parallela del codice Cuda partendo da codice Python in generale consiste nell'utilizzo delle API per i Driver Nvidia per:
+Il codice scritto in Cuda deve essere compilato per poter esser eseguito su una GPU. Python invece è un linguaggio interpretato che non necessita di una previa compilazione ma viene eseguito riga per riga. Per riuscire a richiamare un metodo Cuda da Python è necessario compilare il codice del device (codice Cuda che verrà eseguito su GPU) in PTX (Parallel Thread Execution) ed estrarne la funzione che potrà poi essere richiamata dall'applicazione python. PTX è una macchina virtuale per l'esecuzione di thread paralleli a basso livello che comprende un ISA (Instruction Set Architecture) ossia un insieme di istruzioni macchina. \newline
+In pratica il codice del device viene scritto in una stringa python e compilato con NVRTC che è una libreria di compilazione runtime per CUDA C++. \newline
+In generale il processo di esecuzione parallela del codice Cuda partendo da codice Python consiste nell'utilizzo delle API dei Driver Nvidia per:
 \begin{itemize}
-    \item creazione manuale del \verb|context| CUDA su GPU
-    \item allocazione manuale di tutte le risorse necessarie su GPU
-    \item compilazione codice Cuda (contenuto in stringa Python) con NVRTC
+    \item Creazione manuale del \verb|context| CUDA su GPU
+    \item Allocazione manuale di tutte le risorse necessarie su GPU
+    \item Compilazione codice Cuda (contenuto in stringa Python) con NVRTC
+    \begin{itemize}
+        \item Nella seguente figura 5.1 viene riportato uno schema su questo processo di compilazione
+    \end{itemize}
         \begin{figure}[H]
         \centering
         \begin{floatrow}[1]
             \ffigbox[\FBwidth]{\caption{\small{Schema compilazione runtime con NVRTC di codice CUDA C++ da codice Python e output funzione compatibile PTX richiamabile da Python.}}}{\includegraphics[scale=0.7]{img/Compilazione_NVRTC.png}}
         \end{floatrow}
         \end{figure} 
-    \item caricamento dati da elaborare su GPU
-    \item lancio codice compilato CUDA C++ su GPU
-    \item recupero risultati da GPU 
+    \item Caricamento dati da elaborare su GPU
+    \item Lancio codice CUDA C++ compilato su GPU
+    \item Recupero risultati da GPU 
 \end{itemize} \newpage
 \subsection{Utilizzo funzioni principali}
-Per prima cosa vanno importati NVRTC e le API dei Driver dal pacchetto CUDA-Python come riportato nella seguente portzione di codice. Per copiare dati dall'host al device e viceversa è richiesto l'utilizzo di NumPy. \\[10pt]
+Per prima cosa vanno importati NVRTC e le API dei Driver dal pacchetto CUDA-Python come riportato nella seguente porzione di codice. Per copiare dati dall'host al device e viceversa è richiesto l'utilizzo di NumPy. \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Importazione NVRTC, Driver API e NumPy}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
@@ -525,7 +528,7 @@ from cuda import cuda, nvrtc
 import numpy as np
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
-In seguito viene creato il programma a partire dal codice CUDA che può essere mantenuto in una stringa o portato in un file con estensione \verb|.cu| per mantenere ordine e chiarezza. Il programma deve poi essere compilato e dal risultato ne deve essere estratta la funzione PTX che potrà poi essere richiamata dal Python. In questo codice di esempio viene cercata una capacità di computazione di 75 con FMAD attivato.   \\[10pt]
+In seguito viene creato il programma a partire dal codice CUDA che può essere mantenuto in una stringa o portato in un file con estensione "\verb|.cu|" per mantenere ordine e chiarezza. Il programma deve poi essere compilato e dal risultato ne deve essere estratta la funzione PTX che potrà essere richiamata dal Python. In questo codice di esempio viene cercata una capacità di computazione di 75.   \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Creazione, compilazione e estrazione funzione PTX da codice CUDA C++}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
@@ -545,8 +548,8 @@ ptx = b" " * ptxSize
 err, = nvrtc.nvrtcGetPTX(prog, ptx)
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \newpage
-Prima di poter utilizzare il PTX o eseguire qualsiasi cosa sulla GPU è necessario creare un CUDA context che è l'equivalente di un processo per la CPU. \newline
-Successivamente è necessario inizializzare le API dei Driver per far in modo che i driver Nvidia e la GPU siano accessibili. Per assegnare la GPU principale della macchina alla creazione \verb|context| va passato l'indicatore 0 alla funzione \verb|cuCtxCreate|. Con il \verb|context| creato si può procedere alla compilazione del CUDA kernel con NVRTC. \\[10pt]
+Prima di poter utilizzare il PTX o eseguire qualsiasi cosa sulla GPU è necessario creare un CUDA context, che è l'equivalente di un processo per la CPU. \newline
+Successivamente è necessario inizializzare le API dei Driver per far in modo che i driver Nvidia e la GPU siano accessibili. Per assegnare la GPU principale della macchina va passato l'indicatore 0 alla funzione \verb|cuCtxCreate| per la creazione del \verb|context|. Con il \verb|context| creato si può procedere alla compilazione del CUDA kernel con NVRTC. \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Inizializzazione Driver API e creazione context su device 0}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
@@ -561,7 +564,7 @@ err, cuDevice = cuda.cuDeviceGet(0)
 err, context = cuda.cuCtxCreate(0, cuDevice)
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
-Con un CUDA \verb|context| creato sul device 0 si può caricare nel modulo il PTX generato in precedenza, un modulo è l'analogo per il device di librerie caricare dinamicamente. Più kernel posso essere contenuti all'interno di PTX, in seguito al caricamento nel modulo è possibile estrarre uno specifico kernel con la funzione \verb|cuModuleGetFunction|. \\[10pt]
+Con un CUDA \verb|context| creato sul device 0 si può caricare nel modulo il PTX generato in precedenza. Per il device un modulo è l'analogo di una libreria caricata dinamicamente. Più kernel posso essere contenuti all'interno di PTX; in seguito al caricamento nel modulo è possibile estrarre uno specifico kernel con la funzione \verb|cuModuleGetFunction|. \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Caricamento PTX come modulo ed estrazione funzione}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
@@ -578,8 +581,8 @@ err, kernel = cuda.cuModuleGetFunction(module, b"saxpy")
 ASSERT_DRV(err)
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \newpage
-In seguito tutti i dati a cui sarà necessario accedere dai kernel devono essere preparati e trasferiti sulla GPU, prima è necessario però allocare le risorse necessarie a contenere i dati utilizzando la funzione \verb|cuMemAlloc|. \newline
-Una delle principali differenze tra Python e CUDA C++ è l'utilizzo di strutture dati differenti sia come tipo che livello di astrazione, Python nativamente non ha un concetto di puntatore ma la funzione \verb|cuMemcpyHtoDAsync| si aspetta \verb|void*| ovvero un puntatore senza un tipo specificato. La soluzione introdotta da Nvidia è quella di usare \verb|XX.ctypes.data| che recupera il valore del puntatore associato a \verb|XX|. \\[10pt]
+Tutti i dati a cui sarà necessario accedere dai kernel devono essere preparati e trasferiti sulla GPU, prima è necessario però allocare le risorse necessarie a contenere i dati utilizzando la funzione \verb|cuMemAlloc|. \newline
+Una delle principali differenze tra Python e CUDA C è l'utilizzo di strutture dati differenti sia come tipo che livello di astrazione, Python nativamente non ha un concetto di puntatore ma la funzione \verb|cuMemcpyHtoDAsync| si aspetta \verb|void*| ovvero un puntatore senza un tipo specificato. La soluzione introdotta da Nvidia è quella di usare \verb|XX.ctypes.data| che recupera il valore del puntatore associato a \verb|XX|. \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Creazione, allocazione e trasferimento dati su GPU}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
@@ -605,7 +608,7 @@ err, = cuda.cuMemcpyHtoDAsync(
 
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
-Con i dati allocati e caricati i kernel sono pronti per essere lanciati, per farlo è necessario avere a disposizione gli indirizzi dei dati sul device per essere passati alle configurazioni di esecuzione. Per ottenere questi puntatori è possibile utilizzare \verb|int(dData)| che restituisce un tipo \verb|CUdeviceptr| e assegna un dimensione in termini di memoria con cui può essere memorizzato il valore utilizzando \verb|np.array()| . \newpage
+Con i dati caricati i kernel sono pronti per essere lanciati; per farlo è necessario avere a disposizione gli indirizzi dei dati sul device in modo da passarli come parametri ai kernel. Per ottenere questi puntatori è possibile utilizzare \verb|int(dData)| che restituisce un tipo \verb|CUdeviceptr| e assegna un dimensione in termini di memoria con cui può essere memorizzato il valore utilizzando \verb|np.array()| . \newpage
 
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Recupero puntatori e allocazione parametri per funzione kernel}} \\
@@ -618,7 +621,7 @@ args = [a, dIn, dOut, n]
 args = np.array([arg.ctypes.data for arg in args], dtype=np.uint64)
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
-Il kernel può essere lanciato con la funzione \verb|cuLaunchKernel| a cui vanno passati il modulo compilato del kernel e i parametri di configurazione per l'esecuzione. Lo stream creato in precedenza viene utilizzato sia per il trasferimento dei dati che per il lancio del codice del device, in questo modo il kernel inizia la sua esecuzione solamente quando è terminato il trasferimento di tutti i dati. Tutte le chiamate alle API e i lanci dei kernel su uno stream sono quindi effettivamente serializzati.\newline
+Il kernel può essere lanciato con la funzione \verb|cuLaunchKernel| a cui vanno passati il modulo compilato del kernel e i parametri di configurazione per l'esecuzione. Lo stream creato in precedenza viene utilizzato sia per il trasferimento dei dati che per il lancio del codice del device; in questo modo il kernel inizia la sua esecuzione solamente quando è terminato il trasferimento di tutti i dati. Tutte le chiamate alle API e i lanci dei kernel su uno stream sono quindi serializzati.\newline
 
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Lancio kernel}} \\
@@ -639,8 +642,8 @@ err, = cuda.cuLaunchKernel(
 )
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
-Dato che le chiamate alle API sono eseguite in sequenza si può richiedere la copia del risultato dal device all'host direttamente dopo il lancio del kernel, infatti la chiamata verrà risolta solo al termine dell'esecuzione del kernel. \newline
-Prima di proseguire con altre chiamate per esempio a nuovi kernel è utilie richiamare la funzione \verb|cuStreamSynchronize| che mette in attesa la CPU fino a quando tutte le operazioni dello stream corrente non sono terminate. \newpage
+Dato che le chiamate alle API sono eseguite in sequenza si può richiedere la copia del risultato dal device all'host direttamente dopo il lancio del kernel: la chiamata infatti verrà risolta solo al termine dell'esecuzione del kernel. \newline
+Prima di proseguire con altre chiamate (per esempio a nuovi kernel) è utile richiamare la funzione \verb|cuStreamSynchronize| che mette in attesa la CPU fino a quando tutte le operazioni dello stream corrente non sono terminate. \newpage
 
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Trasferimento risultato da Device (GPU) a Host}} \\
@@ -652,7 +655,7 @@ err, = cuda.cuMemcpyDtoHAsync(
 err, = cuda.cuStreamSynchronize(stream)
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
-Come ultima operazione è opportuno liberare le risorse allocate effettuando una pulizia della memoria l allocata su GPU e distruggendo sia lo \verb|stream| che il \verb|contex| creati. \newline
+Come ultima operazione è opportuno liberare le risorse allocate effettuando una pulizia della memoria allocata su GPU e distruggendo sia lo \verb|stream| che il \verb|contex| creati. \newline
 
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Liberazione risorse}} \\
@@ -666,11 +669,11 @@ err, = cuda.cuCtxDestroy(context)
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
 Con queste ultime funzioni di pulizia si conclude l'introduzione ai comandi messi a disposizione delle API CUDA-Python che possono essere utilizzati per lanciare codice CUDA su GPU da codice Python. \newline
-La versione di CUDA-Python utilizzata ovvero la 12.2.0 è ancora in evoluzione e potrebbe quindi essere aggiornata in futuro rendendo le funzioni precedenti o procedure descritte deprecate, è consigliato quindi consultare la pagina ufficiale di Nvidia per una documentazione aggiornata. \newpage
+La versione di CUDA-Python utilizzata (12.2.0) è ancora in evoluzione e potrebbe quindi essere aggiornata in futuro rendendo le funzioni precedenti o procedure descritte deprecate; è consigliato quindi consultare la pagina ufficiale di Nvidia per una documentazione aggiornata. \newpage
 
 \subsection{Prestazioni dichiarate}
-% benchmarks nvidia
-Nvidia riporta i benchmark effettuati sul del codice di base ovvero tutte le istruzioni descritte in precedenza per l'utilizzo delle API con un semplice kernel CUDA che effettua semplici operazioni di algebra lineare chiamato SAXPY (Single-Precision A·X Plus Y). \newline
+% benchmark nvidia
+Nvidia riporta i benchmark effettuati su del codice di base, ovvero tutte le istruzioni descritte in precedenza per l'utilizzo delle API con un semplice kernel CUDA che effettua operazioni di algebra lineare chiamato SAXPY (Single-Precision A·X Plus Y). \newline
 Ogni thread effettua solamente una operazione
 \( a \cdot x + y \)
 utilizzando un calore scalare e due valori letti da una coppia di array in input, scrive poi il risultato su un array di output.
@@ -691,7 +694,7 @@ void saxpy(float a, float *x, float *y, float *out, size_t n)
 """
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
-I risultati ottenuti dal team di Nvidia sono riportati nella tabella [ ] in cui si può notare come la versione C++ e Python appaiano estremamente simili come tempi di esecuzione sia per le pure esecuzioni dei kernel che per il tempo totale dell'applicazione. Si può osservare come la versione Python introduca un piccolo overhead riscontrabile nella differenza tra i due tempi di esecuzione totale che si discostano di qualche millisecondo. Le versioni kernel invece non hanno alcun tipo di differenza nei tempi di esecuzione, questo significa che una volta che i kernel sono lanciati la loro esecuzione non viene influenzata dal metodo utilizzato per lanciarli.
+I risultati ottenuti dal team di Nvidia sono riportati nella tabella 5.1 in cui si può notare come la versione C++ e Python appaiano estremamente simili come tempi di esecuzione, sia per le pure esecuzioni dei kernel che per il tempo totale dell'applicazione. Si può osservare come la versione Python introduca un piccolo overhead riscontrabile nella differenza tra i due tempi di esecuzione dell'applicazione intera che differiscono di qualche millisecondo. Le versioni kernel invece non hanno alcun tipo di differenza nei tempi di esecuzione, questo significa che una volta che i kernel sono lanciati la loro esecuzione non viene influenzata dal metodo utilizzato per lanciarli.
 
 
 %\captionsetup{labelsep=newline,
@@ -718,7 +721,7 @@ Application execution & 1076 ms & 1080 ms  \\
 %\section{Test API Cuda-Python}
 \newpage
 \section{Progettazione struttura codice parallelo}
-La soluzione da sviluppare dovrà essere in grado di usufruire delle risorse GPU per i calcoli dell'algoritmo Marching Squares partendo da una chiamata ad un metodo Python per poter essere integrato al codice utilizzato da Bioretics. \newline
+La soluzione da sviluppare deve essere in grado di usufruire delle risorse GPU per i calcoli dell'algoritmo Marching Squares partendo da una chiamata ad un metodo Python, per poter essere integrato al codice utilizzato da Bioretics. \newline
 L'idea che comprende l'utilizzo delle API CUDA-Python è di creare un modulo Python richiamabile dal codice dell'azienda che tramite le le API dei Driver CUDA riesca a caricare i dati, lanciare i kernel e recuperare il risultato dalla GPU per poi restituirlo all'applicazione Python. \newline
 Può essere quindi definito il nuovo quadro generale per questa soluzione che definisce il ponte tra il codice Python e il codice CUDA osservabile nella figura 5.2. \\[10pt]
 
@@ -730,14 +733,14 @@ Può essere quindi definito il nuovo quadro generale per questa soluzione che de
 \end{figure} \newpage
 
 La strategia ideata per il problema reale è di creare una funzione Python a cui poter passare il tensore Numpy in cui è memorizzata l'immagine su cui applicare Marching Squares e che restituisca i contorni individuati dall'algoritmo in una struttura dati compatibile nativamente con Python oppure Numpy. \newline
-La funzione Python potrà essere importata nel codice dell'azienda ed essere quindi direttamente richiamabile, si occuperà quindi di interfacciarsi con le applicazioni esterno ad alto livello senza esporre l'implementazione a basso livello del codice CUDA e tutte le procedure necessarie al suo utilizzo. 
-A causa però di alcuni parametri molto specifici relativi alla GPU utilizzata che vanno specificati per una corretta esecuzione ed utilizzo dell'hardware il codice non potrà rimanere invariato per macchine con schede video aventi caratteristiche particolarmente differenti.
-I dati dell'immagine passata alla funzione andranno inevitabilmente trasferiti sulla memoria della GPU per poter essere elaborati dai kernel, andrà in seguito portato dalla memoria della scheda video a quella dell'host il risultato ottenuto con l'esecuzione parallela. %\newpage
+La funzione Python potrà essere importata nel codice dell'azienda ed essere direttamente richiamabile: si occuperà quindi di interfacciarsi con le applicazioni esterne ad alto livello, senza esporre l'implementazione a basso livello del codice CUDA e tutte le procedure necessarie al suo utilizzo. 
+A causa però di alcuni parametri molto specifici relativi alla GPU utilizzata che vanno specificati per una corretta esecuzione ed utilizzo dell'hardware, il codice non potrà rimanere invariato per macchine con schede video aventi caratteristiche particolarmente differenti.
+I dati dell'immagine passata alla funzione andranno inevitabilmente trasferiti sulla memoria della GPU per poter essere elaborati dai kernel. In seguito andrà portato dalla memoria della scheda video a quella dell'host il risultato ottenuto con l'esecuzione parallela. %\newpage
 \subsection{Strutture dati risultato}
-La struttura dati utilizzata per il risultato dalla versione seriale di skimage è una lista, una delle principali sfide per una versione parallela è di riuscire a creare, mantenere e utilizzare strutture dati native C come alternativa. 
-Una lista è una struttura dati estremamente flessibile che può essere creata senza dover specificare a priori la quantità di memoria che dovrà essere poi utilizzata in seguito a cui possono essere aggiunti elementi in modo incrementale. 
-Oltre alla lista viene anche utilizzata la struttura dati tupla che può essere simulata in C con \verb|struct| ma dato che nella versione di skimage viene utilizzata una tupla contente due tuple non è possibile creare un array contenente questa struttura dati avendo la certezza che la memoria utilizzata sia contigua. Gli elementi di una tupla vengono disposti in modo contiguo in memoria solo se la loro dimensione è multipla di quella utilizzata dal compilatore altrimenti viene introdotto del padding tra un elemento e l'altro, nel nostro caso il tipo utilizzato è il \verb|double| che occupa 8 bytes e potrebbero quindi essere probabilmente disposti in sequenza in memoria senza l'aggiunta di padding. Per quanto riguarda una tupla contente due tuple però non è possibile stabilire con certezza come verranno disposti in memoria, non è quindi una soluzione ottimizzata utilizzare un array contenente queste tuple. \newline
-Una struttura dati supportata nativamente da C che possa sostituire una lista di tuple contenenti tuple di double sono un insieme di 4 array, non è la sola a poter esser utilizzata ma è quella che ottimizza maggiormente l'utilizzo dello spazio dei propri elementi, dello spazio totale e all'accesso alle posizioni specifiche. Ovviamente mantenere 4 array disconnessi fisicamente ma uniti solo a livello logico sono molto più delicati e richiedono una attenzione maggiore per essere mantenuti consistenti, l'idea è di memorizzare i 4 double utilizzando un unico indice per accedere alla stessa rispettiva posizione nei 4 array C. \newline
+La struttura dati utilizzata per il risultato dalla versione seriale di skimage è una lista. Una delle principali sfide per una versione parallela è di riuscire a creare, mantenere e utilizzare strutture dati native C come alternativa. 
+Una lista è una struttura dati estremamente flessibile che può essere creata senza dover specificare a priori la quantità di memoria che dovrà essere utilizzata in seguito, a cui possono essere aggiunti elementi in modo incrementale. 
+Oltre alla lista viene anche utilizzata la struttura dati tupla che può essere simulata in C con \verb|struct|. Ma dato che nella versione di skimage viene utilizzata una tupla contente due tuple non è possibile creare un array contenente questa struttura dati avendo la certezza che la memoria utilizzata sia contigua. Gli elementi di una tupla vengono disposti in modo contiguo in memoria solo se la loro dimensione è multipla di quella utilizzata dal compilatore altrimenti viene inserito del padding tra un elemento e l'altro. In questo caso il tipo utilizzato è il \verb|double| che occupa 8 byte e potrebbe quindi essere disposto in sequenza in memoria senza l'aggiunta di padding. Per quanto riguarda una tupla contente due tuple però non è possibile stabilire con certezza come verranno disposti in memoria: non è quindi una soluzione ottimizzata utilizzare un array contenente queste tuple. \newline
+Una struttura dati supportata nativamente da C che possa sostituire una lista di tuple contenenti tuple di double sono un insieme di 4 array. Non è la sola a poter esser utilizzata ma è quella che ottimizza maggiormente l'utilizzo dello spazio dei propri elementi e dello spazio totale. Ovviamente mantenere 4 array disconnessi fisicamente ma uniti solo a livello logico è un metodo più delicato e richiede un'attenzione maggiore per mantenerli consistenti. L'idea è di memorizzare i 4 double utilizzando un unico indice per accedere alla stessa rispettiva posizione nei 4 array C. \newline
 La struttura dati mantenuta su Python da skimage è rappresentata nella figura 5.3 e quella che verrà utilizzata per la versione parallela nella figura 5.4. \newline
 
 
@@ -755,15 +758,15 @@ La struttura dati mantenuta su Python da skimage è rappresentata nella figura 5
 \end{floatrow}
 \end{figure} 
 
-Gli array C di tipo double consentono di avere la certezza che i vari elementi dello stesso array siano memorizzati in modo contiguo in memoria. Questa caratteristica è di fondamentale importanza per le operazioni in memoria a cui saranno sottoposti come scritture, letture, trasferimenti da e su GPU che privilegiano accessi coalizzati ad aree contigue che sfruttano interamente i bus invece che solo parzialmente ricorrendo in una penalizzazione sui tempi. \newpage
+Gli array C di tipo double consentono di avere la certezza che i vari elementi dello stesso array siano memorizzati in modo contiguo in memoria. Questa caratteristica è di fondamentale importanza per le operazioni in memoria a cui saranno sottoposti come scritture, letture, trasferimenti da e su GPU; che privilegiano accessi coalizzati ad aree contigue per sfruttare interamente i bus invece che solo parzialmente ricorrendo in una penalizzazione sui tempi. \newpage
 
 \section{Kernel Cuda}
 La fase di progettazione dei kernel Cuda è quella che ha richiesto il maggior studio e pianificazione in quanto la versione seriale del codice skimage sfrutta una struttura dati per l'output che non è utilizzabile in una versione parallela. \newline
 Dopo una veloce analisi del codice seriale è chiaro che un singolo kernel non è sufficiente ne sono necessari diversi da lanciare in sequenza per riuscire a replicare il funzionamento del codice seriale in parallelo. 
 \subsection{Kernel required\_memory}
-Dato che per utilizzare gli array è necessario definire al momento della loro creazione la dimensione che occuperanno in memoria è necessario stabilire quante posizioni degli array di output verranno utilizzate per una certa immagine. \newline 
+Dato che per utilizzare gli array è necessario definire la dimensione che occuperanno in memoria al momento della loro creazione è necessario stabilire quante posizioni degli array di output verranno utilizzate per una certa immagine. \newline 
 Il primo kernel quindi si occuperà di calcolare in modalità parallela il numero di segmenti che dovranno essere memorizzati con l'algoritmo Marching Squares per ogni singolo quadrato che andrà esaminato.
-Per ogni quadrato composto da 4 valori confinanti verranno stabilite quante posizioni dell'array occuperanno. \\[10pt]
+Per ogni cella verranno stabilite quante posizioni dell'array saranno occupate dai segmenti del contorno che conterrà. \\[10pt]
 
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Codice CUDA kernel required\_memory}} \\
@@ -789,18 +792,18 @@ else {
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
 \newpage
-L'output di questo primo kernel sarà quindi un vettore di dimensione pari al totale dei quadrati analizzabili dell'immagine e conterrà per ognuno di essi un valore da 0 a 2 che indica quanti segmenti dovrà memorizzare come mostrato nella figura 5.5. I valori per ogni cella sono memorizzati nell'array risultato con una logica posizionale che associa dal primo elemento all'ultimo i valori delle celle dell'immagine scorrendole da destra a sinistra e dall'alto verso il basso.
+L'output di questo primo kernel sarà quindi un vettore di dimensione pari al totale delle celle analizzabili dell'immagine e conterrà per ognuno di essi un valore da 0 a 2 che indica quanti segmenti dovrà memorizzare come mostrato nella figura 5.5. I valori per ogni cella sono memorizzati nell'array risultato con una logica posizionale che associa dal primo elemento all'ultimo i valori delle celle dell'immagine scorrendole da sinistra a destra e dall'alto verso il basso.
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
     \ffigbox[\FBwidth]{\caption{\small{Array C risultato dell'esecuzione del kernel required\_memory.}}}{\includegraphics[scale=0.8]{img/kernel1_out.drawio.png}}
 \end{floatrow}
 \end{figure} 
-Non abbiamo ancora a disposizione il numero di posizioni totali necessarie per memorizzare tutti i segmenti, il vettore va immaginato di dimensioni elevate tali per cui una somma dei suoi elementi in versione seriale sia in relazione alla versione parallela estremamente lenta. Sono quindi necessarie altre operazioni parallele per poter ottenere la somma di tutti gli elementi dell'array generato da questo primo kernel. \newpage
+Non abbiamo ancora a disposizione il numero di posizioni totali necessarie per memorizzare tutti i segmenti. Il vettore va immaginato di dimensioni elevate tali per cui una somma dei suoi elementi in versione seriale sia estremamente lenta in relazione alla versione parallela. Sono quindi necessarie altre operazioni parallele per poter ottenere la somma di tutti gli elementi dell'array generato da questo primo kernel. \newpage
 
 \subsection{Kernel reduce}
-Per calcolare la somma di tutti gli elementi dell'array output del kernel required\_memory è necessario effettuare una operazione di riduzione che è possibile parallelizzare. \newline
-La reduce viene effettuata utilizzando ad ogni passaggio un numero di thread pari alla metà del numero di elementi rimasti, ad ogni iterazione ogni thread somma al valore presente nella posizione dell'array rispettiva al proprio indice \verb|threadIdx.x| il valore nella metà superiore corrispondente alla stessa posizione ovvero \verb|(blockDim.x / 2) + threadIdx.x|. \newline In questo modo il risultato può essere ottenuto in \(O(log_2 n)\) passi paralleli come mostrato nell'immagine 5.6.
+Per calcolare la somma di tutti gli elementi dell'array di output del kernel required\_memory è necessario effettuare un'operazione di riduzione che è possibile parallelizzare. \newline
+La sum-reduce viene effettuata utilizzando ad ogni passaggio un numero di thread pari alla metà del numero di elementi rimasti. Ad ogni iterazione ogni thread somma al valore presente nella posizione dell'array rispettiva al proprio indice \verb|threadIdx.x| il valore nella metà superiore corrispondente alla stessa posizione ovvero \verb|(blockDim.x / 2) + threadIdx.x|. \newline In questo modo il risultato può essere ottenuto in \(O(log_2 n)\) passi paralleli come mostrato nell'immagine 5.6.
 
 \begin{figure}[H]
 \centering
@@ -808,9 +811,9 @@ La reduce viene effettuata utilizzando ad ogni passaggio un numero di thread par
     \ffigbox[\FBwidth]{\caption{\small{Schema operazione di sum-reduce.}}}{\includegraphics[scale=0.8]{img/reduce.drawio.png}}
 \end{floatrow}
 \end{figure} 
-Ad ogni passo si dimezzano come il numero di elementi restanti anche il numero di thread utilizzati, questo significa che ci saranno thread che resteranno inevitabilmente senza alcun lavoro da svolgere. \newline
-Una accortezza è quella di lanciare il kernel con un numero di thread che siano la metà della lunghezza dell'array in modo che per almeno il primo passo tutti quanti i thread siano utilizzati. \newline
-Tra un passo e l'altro è necessario richiamare la funzione \verb|__syncthreads()| che attende tutti i thread in esecuzione per evitare che i diversi thread lavorino a passi differenti della riduzione rendendo inconsistenti le letture sull'array.  \newpage
+Ad ogni passo si dimezzano come il numero di elementi restanti anche il numero di thread utilizzati; questo significa che ci saranno sempre più thread che resteranno inevitabilmente senza alcun lavoro da svolgere nelle iterazioni successive. \newline
+Un'accortezza è lanciare il kernel con un numero di thread che sia la metà della lunghezza dell'array in modo che per almeno il primo passo tutti quanti i thread siano utilizzati. \newline
+Tra un passo e l'altro è necessario richiamare la funzione \verb|__syncthreads()| che attende tutti i thread in esecuzione, per evitare che i diversi thread lavorino a passi differenti della riduzione rendendo inconsistenti le letture sull'array.  \newpage
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Codice CUDA kernel sum-reduce}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
@@ -834,9 +837,10 @@ if(0==lindex){
 } 
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
-In seguito alla lettura iniziale dalla memoria principale della GPU tutte le operazioni vengono effettuate successivamente sono sulla memoria condivisa della scheda video che richiede tempi molto più rapidi per le operazioni di lettura e scrittura. \newline
+In seguito alla lettura iniziale dalla memoria principale della GPU, tutte le operazioni vengono effettuate successivamente sono sulla memoria condivisa della scheda video che richiede tempi molto più rapidi per le operazioni di lettura e scrittura. \newline
 Lo scalare ottenuto con l'ultimo passo viene copiato dal thread 0 nella posizione relativa al proprio blocco sull'array risultato. 
-Ogni blocco di thread ottiene quindi la somma dei valori corrispondenti alle loro posizioni, una volta riportati questi risultati parziali sull'host è necessario effettuare un'ulteriore operazione di somma su di questi per ottenere il risultato finale. In questo caso però il numero di blocchi necessari per elaborare tutto l'array non è sufficientemente grande da garantire una convenienza in termini temporali per il lancio di un kernel parallelo su GPU rispetto a effettuare la somma degli elementi con una funzione ottimizzata come \verb|.sum()| fornita da Numpy. \newline
+Ogni blocco di thread ottiene quindi la somma dei valori corrispondenti alle sue posizioni; una volta riportati questi risultati parziali sull'host è necessario effettuare un'ulteriore operazione di somma su di essi per ottenere il risultato finale. 
+In questo caso però il numero di thread necessari per elaborare tutto l'array non è sufficientemente grande da garantire una convenienza in termini temporali per il lancio di un kernel parallelo su GPU. Conviene effettuare la somma degli elementi sull'host con una funzione ottimizzata come \verb|.sum()| fornita da Numpy. \newline
 Il risultato finale che unisce i risultati parziali degli altri blocchi è ottenuto con il seguente codice Python dall'host. \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Codice host in Python per somma risultati parziali del kernel reduce}} \\
@@ -848,11 +852,11 @@ N_RES = np_result_reduce.sum()
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
 
 \subsection{Kernel exclusive scan (prescan)}
-Una volta ricavato quanto sia il totale di segmenti che andranno memorizzati manca ancora un componente per poter lanciare il kernel che eseguirà Marching Squares. \newline
-Ora che possiamo allocare tutto lo spazio necessario e che tutti i thread che eseguiranno MS avranno uno spazio sufficiente per scrivere i segmenti trovati è necessario definire in quali posizioni della memoria a loro riservata ognuno dovrà scrivere. \newline
-Esiste una funzione da applicare ad un array che calcola esattamente il risultato di cui abbiamo bisogno ovvero un array che contiene le posizioni in cui il thread corrispondente alla posizione in cui è salvata deve scrivere i suoi risultati.
-Questa funzione è la exclusive scan chiamata anche prescan, calcola tutti i prefissi di un array in base ad una operazione data che nel nostro caso sarà l'operatore binario di somma. \newline
-La principale caratteristica dell'exclusive scan è che nella prima posizione dell'array risultato venga messo il valore dell'elemento neutrale dell'operazione utilizzata; zero per la somma. Tutti i valori del risultato sono quindi spostati di una posizione verso destra e l'ultimo valore dell'array in input non viene considerato. Un esempio di array risultato prodotto dalla exclusive scan è riportato nella figura 5.7.
+Una volta ricavato quanto sia il totale di segmenti che andranno memorizzati solo un altro componente per poter lanciare il kernel che eseguirà Marching Squares. \newline
+Ora che possiamo allocare tutto lo spazio necessario e che tutti i thread che eseguiranno MS avranno uno spazio sufficiente per scrivere i segmenti trovati, è necessario definire in quali posizioni della memoria a loro riservata ognuno dovrà scrivere. \newline
+Esiste una funzione da applicare a un array che calcola esattamente il risultato di cui abbiamo bisogno; ovvero un array che contiene le posizioni in cui il thread corrispondente alla posizione in cui è salvata deve scrivere i suoi risultati.
+Questa funzione è la exclusive scan (chiamata anche prescan), che calcola tutti i prefissi di un array in base ad una operazione binaria data che nel nostro caso è quella di somma. \newline
+La principale caratteristica dell'exclusive scan è che nella prima posizione dell'array risultato viene messo il valore dell'elemento neutrale dell'operazione utilizzata (lo zero per la somma). Tutti i valori del risultato sono quindi spostati di una posizione verso destra e l'ultimo valore dell'array in input non viene considerato. Un esempio di array risultato prodotto dalla exclusive scan è riportato nella figura 5.7.
 
 \begin{figure}[H]
 \centering
@@ -860,21 +864,21 @@ La principale caratteristica dell'exclusive scan è che nella prima posizione de
     \ffigbox[\FBwidth]{\caption{\small{Vettori di input e output della funzione di exclusive scan.}}}{\includegraphics[scale=0.8]{img/prescan.drawio.png}}
 \end{floatrow}
 \end{figure} 
-Il risultato di una exclusive scan per le sue proprietà è già pronto a essere utilizzato per lo scopo desiderato infatti in ogni cella è contenuta la posizione in cui andrà scritto il rispettivo valore. Rispetta anche gli indici degli array infatti la prima posizione in cui scrivere indicata è lo 0. Il valore della posizione non considera quanti segmenti andranno scritti dal corrispondente thread ma solo quelli precedenti poiché è necessario saper solo da dove iniziare a scrivere. \newline
-Sono presenti valori ripetuti nel vettore in output dato che l'indice della prima posizione disponibile in cui scrivere non deve variare se certi thread non hanno alcun segmento da scrivere. I thread che invece troveranno 2 segmenti dovranno scriverli consecutivamente partendo dalla posizione specificata nel risultato dell'exclusive scan. \newpage
+Il risultato di una exclusive scan per le sue proprietà è già pronto a essere utilizzato per lo scopo desiderato: in ogni cella infatti è contenuta la posizione in cui andrà scritto il rispettivo valore. Rispetta anche gli indici degli array siccome la prima posizione in cui scrivere indicata è lo 0. Il valore della posizione non considera quanti segmenti andranno scritti dal corrispondente thread, ma solo quelli precedenti poiché è necessario saper solo da dove iniziare a scrivere e non dove si finirà. \newline
+Sono presenti valori ripetuti nel vettore in output dato che l'indice della prima posizione disponibile in cui scrivere non deve variare se i thread successivi non hanno alcun segmento da memorizzare. I thread che invece troveranno 1 o 2 segmenti dovranno scriverli consecutivamente, partendo dalla posizione specificata nel risultato dell'exclusive scan. \newpage
 
 Per effettuare l'operazione di exclusive scan su un array di grandi dimensioni un singolo kernel non è sufficiente.
-Il codice proposto da Nvidia per implementare la Exclusive Scan funziona solamente se l’array su cui si deve applicare la funzione può essere contenuto all’interno della memoria shared condivisa da un singolo blocco della GPU, inoltre può utilizzare solamente la metà del numero massimo di thread per un blocco. \newline
+Il codice consigliato da Nvidia per implementare la Exclusive Scan funziona solamente se l’array su cui si deve applicare la funzione può essere contenuto all’interno della memoria condivisa da un singolo blocco della GPU; inoltre può utilizzare solamente la metà del numero massimo di thread per un blocco. \newline
 Per comporre il vettore finale in modalità parallela è stato necessario implementare un totale di 3 kernel differenti:
 \begin{itemize}
     \item prescan (exclusive scan)
     \item prescan\_small  (exclusive scan small)
     \item add
 \end{itemize}
-Questa particolare versione permette l'applicazione della exclusive scan ad array di lunghezza arbitraria anche maggiore alla memoria shared di un singolo blocco. \newline
+Questa particolare versione permette l'applicazione della exclusive scan ad array di lunghezza arbitraria anche maggiore alla memoria condivisa di un singolo blocco. \newline
 % TODO spiegare meglio motivazioni approfondendo aspetti tecnici
 
- In pratica il kernel prescan esegue una exclusive scan su tutto l’array ma a comparti di 64 elementi ovvero ogni 64 posizioni dell’array principale il conteggio riparte da zero. \newline 
+ In pratica il kernel prescan esegue una exclusive scan su tutto l’array ma a comparti di 64 elementi; ogni 64 posizioni dell’array principale il conteggio riparte da zero. \newline 
 Nella figura 5.8 è rappresentato un esempio del risultato prodotto dal kernel \verb|prescan| con il numero di elementi per blocco ridotto da 64 a 20 per semplicità.
 \begin{figure}[H]
 \centering
@@ -884,7 +888,7 @@ Nella figura 5.8 è rappresentato un esempio del risultato prodotto dal kernel \
 \end{figure} 
 Sempre all’interno del kernel \verb|prescan| si salva l’ultimo valore di ogni blocco (colorato in blu nella figura 5.8) cioè la somma di tutti i valori che contiene (il 64° elemento) in un altro array chiamato \verb|sums| con dimensione pari al numero di blocchi utilizzato. Se si facesse riferimento all'esempio della figura 5.8 il vettore \verb|sums| conterrebbe nelle prime due posizioni i valori 4 e 3.
 Si prosegue poi con il kernel \verb|prescan_small| che lavora con 1 solo blocco di thread ed effettua una exclusive scan sull’array \verb|sums|.
-Infine si utilizza un ulteriore kernel denominato \verb|add| che si occupa di sommare a \verb|res\_prescan| citato sopra per compartimenti da 64 il rispettivo valore contenuto nel risultato del kernel \verb|prescan_small| che sostanzialmente è la somma di tutti i valori dei compartimenti da 64 precedenti. \newpage
+Infine si utilizza un ulteriore kernel denominato \verb|add| che si occupa di sommare a \verb|res_prescan| citato sopra il rispettivo valore contenuto nel risultato del kernel \verb|prescan_small| (che sostanzialmente è la somma di tutti i valori dei compartimenti da 64 precedenti) per compartimenti da 64. \newpage
 
 % descrizione 3 kernel per la reduce
 Nella seguente figura 5.9 viene rappresentato in modo semplificato in che modo i tre kernel collaborano per ottenere il risultato dell'exclusive scan.
@@ -904,16 +908,16 @@ Nella seguente figura 5.9 viene rappresentato in modo semplificato in che modo i
 \subsection{Kernel marching\_squares}
 Con a disposizione il risultato della Exclusive scan si può procedere con il kernel \verb|marching_squares|. \newline
 L'array \verb|res_prescan| contiene le posizioni da cui i thread corrispondenti ad ogni suo elemento dovranno iniziare a scrivere i segmenti che troveranno nell'esecuzione del kernel \verb|marching_squares|. 
-Questo kernel è in sostanza il corrispondente CUDA del codice seriale Cython sviluppato da skimage. La principale differenza è la scrittura dei segmenti del risultato, dove si è passati dal semplice \verb|.append(tuple(tuple(),tuple()))| su una lista alla scrittura su 4 array nelle posizioni individuate per ogni thread dai kernel precedenti. \newline
-Ogni thread che esegue questo kernel si occupa di una singola cella (quadrato con 4 valori binarizzati sugli spigoli) dell'immagine in input e svolge questi passaggi:
+Questo kernel è in sostanza il corrispondente CUDA del codice seriale Cython sviluppato da skimage. La principale differenza è la scrittura dei segmenti del risultato, dove si è passati dal semplice \verb|append(tuple(tuple(),tuple()))| su una lista, alla scrittura su 4 array nelle posizioni individuate per ogni thread dai kernel precedenti. \newline
+Ogni thread che esegue questo kernel si occupa di una singola cella dell'immagine in input e svolge questi passaggi:
 \begin{enumerate}
-\item tramite la logica di Marching Squares individua a quale dei 16 possibili tipi appartiene
-\item accede all'array restituito dalla exclusive scan nella posizione corrispondente al proprio blocco e id per ottenere la posizione in cui dovrà scrivere il risultato
-\item se il tipo di cella è diverso da 0 o15 allora scrive nell'array risultato le coordinate degli estremi dei segmenti trovati partendo dalla posizione recuperata in precedenza
+\item Tramite la logica di Marching Squares individua a quale dei 16 possibili tipi appartiene la cella
+\item Accede all'array restituito dalla exclusive scan nella posizione corrispondente al proprio blocco e id per ottenere la posizione in cui dovrà scrivere il risultato
+\item Se il tipo di cella è diverso da 0 o 15 allora scrive nell'array risultato le coordinate degli estremi dei segmenti trovati partendo dalla posizione recuperata in precedenza
 \end{enumerate}
 Tutti i kernel precedenti consentono a questo kernel finale di poter scrivere sull'array risultato (della dimensione esattamente necessaria) in maniera parallela. \newline
-Di seguito è riportato il codice completo del kernel \verb|marching_squares| esclusa la funzione \verb|get_raction| che è l'equivalente CUDA della semplice versione Cython riportata in precedenza. \newline
-Come si può vede dalle righe 4 e 5: ad ogni thread viene assegnato la corrispondente cella il quale spigolo in alto a sinistra coincide come posizione nella matrice alla combinazione di blocco e id del thread sugli assi $x$ e $y$.
+Di seguito è riportato il codice completo del kernel \verb|marching_squares| esclusa la funzione \verb|get_fraction| che è l'equivalente CUDA della versione Cython riportata in precedenza. \newline
+Come si può vede dalle righe 4 e 5 ad ogni thread viene assegnata la corrispondente cella, il quale spigolo in alto a sinistra coincide come posizione nella matrice alla combinazione di blocco e id del thread sugli assi $x$ e $y$.
 \newpage
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Codice kernel marching\_squares } \\
@@ -1078,11 +1082,11 @@ void marching_squares(double *image, double *result_1x, double *result_1y, doubl
     
 \section{Codice Python con API CUDA Python}
 % mettere e spiegare codice per lancio kernel
-Per poter lanciare i kernel CUDA da Python, come descritto in precedenza è necessario utilizzare le API CUDA Python. \newline
+Per poter lanciare i kernel CUDA da Python è necessario utilizzare le API CUDA Python come descritto in precedenza. \newline
 Questo componente serve da interfaccia per le chiamate Python esterne e si occupa di tutto il necessario per poter lanciare i kernel sopra descritti ottenendo il risultato richiesto. \newline
-Questo modulo è costituito principalmente da codice molto simile a quello descritto nella sezione 5.1.3, tutte le logiche di preparazione e lancio di un kernel sono però moltiplicate per 6 ovvero il numero di kernel totali che sono necessari come descritto in precedenza. \newline
-Per chiari motivi pratici non è possibile riportare tutto il codice del modulo che si sviluppa per centinaia di righe per cui riportiamo e analizziamo solo le parti più significative. \newline
-Tra un kernel e l'altro la funzione \verb|cuda.cuStreamSynchronize(stream)| indicata da Nvidia non si è rivelata sufficiente per una corretta esecuzione: si presentava infatti un \verb|illegal access error| che terminava l'esecuzione. Un errore di questo tipo solitamente è causato da un errore all'interno del codice ma in questo caso si è scoperto essere dovuto a un problema delle API Cuda Python che faticano a gestire chiamate consecutive senza pause generando ritardi nella risoluzione delle chiamate ai driver Nvidia.
+Questo modulo è costituito principalmente da codice molto simile a quello descritto nella sezione 5.1.3. Tutte le logiche di preparazione e lancio di un kernel sono però moltiplicate per 6; ovvero il numero di kernel totali che sono necessari come descritto in precedenza. \newline
+Per chiari motivi pratici non è possibile riportare tutto il codice del modulo che si sviluppa per centinaia di righe per cui riportiamo e analizziamo solo le parti più significative. \newline \newline
+Tra un kernel e l'altro la funzione \verb|cuda.cuStreamSynchronize(stream)| indicata da Nvidia non si è rivelata sufficiente per una corretta esecuzione: si presentava infatti un \verb|illegal access error| che terminava l'esecuzione. Un errore di questo tipo solitamente è causato da un errore all'interno del codice ma in questo caso si è scoperto essere dovuto a un problema delle API Cuda Python, che faticano a gestire chiamate consecutive senza pause generando ritardi nella risoluzione delle chiamate ai driver Nvidia.
 Per risolvere il problema è stato necessario effettuare numerose prove che hanno condotto all'aggiunta di una ulteriore funzione in accoppiata a \verb|cuda.cuStreamSynchronize(stream)| che permette di risolvere il problema. Come si può vedere nel seguente estratto di codice è stata aggiunta la sincronizzazione anche del \verb|context| oltre che a quella dello \verb|stream|. \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
 \small{\textbf{Codice migliorato per sincronizzazione con API CUDA Python}} \\
@@ -1097,7 +1101,7 @@ ASSERT_DRV(err)
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
 
 \newpage
-Per quanto riguarda invece il lancio del kernel finale \verb|marching_squares| va fatta una osservazione sulla corrispondenza tra le celle (o quadrati) dell'immagine da esaminare con MS e i thread che se occupano. Come analizzato in precedenza nella sezione del kernel \verb|marching_squares| ad ogni thread viene assegnata la cella dell'immagine il cui spigolo in alto a sinistra corrisponde come posizione nella matrice. Di conseguenza il numero di pixel sarà maggiore del numero di thread necessari, per esattezza il numero di thread sarà $n_pixel - height - width + 1$. Il calcolo è facilmente intuibile dalla figura 5.10 che riporta l'associazione tra un thread e una singola cella composta da 4 pixel sulla sinistra e mostra quanti thread sono necessari (celle in azzurro) per coprire una certa matrice di pixel.
+Per quanto riguarda invece il lancio del kernel finale \verb|marching_squares| va fatta un'osservazione sulla corrispondenza tra le celle dell'immagine da esaminare con MS e i thread che se ne occupano. Come analizzato in precedenza nella sezione del kernel \verb|marching_squares| ad ogni thread viene assegnata la cella dell'immagine il cui spigolo in alto a sinistra corrisponde come posizione nella matrice. Di conseguenza il numero di pixel sarà maggiore del numero di thread necessari, per esattezza il numero di thread sarà $numero\_pixel - altezza\_immagine - larghezza\_immagine + 1$. Il calcolo è facilmente intuibile dalla figura 5.10 che riporta l'associazione tra un thread e una singola cella composta da 4 pixel sulla sinistra e mostra quanti thread sono necessari (celle in azzurro) per coprire una certa matrice di pixel sulla destra.
 
 \begin{figure}[H]
 \centering
@@ -1106,10 +1110,10 @@ Per quanto riguarda invece il lancio del kernel finale \verb|marching_squares| v
 \end{floatrow}
 \end{figure} 
 \newpage
-Gli array necessari ai kernel per input o output vengono creati nella fase iniziale prima del lancio dei kernel, ci sono degli array però che per motivi di logica della soluzione parallela non posso seguire questa sequenza. I 4 arrray del risultato infatti possono essere creati solo dopo aver lanciato i primi kernel poiché è necessario sapere il risultato della reduce per avere la dimensione corretta con cui devono essere allocati.
-Prima dell'ultimo kernel \verb|marching_squares| vengono quindi creati i 4 array utilizzando il risultato della reduce come riportato nel seguente estratto di codice. \\[10pt]
+Gli array necessari ai kernel per input o output vengono creati nella fase iniziale prima del lancio dei kernel. Ci sono però degli array che per motivi di logica della soluzione parallela non posso seguire questa sequenza. I 4 array del risultato infatti possono essere creati solo dopo aver lanciato i primi kernel poiché è necessario sapere il risultato della sum-reduce per avere la dimensione corretta con cui devono essere allocati.
+Prima dell'ultimo kernel \verb|marching_squares| vengono quindi creati i 4 array utilizzando il risultato ottenuto dall'elaborazione del risultato parziale della sum-reduce come riportato nel seguente estratto di codice. \\[10pt]
 \noindent\rule[0.5ex]{\linewidth}{2pt}
-\small{\textbf{Estratto di codice allocazione 4 array per output kernel marching\_squares con risultato di sum-reduce}} \\
+\small{\textbf{Estratto di codice con allocazione 4 array per output del kernel marching\_squares calcolando risultato finale di sum-reduce}} \\
 \noindent\rule[0.5ex]{\linewidth}{1pt}
 \begin{lstlisting}
 np_result_reduce = np.array(result_reduce) 
@@ -1140,7 +1144,7 @@ args_6 = [dImage, dResult_1x, dResult_1y, dResult_2x, dResult_2y, lev_np,       
 args_6 = np.array([arg.ctypes.data for arg in args_6], dtype=np.uint64)
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[6pt]
-Non è possibile sapere a priori quanti segmenti è necessario memorizzare poiché neanche il numero di celle totali dell'immagine è un limite superiore: potrebbe succedere infatti che se più della metà delle celle appartenessero ai tipi 6 o 9 di quelle predefinite da MS allora in numero totale di segmenti sarebbe superiore. Inoltre creare array di dimensioni maggiori di quelle necessarie avrebbe indotto un overhead causato dai tempi maggiori di trasferimento degli array tra le memorie.
+Non è possibile sapere a priori quanti segmenti è necessario memorizzare poiché neanche il numero di celle totali dell'immagine è un limite superiore: potrebbe succedere infatti che se più della metà delle celle appartenessero ai tipi 6 o 9 di quelle predefinite da MS allora in numero totale di segmenti sarebbe superiore. Inoltre creare array di dimensioni maggiori di quelle necessarie indurrebbe un overhead causato dai tempi maggiori di trasferimento degli array tra le memorie.
 
 % array creati con dimensioni
     % quelli del risultatao creati in seguito
@@ -1151,10 +1155,11 @@ Non è possibile sapere a priori quanti segmenti è necessario memorizzare poich
 Il codice implementato è in grado di applicare l'algoritmo Marching Squares in parallelo su GPU impiegando un tempo inferiore rispetto al metodo \verb|findContours| della libreria skimage. \newline
 I test sono stati effettuati su due diversi tipi di immagini in input, una foto reale scattata da un macchina per la selezione della frutta e una generata artificialmente con delle funzioni matematiche.
 %TODO scrivere specofoche macchina su cui sono stati fatti i test e osservazioni schede più potenti
+Tutti i test seguenti sono stati svolti su una macchina con una Nvidia 1050 Ti.
 
 \section{Immagine reale}
 L'immagine in questione è stata fornita da Bioretics e contiene una quantità di bordi che rappresenta indicativamente la media individuabile in un set di scatti. Oltre ad individuare i contorni dei difetti del frutto vengono esaminate anche tutte le altre aree dell'immagine comprese alcune zone dei rulli in cui la CNN ha attribuito una classe (anche la classe "rullo" viene assegnata).
-L'immagine utilizzata per questi test è riportata nella figura 5.11.
+L'immagine utilizzata per questi test è riportata nella figura 6.1.
 %TODO immagine reale e sintetica
 %TODO immagini da sole e con contorni
 \begin{figure}[H]
@@ -1163,14 +1168,14 @@ L'immagine utilizzata per questi test è riportata nella figura 5.11.
     \ffigbox[\FBwidth]{\caption{\small{Fotografia reale utilizzata per i test.}}}{\includegraphics[scale=0.25]{img/marching_squares_00000001_00000001.png}}
 \end{floatrow}
 \end{figure} 
-Questo preciso scatto ritrae un'albicocca che ruota sui nastri su cui la CNN ha individuato un difetto sulla buccia nella parte alta del frutto e ha individuato il picciolo. Sono state individuate anche molte zone che fanno parte della struttura o dei rulli stessi, la foto viene scatta inquadrando un'area così abbondante dei rulli poiché sarebbe troppo complesso individuare la posizione esatta in cui si troverà un certo frutto che scorre e rotola a velocità elevate davanti alla camera.
+Questo preciso scatto ritrae un'albicocca che ruota sui nastri su cui la CNN ha individuato un difetto sulla buccia nella parte alta del frutto e il picciolo. Sono state trovate anche molte zone che fanno parte della struttura o dei rulli stessi. La foto viene scatta inquadrando un'area così abbondante dei rulli poiché sarebbe troppo complesso individuare la posizione esatta in cui si troverà un certo frutto che scorre e rotola a velocità elevata davanti alla camera.
 \newpage
-Prima di essere passata al metodo che applica MS l'immagine viene ridimensionata notevolmente e binarizzata. L'immagine in input al test effettuato sul codice è riportato in figura 5.12.
-L'output è stato riportato in formato grafico nell'immagine 5.13 in cui si possono notare dei bordi colorati che sono stati ricostruiti attorno alle aree con valore maggiore della soglia impostata che in questo caso era $0.5$.
+Prima di essere passata al metodo che applica MS l'immagine viene ridimensionata notevolmente e convertita in grayscale (scala di grigi). L'immagine in input al test effettuato sul codice è riportato in figura 6.1.
+L'output è stato riportato in formato grafico nell'immagine 6.3 in cui si possono notare dei bordi colorati che sono stati ricostruiti attorno alle aree con valore maggiore della soglia (impostata in questo caso a $0.5$).
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
-    \ffigbox[\FBwidth]{\caption{\small{Immagine 6.1 ridimensionata e binarizzata.}}}{\includegraphics[scale=1.25]{img/Figure_4.png}}
+    \ffigbox[\FBwidth]{\caption{\small{Immagine 6.1 ridimensionata e convertita in grayscale.}}}{\includegraphics[scale=1.25]{img/Figure_4.png}}
 \end{floatrow}
 \end{figure} 
 
@@ -1181,7 +1186,7 @@ L'output è stato riportato in formato grafico nell'immagine 5.13 in cui si poss
 \end{floatrow}
 \end{figure} 
 
-Per motivi pratici non è possibile riportare le due immagini in maniera che tutti i dettagli dei contorni siano visibili: sono riportati quindi nelle immagine 4.15 i contorni relativi al difetto e del picciolo del frutto dell'immagine 4.14.
+Per motivi pratici non è possibile riportare le due immagini in maniera che tutti i dettagli dei contorni siano visibili chiaramente: sono riportati quindi nelle immagine 6.5 i contorni relativi al difetto e del picciolo del frutto dell'immagine 6.4.
 
 \begin{figure}[H]
 \centering
@@ -1196,14 +1201,14 @@ Per motivi pratici non è possibile riportare le due immagini in maniera che tut
 \end{floatrow}
 \end{figure} 
 \newpage
-In termini di prestazioni, l'obbiettivo concreto del progetto, sono stati registrati tempi di esecuzione minori di quelli impiegati dalla funzione \verb|findContours|. Si è quindi ottenuto uno speedup raggiungendo l'obbiettivo del progetto, va però fatta una importante osservazione sul metodo di misura di questo speedup. \newline
-La funzione \verb|findContours| è costituita da due componenti principali come descritto in precedenza, la seconda parte \verb|_assemble_contours| che è quella che si occupa della congiunzione dei segmenti di contorno adiacenti dovrebbe essere idealmente esclusa dalla misurazione dei tempi di esecuzione. Non è possibile farlo però in maniera esatta poiché la chiamata a \verb|_assemble_contours| viene fatta all'interno del metodo \verb|findContours| di cui è possibile misurare solo i tempi di esecuzione totali. Dato che il codice della libreria skimage è pubblico e reperibile è stato possibile fare un test indicativo dei tempi di esecuzione di \verb|_assemble_contours| testandoli sul singolo metodo con lo stesso input che avrebbe ricevuto se richiamato all'interno di \verb|findContours|. 
-I tempi di esecuzione misurati per le due diverse versioni e quello calcolato come stima del metodo \verb|_assemble_contours| sono riportati nella seguente tabella 5.2. 
+In termini di prestazioni sono stati registrati tempi di esecuzione minori di quelli impiegati dalla funzione \verb|findContours|. Si è quindi ottenuto uno speedup raggiungendo l'obbiettivo del progetto, va però fatta una importante osservazione sul metodo di misura di questo speedup. \newline
+La funzione \verb|findContours| è costituita da due componenti principali come descritto in precedenza, la seconda parte \verb|_assemble_contours| che si occupa della congiunzione dei segmenti di contorno adiacenti, dovrebbe essere idealmente esclusa dalla misurazione dei tempi di esecuzione. Non è possibile farlo però in maniera esatta poiché la chiamata a \verb|_assemble_contours| viene fatta all'interno del metodo \verb|findContours| di cui è possibile misurare solo i tempi di esecuzione totali. Dato che il codice della libreria skimage è pubblico e reperibile è stato possibile fare un test indicativo dei tempi di esecuzione di \verb|_assemble_contours| testandoli sul singolo metodo con lo stesso input che avrebbe ricevuto se richiamato all'interno di \verb|findContours|. 
+I tempi di esecuzione misurati per le due diverse versioni e quello calcolato come stima del metodo \verb|_assemble_contours| sono riportati nella seguente tabella 6.1. 
 
 \begin{table}[h]
 \centering
 \setlength\tabcolsep{0pt} % let LaTeX figure out amount of inter-column whitespace
-\caption{Comparazione tempi (per immagine reale) di esecuzione versione skimage ovvero il tempo totale impiegato dal metodo findContours, quello impiegato dal singolo metodo assemle\_contours e quello relativo alla versione parallela su GPU che sfrutta le API CUDA-Python.}
+\caption{Comparazione tempi (per immagine reale) di esecuzione versione skimage ovvero il tempo totale impiegato dal metodo findContours, quello impiegato dal singolo metodo assemble\_contours e quello relativo alla versione parallela su GPU che sfrutta le API CUDA-Python.}
 \label{t2}
 
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l *{3}{c} }
@@ -1217,8 +1222,8 @@ Metodo con API CUDA-Python  & 0.000283867 s\\
 \end{tabular*}
 \end{table} 
 \newpage
-I tempi sono stati riportati graficamente nella figura 5.16. Nella barra che rappresenta la versione skimage ovvero tutto il metodo \verb|findContours| è stata colorata in azzurro più chiaro la porzione che si è stimato impieghi il metodo \verb|_assemble_contours|. \newline
-Come si può notare la versione parallela sviluppata con le API CUDA-Python applica l'algoritmo Marching Squares impiegando un tempo minore rispetto alla versione skimage con un ampio margine.
+I tempi sono stati riportati graficamente nella figura 6.6. Nella barra che rappresenta la versione skimage ovvero tutto il metodo \verb|findContours| è stata colorata in azzurro più chiaro la porzione che si è stimato impieghi il metodo \verb|_assemble_contours|. \newline
+Come si può notare, la versione parallela sviluppata con le API CUDA-Python applica l'algoritmo Marching Squares impiegando un tempo minore rispetto alla versione skimage con un ampio margine.
 
 %TODO grafici tempi e speedup
 \begin{figure}[H]
@@ -1228,10 +1233,10 @@ Come si può notare la versione parallela sviluppata con le API CUDA-Python appl
 \end{floatrow}
 \end{figure} 
 
-Si possono fare anche osservazioni sul codice sviluppato da skimage che presenta delle scelte progettuali estremamente distanti tra loro nei due metodi che costituiscono \verb|findContours|. Il metodo interno \verb| _get_contour_segments| che applica l'algoritmo Marching Squares è stato particolarmente ottimizzato con l'utilizzo del Cython in modo da ridurre i tempi al minimo, il metodo \verb|_assemble_contours| invece è composto quasi interamente da pesanti operazioni su liste Python che sono estremamente dispendiose in termini di tempo di esecuzione. Come si può vedere dal grafico la stima del tempo impiegato per l'esecuzione di \verb|_assemble_contours| occupa circa la metà del tempo totale medio impiegato da \verb|findContours|.
+Si possono fare anche osservazioni sul codice sviluppato da skimage, che presenta delle scelte progettuali estremamente distanti tra loro nei due metodi che costituiscono \verb|findContours|. Il metodo interno \verb| _get_contour_segments| che applica l'algoritmo Marching Squares è stato particolarmente ottimizzato con l'utilizzo del Cython in modo da ridurre i tempi al minimo. Il metodo \verb|_assemble_contours| invece è composto quasi interamente da pesanti operazioni su liste Python che sono estremamente dispendiose in termini di tempo di esecuzione. Come si può vedere dal grafico la stima del tempo impiegato per l'esecuzione di \verb|_assemble_contours| occupa circa la metà del tempo totale medio impiegato da \verb|findContours|.
 \newpage
 
-Gli speedup della versione parallela calcolati sulla base delle misurazioni precedenti sono stati riportati nella tabella 5.3. Per completezza è stato inserito anche lo speedup misurato sul tempo totale di \verb|findContours| dato che la misura del tempo impiegato da \verb|_assemble_contours| che è stato sottratto a quello di \verb|findContours| per il calcolo dello speedup è una stima.
+Gli speedup della versione parallela calcolati sulla base delle misurazioni precedenti sono stati riportati nella tabella 6.2. Per completezza è stato inserito anche lo speedup misurato sul tempo totale di \verb|findContours| dato che la misura del tempo impiegato da \verb|_assemble_contours| che è stato sottratto a quello di \verb|findContours| per il calcolo dello speedup è una stima.
 
 \begin{table}[h]
 \centering
@@ -1249,11 +1254,11 @@ Rispetto findContours escluso assemble\_contours  & 1.982321\\
 \end{tabular*}
 \end{table}
 
-Il valore più importante che determina il successo del progetto è quello dello speedup della versione parallela sviluppata rispetto alla porzione di codice skimage sull'esecuzione dell'algoritmo Marching Squares che seppur derivato da una approssimazione del tempo di esecuzione di \verb|_assemble_contours| risulta essere di circa 2 volte. Uno speedup di 2 è sufficientemente grande da poter affermare che uno speedup sia stato raggiunto anche considerando una approssimazione per eccesso dei tempi stimati per \verb|_assemble_contours|.
+Il valore più importante che determina il successo del progetto è quello dello speedup della versione parallela sviluppata rispetto alla porzione di codice skimage sull'esecuzione dell'algoritmo Marching Squares. Seppur sia derivato da una approssimazione del tempo di esecuzione di \verb|_assemble_contours| risulta essere di circa 2 volte. Uno speedup di 2 è sufficientemente grande da poter affermare che uno speedup sia stato raggiunto anche considerando una approssimazione per eccesso dei tempi stimati per \verb|_assemble_contours|.
 \newpage
 
 \section{Immagine artificiale}
-Le dimensioni dell'immagine generata artificialmente sono le stesse di quella reale ovvero $511 \times 95$. Questa immagine però ha un numero di segmenti necessari per definire i contorni maggiore, ne consegue un maggior carico di lavoro per l'algoritmo Marching Squares che dove gestire più casi di celle che necessitano di un segmento di contorno. L'immagine con cui sono stati effettuati i test è stata creata con l'utilizzo di funzioni matematiche ed è riportato nella figura 6.7. L'output del codice sviluppato relativo a questa immagine è osservabile dalla figura 6.8 adiacente.
+Le dimensioni dell'immagine generata artificialmente sono le stesse di quella reale ovvero $511 \times 95$. Questa immagine però ha un numero maggiore di segmenti necessari per definire i contorni, ne consegue un maggior carico di lavoro per l'algoritmo Marching Squares che dove gestire più casi di celle che necessitano di un segmento di contorno. L'immagine con cui sono stati effettuati i test è stata creata con l'utilizzo di funzioni matematiche ed è riportato nella figura 6.7. L'output del codice parallelo a cui è stata passato in input questa immagine è osservabile dalla figura 6.8 sottostante.
 
 
 \begin{figure}[H]
@@ -1270,12 +1275,12 @@ Le dimensioni dell'immagine generata artificialmente sono le stesse di quella re
 \end{floatrow}
 \end{figure} 
 
-I tempi di esecuzione sono stati raccolti con lo stesso metodo descritto per l'immagine reale con la sola differenza che in input alle funzioni è stata passata l'immagine artificiale. La tabella 6.3 riporta i tre valori misurati.
+I tempi di esecuzione sono stati raccolti con lo stesso metodo descritto per l'immagine reale, con la sola differenza che in input alle funzioni è stata passata l'immagine artificiale. La tabella 6.3 riporta i tre tempi misurati.
 
 \begin{table}[H]
 \centering
 \setlength\tabcolsep{0pt} % let LaTeX figure out amount of inter-column whitespace
-\caption{Comparazione tempi di esecuzione (per immagine artificiale) versione skimage ovvero il tempo totale impiegato dal metodo findContours, quello impiegato dal singolo metodo assemle\_contours e quello relativo alla veresione parallea su GPU che sfrutta le API CUDA-Python.}
+\caption{Comparazione tempi di esecuzione (per immagine artificiale) versione skimage ovvero il tempo totale impiegato dal metodo findContours, quello impiegato dal singolo metodo assemble\_contours e quello relativo alla versione parallela su GPU che sfrutta le API CUDA-Python.}
 \label{t4}
 
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l *{3}{c} }
@@ -1300,7 +1305,7 @@ Il tempo di esecuzione impiegato dalla versione parallela di MS con le API CUDA-
 \end{floatrow}
 \end{figure} 
 \newpage
-Per l'immagine artificiale il calcolo dello speedup è stato effettuato nello stesso modo utilizzato in precedenza per l'immagine reale e valgono le stesse osservazioni sulla completezza dei valori riportati.
+Per l'immagine artificiale il calcolo dello speedup è stato effettuato nello stesso modo utilizzato in precedenza per l'immagine reale e valgono le stesse osservazioni sulla completezza dei valori riportati nella tabella 6.4.
 
 \begin{table}[H]
 \centering
@@ -1318,7 +1323,8 @@ Rispetto findContours escluso assemble\_contours  & 2.620361\\
 \end{tabular*}
 \end{table}
 
-Lo speedup ottenuto rispetto all'esecuzione di MS interna a \verb|findContours| risulta maggiore di quello calcolato per l'immagine reale. Con l'immagine artificiale si è ottenuto infatti uno speedup pari a circa 2.6 volte, un risultato che indica un aumento dello speedup da parte della versione parallela rispetto a quella di skimage in relazione ad un aumento del numero di segmenti e la lunghezza dei contorni contigui.
+Lo speedup ottenuto rispetto all'esecuzione di MS interna a \verb|findContours| risulta maggiore di quello calcolato per l'immagine reale. Con l'immagine artificiale si è ottenuto infatti uno speedup pari a circa 2.6 volte, un risultato che indica un aumento dello speedup in relazione ad un aumento del numero di segmenti come ci si aspettava. 
+% e della lunghezza dei contorni contigui.
 
 %TODO pararlare di tempi
 %TODO prestazioni
@@ -1352,12 +1358,13 @@ Lo speedup ottenuto rispetto all'esecuzione di MS interna a \verb|findContours| 
 \begin{thebibliography}{9}
 
 \bibitem{texbook}
-scikit-image code 
-URL: 
 
-\bibitem{lamport94}
-Nvidia nvc++ -stdpar and Cython
-URL: 
+%scikit-image code 
+%URL: 
+
+%\bibitem{lamport94}
+%Nvidia nvc++ -stdpar and Cython
+%URL: 
 
 \end{thebibliography}
 
