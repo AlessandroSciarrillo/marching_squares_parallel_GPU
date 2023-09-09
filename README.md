@@ -25,11 +25,8 @@ https://numba.readthedocs.io/en/stable/cuda/index.html
 ## Current state
 |               |    PC    |   server   |
 | ------------- | -------- | ---------- |
-| api_cuda_test |    OK    | 	 OK	|
-| jupyter_test (aborted) |    X     |     X      | *(1)
-| api_cuda	|    OK    |     ?      |
-| nvc++ (aborted)		|    X     |     X      | *(2)
+| jupyter_test (aborted) |    ×     |     ×      |
+| nvc++ (aborted)		|    ×     |     ×      |
+| api_cuda_test |    ✓    | 	 ✓	|
+| api_cuda	|    ✓    |     ✓      |
 
-*(1) tempo per "zip" risultati
-
-*(2) compila ed esegue ma senza gpu poichè le direttive stdpar non sono specificate
