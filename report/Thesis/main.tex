@@ -63,13 +63,15 @@ Anno Accademico 2022/2023}}%inserire l'anno accademico a cui si Ë iscritti
 \end{center}
 \end{titlepage}
 
+\pagenumbering{roman}
 
 \hypersetup{
     allcolors=black
 }
 \tableofcontents
 
-\chapter{Abstract}
+\chapter*{Abstract}
+%\chapter{Abstract}
 % una vista rapida della tesi 1/2 facciate, cosa si andrà a fare, quale è il problema, cosa si fa per risolverlo e quali risultati si otterranno. 
 % keyword: cosa siANDRà a fare, OTTERREMO
 Marching Squares (MS) è un algoritmo per la generazione di contorni in un campo scalare bidimensionale che viene ampiamente utilizzato nel Machine Vision in ambito industriale. Nella applicazione pratica in questione viene utilizzato su fotografie scattate da macchine per la selezione automatica della frutta per trovare i contorni di aree dell'immagine dove vengono riconosciuti dei difetti nel frutto. L'algoritmo viene applicato all'output di una CNN (Convolutional Neural Network) che è composto da una mappatura dei pixel dell'immagine in input nella rispettiva probabilità di appartenere ad una certa classe di difetto, vengono costruiti i contorni delle aree che hanno una probabilità maggiore di una certa soglia di contenere una certa classe. Le classi di difetto sono ad esempio: marcio, ruggine, danno da grandine fresca, danno da grandine cicatrizzato, danno da raccolta, danno da trasporto ecc.. \newline
@@ -81,36 +83,36 @@ Le principali strategie che verranno esplorate sono:
 \item utilizzo dell'ultima versione di nvc++ per la parallelizzazione in fase di compilazione del codice Cython
 \item utilizzo delle API Cuda-Python per il lancio di kernel Cuda (scritti manualmente) da Python 
 \end{itemize}
-Il metodo migliore che verrà poi utilizzato per la soluzione finale sarà quello che sfrutta le API Cuda-Python e i kernel Cuda scritti manualmente, riuscirà infatti ad ottenere uno Speedup di circa 2.6 volte %TODO scrivere specifiche macchina
- rispetto al corrispondente codice seriale della libreria skimage. Verrà anche analizzato l'overhead nel lancio dei kernel Cuda introdotto da Python rispetto a una versione scritta in C. \newline
-Nella soluzione finale viene inoltre implementata una versione parallela di exclusive scan composta da più kernel che risulta di particolare interesse nell'ambito dell'High Performance Computing.
+Il metodo migliore che verrà poi utilizzato per la soluzione finale sarà quello che sfrutta le API CUDA-Python e i kernel CUDA scritti manualmente, riuscirà infatti ad ottenere uno Speedup di circa 2.6 volte rispetto al corrispondente codice seriale della libreria skimage. \newline
+Per la soluzione finale verranno progettati vari kernel CUDA da utilizzare in sequenza ottenendo un nuovo pattern di programmazione parallela che risulta di particolare interesse nell'ambito dell'High Performance Computing.
 
-\chapter{Introduzione alla programmazione Parallela}
+%\chapter{Introduzione alla programmazione Parallela}
 % guardare altre tesi per vedere in che ordine metterlo
 % valutare se tenerlo o meno
 
 % introdurre almeno il signifficato di Device Host e blocco thread Cuda core
 
 \chapter{Introduzione e Analisi del Problema}
+\pagenumbering{arabic}
 \section{Introduzione}
 % spiegare il problema e la sua utilità, obbiettivo
 \subsection{Marching Squares (MS)} %valutare di farlo diventare capitolo
 L'algoritmo Marching Squares genera contorni per un campo scalare a due dimensioni. Data una matrice di valori e una soglia è in grado di trovare un insieme di segmenti che delimitano le aree della matrice in cui il valore contenuto dalle singole celle è maggiore della soglia data. 
-Una delle elaborazioni più utilizzate viene effettuata considerando separatamente ogni gruppo di quattro elementi della matrice disposti a forma di quadrato; ognuno di questi quadrati può ricadere in uno di sedici diversi casi possibili ben definiti. Per definire a quale tipo appartiene un certo quadrato bisogna prima binarizzare i valori dei quattro spigoli in base alla soglia data come illustrato nella figura 3.1; la posizione dei valori negli spigoli è importante poiché i sedici casi sono definiti con un'orientazione ben precisa. 
+Una delle elaborazioni più utilizzate viene effettuata considerando separatamente ogni gruppo di quattro elementi della matrice disposti a forma di quadrato; ognuno di questi quadrati può ricadere in uno di sedici diversi casi possibili ben definiti. Per definire a quale tipo appartiene un certo quadrato bisogna prima binarizzare i valori dei quattro spigoli in base alla soglia data come illustrato nella figura 1.1; la posizione dei valori negli spigoli è importante poiché i sedici casi sono definiti con un'orientazione ben precisa. 
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.65]{img/MS2.drawio.png}
     \caption{Schema processo di binarizzazione.}
 \end{figure} 
- In seguito alla fase iniziale di binarizzazione, in base alla soglia dei valori di ogni pixel viene applicata la logica dell'algoritmo Marching Squares. Come primo passaggio si assegna a ogni cella un numero da 0 a 15 in base ai valori binari assunti dai suoi spigoli, in seguito ogni cella viene mappata con il numero ad essa assegnato e una look-up table nella rispettiva disposizione di segmenti come mostrato nella figura 3.2.
+ In seguito alla fase iniziale di binarizzazione, in base alla soglia dei valori di ogni pixel viene applicata la logica dell'algoritmo Marching Squares. Come primo passaggio si assegna a ogni cella un numero da 0 a 15 in base ai valori binari assunti dai suoi spigoli, in seguito ogni cella viene mappata con il numero ad essa assegnato e una look-up table nella rispettiva disposizione di segmenti come mostrato nella figura 1.2.
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.6]{img/MS.drawio.png}
     \caption{Schema funzionamento dell'individuazione di contorni in Marching Squares.}
 \end{figure}
 % TODO sistemare numerazione immagini
-Nella figura 3.3 è possibile vedere una generica rappresentazione a colori dei sedici casi possibili nella versione più comune di Marching Squares, equivalente a quella riportata in bianco e nero nella figura 3.2.
-In questa versione vengono considerate delle isolinee ma esiste anche una variante in cui vengono considerate delle isobande che sono costruite con l'aggiunta alle barre di contorno di limiti superiori e inferiori come rappresentato nell'immagine 3.4. \newline Esistono anche versioni che invece dei quadrati utilizzano triangoli e vengono applicate per l'individuazione di meshes triangolari.
+Nella figura 1.3 è possibile vedere una generica rappresentazione a colori dei sedici casi possibili nella versione più comune di Marching Squares, equivalente a quella riportata in bianco e nero nella figura 1.2.
+In questa versione vengono considerate delle isolinee ma esiste anche una variante in cui vengono considerate delle isobande che sono costruite con l'aggiunta alle barre di contorno di limiti superiori e inferiori come rappresentato nell'immagine 1.4. \newline Esistono anche versioni che invece dei quadrati utilizzano triangoli e vengono applicate per l'individuazione di meshes triangolari.
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.32]{img/Marching_squares_isolines.svg.png}
@@ -228,7 +230,7 @@ Bioretics è l'azienda con cui è stara svolta la ricerca, opera in diversi sett
 L'azienda offre in sostanza un prodotto software che viene eseguito da macchine per la selezione della frutta e include l’utilizzo dell'algoritmo Marching Squares (MS). La sfida proposta dall'azienda è quella di ridurre i tempi di esecuzione di MS che è utilizzato nella fase di segmentazione dei difetti.
 Le macchine per la selezione gestiscono un flusso di circa 10 frutti al secondo, per cui c'è approssimativamente 0.1s a disposizione per ogni frutto. Un’implementazione parallela dell’algoritmo MS, che riesca a ottenere uno speedup anche solo di 1.1 sarebbe considerato un risultato positivo per l’azienda.
 Scendendo più nel merito degli aspetti tecnici, all’interno delle macchine vengono scattate immagini dei frutti da camere fissate e calibrate che sono poi elaborate da una CNN che a sua volta restituisce un tensore $W\times H\times C$, dove ogni canale rappresenta una classe (esempio: picciolo, ammaccatura, muffa).
-I canali vengono poi passati singolarmente al MS che definisce i contorni di ogni classe in base ad un valore di soglia specificato. Il risultato del processo è visibile dall’immagine della figura 3.5 dove si possono notare le varie classi delimitate da colori differenti. \newline
+I canali vengono poi passati singolarmente al MS che definisce i contorni di ogni classe in base ad un valore di soglia specificato. Il risultato del processo è visibile dall’immagine della figura 1.5 dove si possono notare le varie classi delimitate da colori differenti. \newline
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.25]{img/marching_squares_00000052_00000001.png}
@@ -242,7 +244,7 @@ In tutte le macchine sulle quali esegue il codice dell'azienda sono montate sche
 \subsection{Obbiettivo}
 L'obbiettivo concordato con l'azienda è quello di implementare una versione parallela su GPU (scheda video) dell'algoritmo Marching Squares. Ottenere di uno speedup rispetto alla versione utilizzata attualmente ovvero il metodo \verb|find_contours| della libreria skimage sarebbe considerata un successo. \newline
 Il software dell'azienda che attualmente richiama la funzione \verb|find_contours| è scritta in Python; è necessario quindi riuscire trovare un metodo per poter sfruttare l'esecuzione parallela su GPU da Python, operazione non comune dato che solitamente i kernel Cuda sono lanciati da codice C o C++ ovvero a un livello di astrazione molto più basso di Python e con strutture dati come puntatori compatibili con quelli di Cuda. \newline
-L'implementazione finale può essere rappresentata dallo schema in figura 3.6 ovvero una componente software che può essere richiamata direttamente da codice Python cioè un altro componente Python e delle parti aggiuntive di codice più a basso livello che siano in grado di lanciare ed eseguire codice sulla GPU in parallelo. L'unica parte della soluzione per cui la scelta del linguaggio da utilizzare risulta automatica è quella con cui si interfaccerà il codice dell'azienda, sarà quindi un modulo Python da cui poi si cercherà una strategia per arrivare all'esecuzione su GPU. \newline
+L'implementazione finale può essere rappresentata dallo schema in figura 1.6 ovvero una componente software che può essere richiamata direttamente da codice Python cioè un altro componente Python e delle parti aggiuntive di codice più a basso livello che siano in grado di lanciare ed eseguire codice sulla GPU in parallelo. L'unica parte della soluzione per cui la scelta del linguaggio da utilizzare risulta automatica è quella con cui si interfaccerà il codice dell'azienda, sarà quindi un modulo Python da cui poi si cercherà una strategia per arrivare all'esecuzione su GPU. \newline
 
 
 \begin{figure}[H]
@@ -258,7 +260,7 @@ Il metodo \verb|find_contours| di skimage [5] composto da due fasi principali. N
 Il metodo \verb|_get_contour_segments| è contenuto nel file \verb|_find_contours_cy.pyx| che è scritto in codice Cython [5]. Questo linguaggio è un superset di Python che permette di scrivere codice Python-like che effettua chiamate a funzioni C e può dichiarare tipi di dato del C, queste caratteristiche permettono al compilatore di generare codice ottimizzato per quanto riguarda i tempi di esecuzione rispetto all'equivalente in Python. \newline
 % confronto prestazione Python<-->Cython
 Non è semplice stabilire lo speedup del codice Cython rispetto al Python poiché il confronto dipende fortemente dalle strutture dati usate, il numero di funzioni C e Python richiamate e altri fattori che influiscono in maniera significativa sulla differenza tra i tempi di esecuzione dei due linguaggi. Indubbiamente le chiamate a funzioni C da codice Cython introducono un overhead rispetto alla stessa chiamata effettuata da C e le funzioni Python impiegano un tempo al massimo uguale ma sicuramente non minore delle stesse funzioni richiamate da codice Python nativo. \newline
-Nel complesso, però, se il codice Cython viene scritto con particolari accortezze nell'utilizzo di soli tipi di dato C e richiamando funzioni Python solo se indispensabili, allora il codice che ne deriva risulta estremamente più veloce della versione Python, con tempi di esecuzione si avvicinano alla versione C che teoricamente può essere considerata un suo limite inferiore. Queste osservazioni sono riscontrabili graficamente nei risultati dei test generici riportati nella figura 3.7. 
+Nel complesso, però, se il codice Cython viene scritto con particolari accortezze nell'utilizzo di soli tipi di dato C e richiamando funzioni Python solo se indispensabili, allora il codice che ne deriva risulta estremamente più veloce della versione Python, con tempi di esecuzione si avvicinano alla versione C che teoricamente può essere considerata un suo limite inferiore. Queste osservazioni sono riscontrabili graficamente nei risultati dei test generici riportati nella figura 1.7. 
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.9]{img/cython-vs-c.png}
@@ -273,6 +275,26 @@ Il codice del metodo \verb|find_contours| può essere considerato quindi già pa
 Con una immagine reale di $511\times 95$ il metodo \verb|find_contours| impiega in media circa \verb|0.001192s| %TODO specifiche macchina
 ovvero neanche tre millesimi di secondo.
 
+\section{Introduzione architettura GPU}
+% dire qualcosa almeno riguardo l'architettura di una GPU, perché non è detto che chi legge la conosca necessariamente.
+Una scheda video o GPU (Graphics Processing Unit) è un'unita di elaborazione progettata per l'elaborazione parallela. Viene solitamente sfruttata per l'elaborazione grafica ma è ampiamente utilizzata anche per applicazioni di calcolo intensivo dove è possibile parallelizzare le operazioni da eseguire. \newline
+Nella terminologia CUDA la GPU viene chiamata \verb|device|. CUDA definisce infatti il device come l'insieme di GPU (intesa come unità di calcolo) e delle sue memorie. Ci si riferisce invece come \verb|host| alla CPU e le sue memorie. \newline
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{img/arc-gpu.png}
+    \caption{Rappresentazione dell'architettura di un GPU. 
+}
+\end{figure} \newpage
+
+Come è possibile osservare dalla figura 1.8 l'hardware di una GPU è composto principalmente da unità logiche e memorie di vario genere.
+In primo piano si ha la memoria globale, l'interfaccia con l'host e degli Streaming Multiprocessor. Approfondendo, all'interno di ogni Streaming Multiprocessor sono presenti gli Streaming Processors, delle memorie cache e una memoria condivisa. \newline 
+L'unità di lavoro minima su una GPU è il \verb|thread|. Quando viene lanciato un kernel, le sue istruzioni vengono eseguite da tutti i thread, che sono raggruppati in \verb|warp| ovvero insiemi di 32 thread per i quali è garantita l'esecuzione in parallelo. Questo implica che il minimo numero di thread utilizzabili per un'operazione è 32, che la eseguiranno in parallelo sfruttando il paradigma SIMD (Single Instruction stream, Multiple Data stream).\newline
+I thread vengono raggruppati in array 3D chiamati \verb|block| che sono delle porzioni di lavoro indipendente che possono essere eseguiti da da uno Streaming Multiprocessor in qualsiasi ordine. \newline
+I blocchi vengono a loro volta raggruppati in array 2D (o 3D) chiamati \verb|grid| che sono pezzi di lavoro assegnabile ad una GPU.
+
+
+\newpage
 \section{Limiti della programmazione parallela}
 % intro generale ai problemi della prog parallela
 % spiegare che parte più dispendiosa in questo caso sarebbe caricamnto e scrittura dati visto che l'esecuzione di immagini di queste dimensioni è esigua
@@ -334,14 +356,14 @@ L'utilizzo dei questi tipi di dato C++ rispetto ai tipi Python permette di otten
 La porzione di codice più importante del metodo \verb|_get_contour_segments| è costituita da due cicli for annidati che scorrono tutta la matrice in input e considerano un quadrato di 4 celle ad ogni iterazione,  calcolano a quale dei sedici diversi tipi appartiene e aggiornano una struttura dati contenente tutti segmenti dei contorni trovati. \newline
 Nell'aggiornamento dei segmenti trovati possono presentarsi tre diversi casi per quanto riguarda il numero di segmenti trovati:
 \begin{itemize}
-\item 0 segmenti da aggiungere: per i tipi di MS numerati come 0 e 15 che sono quadrati con i 4 spigoli rispettivamente sotto e sopra la soglia di threshold non è necessario aggiungere alcun segmento poiché la relativa sezione dell'immagine in questione è completamente esclusa o inclusa in una certa classe,  non è attraversata quindi da segmenti del contorno come si può vedere dalla figura 3.8.
+\item 0 segmenti da aggiungere: per i tipi di MS numerati come 0 e 15 che sono quadrati con i 4 spigoli rispettivamente sotto e sopra la soglia di threshold non è necessario aggiungere alcun segmento poiché la relativa sezione dell'immagine in questione è completamente esclusa o inclusa in una certa classe,  non è attraversata quindi da segmenti del contorno come si può vedere dalla figura 1.9.
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
     \ffigbox[\FBwidth]{\caption{\small{Caso 0 e 15 dell'algoritmo Marching Squares.}}}{\includegraphics[scale=0.27]{img/Case_0_15.svg.png}}
 \end{floatrow}
 \end{figure}
-\item 2 segmenti da aggiungere: per i tipi di MS numerati come 6 e 9 che sono quadrati con le due coppie di spigoli opposti in cui una è maggiore e una minore della soglia.  In questi due casi i segmenti da disegnare sono due,  ci sono due aree appartenenti ad una certa classe che hanno contorni vicini ma separati come osservabile nella figura 3.9.
+\item 2 segmenti da aggiungere: per i tipi di MS numerati come 6 e 9 che sono quadrati con le due coppie di spigoli opposti in cui una è maggiore e una minore della soglia.  In questi due casi i segmenti da disegnare sono due,  ci sono due aree appartenenti ad una certa classe che hanno contorni vicini ma separati come osservabile nella figura 1.10.
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
@@ -349,7 +371,7 @@ Nell'aggiornamento dei segmenti trovati possono presentarsi tre diversi casi per
 \end{floatrow}
 \end{figure}
 
-\item 1 segmento da aggiungere: tutti gli altri tipi di MS esclusi quelli numerati 0, 15, 6 e 9 hanno solamente un segmento che li attraversa in diverse modalità con diverse configurazioni di valori per i quattro spigoli del quadrato.  Rappresentano i casi più comuni di aree di contorno e   solitamente compongono la porzione maggiore di segmenti di cui sono costituite le linee spezzate con cui viene disegnato il contorno. Le 12 configurazioni sono rappresentate nella figura 3.10.
+\item 1 segmento da aggiungere: tutti gli altri tipi di MS esclusi quelli numerati 0, 15, 6 e 9 hanno solamente un segmento che li attraversa in diverse modalità con diverse configurazioni di valori per i quattro spigoli del quadrato.  Rappresentano i casi più comuni di aree di contorno e   solitamente compongono la porzione maggiore di segmenti di cui sono costituite le linee spezzate con cui viene disegnato il contorno. Le 12 configurazioni sono rappresentate nella figura 1.11.
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
@@ -409,7 +431,7 @@ La principale criticità riscontrabile nel metodo è l'utilizzo di una lista e d
 \chapter{Versione parallela con nvc++} 
 La prima strategia esplorata consiste nel compilare il codice Cython con le ultime versioni del compilatore nvc++ che supporta dei flag per la parallelizzazione automatica su GPU.  Nvidia ha recentemente aggiornato \verb|stdpar,|  un flag che promette di parallelizzare automaticamente codice C++ su GPU utilizzando il compilatore nvc++ [2]. \newline
 Il processo parte da del codice Cython che tramite il proprio compilatore viene trasformato in codice C++.  A questo punto si compila il codice C++ utilizzando nvc++ e una serie di flag per la parallelizzazione su GPU tra cui \verb|stdpar|; infine si può richiamare il codice parallelizzato da Python tramite l'importazione del modulo generato. \newline
-Il processo documentato da Nvidia è descritto in forma schematica nella figura 4.1.
+Il processo documentato da Nvidia è descritto in forma schematica nella figura 2.1.
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
@@ -421,7 +443,7 @@ Il processo documentato da Nvidia è descritto in forma schematica nella figura 
 Per poter utilizzare il flag stdpar con una versione aggiornata di nvc++ è necessario installare \textit{Nvidia High Performance Computing Software Development Kit (HPC SDK)} sulla macchina su cui verrà effettuata la compilazione e l'esecuzione. Le opzioni disponibili per ottenere HPC SDK sono installarlo direttamente sulla macchina oppure utilizzare un container Docker configurato da Nvidia con tutte le dipendenze di nvc++ installate. \newline
 L'azienda Bioretics ha messo a disposizione un server con una scheda video RTX 2060 Super. Per evitare tutte le problematiche legate alle dipendenze come le loro versioni e il loro mantenimento è stato valutato di utilizzare la soluzione con Docker. \newline
 L'utilizzo del container Docker fornito da Nvidia si è rivelato però particolarmente ostico poiché per il suo avvio è stata necessaria una configurazione molto articolata che non era descritta nella guida all'utilizzo. Per il corretto funzionamento del container e del compilatore nvc++ è stata necessaria una particolare configurazione che permettesse al container di utilizzare la scheda video e i suoi driver con permessi specifici. 
-L'ambiente ottenuto sul server con la configurazione del container è rappresentato dalla figura 4.2.
+L'ambiente ottenuto sul server con la configurazione del container è rappresentato dalla figura 2.2.
 
 \begin{figure}[H]
 \centering
@@ -442,7 +464,7 @@ Per ognuno dei due task relativi alle due funzioni appena descritte sono state u
 \item Versione parallela su GPU che utilizza sempre le policy di esecuzione parallela ma è compilata con nvc++ e l'opzione \verb|-stdpar|.
 \end{itemize}
 
-Nei test effettuati da Nvidia sull'ordinamento di numeri presentati in figura 4.3 è rappresentato lo speedup delle tre versioni rispetto all'implementazione di Numpy della funzione sort(). Si può notare uno speedup di circa 20 volte nel test con il numero maggiore di elementi per la versione parallelizzata su GPU da nvc++ con -stdpar; risultato apparentemente molto promettente. Nei test con un basso numero di elementi risultano però migliori le due versioni su CPU (seriali e parallele). Questo fenomeno è dovuto all'overhead introdotto da un'esecuzione parallela su GPU che comporta il trasferimento di dati sulle memorie. Il problema è lo stesso discusso precedentemente in relazione alle dimensioni ridotte delle immagini utilizzate nell'applicazione reale oggetto di questa ricerca.
+Nei test effettuati da Nvidia sull'ordinamento di numeri presentati in figura 2.3 è rappresentato lo speedup delle tre versioni rispetto all'implementazione di Numpy della funzione sort(). Si può notare uno speedup di circa 20 volte nel test con il numero maggiore di elementi per la versione parallelizzata su GPU da nvc++ con -stdpar; risultato apparentemente molto promettente. Nei test con un basso numero di elementi risultano però migliori le due versioni su CPU (seriali e parallele). Questo fenomeno è dovuto all'overhead introdotto da un'esecuzione parallela su GPU che comporta il trasferimento di dati sulle memorie. Il problema è lo stesso discusso precedentemente in relazione alle dimensioni ridotte delle immagini utilizzate nell'applicazione reale oggetto di questa ricerca.
 
 \begin{figure}[H]
 \centering
@@ -451,7 +473,7 @@ Nei test effettuati da Nvidia sull'ordinamento di numeri presentati in figura 4.
 \end{floatrow}
 \end{figure} 
 
-Nei test sulle iterazione del metodo di Jacobi il fenomeno riscontrato con .sort() non si presenta come osservabile nella figura 4.4. Il test con il numero di elementi minore comporta un carico di lavoro nettamente maggiore rispetto a quello del test precedente ed è quindi già in grado di ammortizzare il costo impiegato per l'esecuzione parallela su GPU.
+Nei test sulle iterazione del metodo di Jacobi il fenomeno riscontrato con .sort() non si presenta come osservabile nella figura 2.4. Il test con il numero di elementi minore comporta un carico di lavoro nettamente maggiore rispetto a quello del test precedente ed è quindi già in grado di ammortizzare il costo impiegato per l'esecuzione parallela su GPU.
 I risultati ottenuti in questi benchmark sono ancora più eclatanti, tanto da insospettirsi sul fatto che siano realmente ottenibili anche su altre funzioni di utilizzo reale. \newline
 Bisogna considerare infatti che tutti i risultati ottenuti in questi test con il compilatore nvc++ e la direttiva \verb|-stdpar| sono stati eseguiti su una macchina con componenti hardware di fascia altissima che sviluppano una potenza di calcolo estremamente lontana da quella della maggior parte delle macchine utilizzate in ambito enterprise. Infatti la GPU utilizzata da Nvidia per questi test è una Nvidia A100 ovvero una scheda che si trova in configurazioni con decine di GB di memoria a costi molto maggiori a quelli di una generica GPU di fascia alta. \newline
 Oltre all'hardware bisogna anche considerare che i task su cui sono stati effettuati i test comprendevano esclusivamente esecuzione di codice interamente parallelizzabile; strutturalmente quindi molto distante dal codice utilizzato come base per questo progetto.
@@ -497,7 +519,7 @@ In seguito a queste conclusioni è stato valutato di non proseguire con questa s
 
 \section{API Cuda-Python}
 Cuda-Python è un progetto nato per unificare l'ecosistema di utilizzo di CUDA da Python con un insieme di interfacce a basso livello in grado di mettere a disposizione una copertura completa all'accesso da codice Python alle API dell'host CUDA [4]. Il principale obbiettivo è quello di agevolare i programmatori Python nell'utilizzo di GPU Nvidia. \newline \newline
-Per poter utilizzare le API Cuda-Python è necessario il CUDA Toolkit (dalla versione 12.0 alla 12.2) e predisporre una macchina che abbia una versione aggiornata sia di Python (da 3.8 a 3.11) che dei Driver Nvidia specifici per le proprie schede video. \newline
+Per poter utilizzare le API Cuda-Python è necessario il CUDA Toolkit (dalla versione 12.0 alla 12.2) e predisporre una macchina che abbia una versione aggiornata sia di Python (da 1.8 a 1.11) che dei Driver Nvidia specifici per le proprie schede video. \newline
 Dal CUDA Toolkit è richiesto solamente il componente NVRTC che è utilizzato a runtime per la compilazione di codice CUDA C++. \newline
 La scheda video della macchina su cui viene utilizzato deve essere Nvidia e compatibile con l'utilizzo di CUDA.
 
@@ -510,7 +532,7 @@ In generale il processo di esecuzione parallela del codice Cuda partendo da codi
     \item Allocazione manuale di tutte le risorse necessarie su GPU
     \item Compilazione codice Cuda (contenuto in stringa Python) con NVRTC
     \begin{itemize}
-        \item Nella seguente figura 5.1 viene riportato uno schema su questo processo di compilazione
+        \item Nella seguente figura 3.1 viene riportato uno schema su questo processo di compilazione
     \end{itemize}
         \begin{figure}[H]
         \centering
@@ -698,7 +720,7 @@ void saxpy(float a, float *x, float *y, float *out, size_t n)
 """
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
-I risultati ottenuti dal team di Nvidia sono riportati nella tabella 5.1 in cui si può notare come la versione C++ e Python appaiano estremamente simili come tempi di esecuzione, sia per le pure esecuzioni dei kernel che per il tempo totale dell'applicazione. Si può osservare come la versione Python introduca un piccolo overhead riscontrabile nella differenza tra i due tempi di esecuzione dell'applicazione intera che differiscono di qualche millisecondo. Le versioni kernel invece non hanno alcun tipo di differenza nei tempi di esecuzione, questo significa che una volta che i kernel sono lanciati la loro esecuzione non viene influenzata dal metodo utilizzato per lanciarli.
+I risultati ottenuti dal team di Nvidia sono riportati nella tabella 3.1 in cui si può notare come la versione C++ e Python appaiano estremamente simili come tempi di esecuzione, sia per le pure esecuzioni dei kernel che per il tempo totale dell'applicazione. Si può osservare come la versione Python introduca un piccolo overhead riscontrabile nella differenza tra i due tempi di esecuzione dell'applicazione intera che differiscono di qualche millisecondo. Le versioni kernel invece non hanno alcun tipo di differenza nei tempi di esecuzione, questo significa che una volta che i kernel sono lanciati la loro esecuzione non viene influenzata dal metodo utilizzato per lanciarli.
 
 
 %\captionsetup{labelsep=newline,
@@ -727,7 +749,7 @@ Application execution & 1076 ms & 1080 ms  \\
 \section{Progettazione struttura codice parallelo}
 La soluzione da sviluppare deve essere in grado di usufruire delle risorse GPU per i calcoli dell'algoritmo Marching Squares partendo da una chiamata ad un metodo Python, per poter essere integrato al codice utilizzato da Bioretics. \newline
 L'idea che comprende l'utilizzo delle API CUDA-Python è di creare un modulo Python richiamabile dal codice dell'azienda che tramite le API dei Driver CUDA riesca a caricare i dati, lanciare i kernel e recuperare il risultato dalla GPU per poi restituirlo all'applicazione Python. \newline
-Può essere quindi definito il nuovo quadro generale per questa soluzione che definisce il ponte tra il codice Python e il codice CUDA osservabile nella figura 5.2. \\[10pt]
+Può essere quindi definito il nuovo quadro generale per questa soluzione che definisce il ponte tra il codice Python e il codice CUDA osservabile nella figura 3.2. \\[10pt]
 
 \begin{figure}[H]
 \centering
@@ -745,7 +767,7 @@ La struttura dati utilizzata per il risultato dalla versione seriale di skimage 
 Una lista è una struttura dati estremamente flessibile che può essere creata senza dover specificare a priori la quantità di memoria che dovrà essere utilizzata in seguito, a cui possono essere aggiunti elementi in modo incrementale. 
 Oltre alla lista viene anche utilizzata la struttura dati tupla che può essere simulata in C con \verb|struct|. Ma dato che nella versione di skimage viene utilizzata una tupla contente due tuple non è possibile creare un array contenente questa struttura dati avendo la certezza che la memoria utilizzata sia contigua. Gli elementi di una tupla vengono disposti in modo contiguo in memoria solo se la loro dimensione è multipla di quella utilizzata dal compilatore altrimenti viene inserito del padding tra un elemento e l'altro. In questo caso il tipo utilizzato è il \verb|double| che occupa 8 byte e potrebbe quindi essere disposto in sequenza in memoria senza l'aggiunta di padding. Per quanto riguarda una tupla contente due tuple però non è possibile stabilire con certezza come verranno disposti in memoria: non è quindi una soluzione ottimizzata utilizzare un array contenente queste tuple. \newline
 Una struttura dati supportata nativamente da C che possa sostituire una lista di tuple contenenti tuple di double sono un insieme di 4 array. Non è la sola a poter esser utilizzata ma è quella che ottimizza maggiormente l'utilizzo dello spazio dei propri elementi e dello spazio totale. Ovviamente mantenere 4 array disconnessi fisicamente ma uniti solo a livello logico è un metodo più delicato e richiede un'attenzione maggiore per mantenerli consistenti. L'idea è di memorizzare i 4 double utilizzando un unico indice per accedere alla stessa rispettiva posizione nei 4 array C. \newline
-La struttura dati mantenuta su Python da skimage è rappresentata nella figura 5.3 e quella che verrà utilizzata per la versione parallela nella figura 5.4. \newline
+La struttura dati mantenuta su Python da skimage è rappresentata nella figura 3.3 e quella che verrà utilizzata per la versione parallela nella figura 3.4. \newline
 
 
 
@@ -796,7 +818,7 @@ else {
 \end{lstlisting}
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
 \newpage
-L'output di questo primo kernel sarà quindi un vettore di dimensione pari al totale delle celle analizzabili dell'immagine e conterrà per ognuno di essi un valore da 0 a 2 che indica quanti segmenti dovrà memorizzare come mostrato nella figura 5.5. I valori per ogni cella sono memorizzati nell'array risultato con una logica posizionale che associa dal primo elemento all'ultimo i valori delle celle dell'immagine scorrendole da sinistra a destra e dall'alto verso il basso.
+L'output di questo primo kernel sarà quindi un vettore di dimensione pari al totale delle celle analizzabili dell'immagine e conterrà per ognuno di essi un valore da 0 a 2 che indica quanti segmenti dovrà memorizzare come mostrato nella figura 3.5. I valori per ogni cella sono memorizzati nell'array risultato con una logica posizionale che associa dal primo elemento all'ultimo i valori delle celle dell'immagine scorrendole da sinistra a destra e dall'alto verso il basso.
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
@@ -807,7 +829,7 @@ Non abbiamo ancora a disposizione il numero di posizioni totali necessarie per m
 
 \subsection{Kernel reduce}
 Per calcolare la somma di tutti gli elementi dell'array di output del kernel required\_memory è necessario effettuare un'operazione di riduzione che è possibile parallelizzare. \newline
-La sum-reduce viene effettuata utilizzando ad ogni passaggio un numero di thread pari alla metà del numero di elementi rimasti. Ad ogni iterazione ogni thread somma al valore presente nella posizione dell'array rispettiva al proprio indice \verb|threadIdx.x| il valore nella metà superiore corrispondente alla stessa posizione ovvero \verb|(blockDim.x / 2) + threadIdx.x|. \newline In questo modo il risultato può essere ottenuto in $O(\log_2 n)$ passi paralleli come mostrato nell'immagine 5.6.
+La sum-reduce viene effettuata utilizzando ad ogni passaggio un numero di thread pari alla metà del numero di elementi rimasti. Ad ogni iterazione ogni thread somma al valore presente nella posizione dell'array rispettiva al proprio indice \verb|threadIdx.x| il valore nella metà superiore corrispondente alla stessa posizione ovvero \verb|(blockDim.x / 2) + threadIdx.x|. \newline In questo modo il risultato può essere ottenuto in $O(\log_2 n)$ passi paralleli come mostrato nell'immagine 3.6.
 
 \begin{figure}[H]
 \centering
@@ -860,7 +882,7 @@ Una volta ricavato quanto sia il totale di segmenti che andranno memorizzati sol
 Ora che possiamo allocare tutto lo spazio necessario e che tutti i thread che eseguiranno MS avranno uno spazio sufficiente per scrivere i segmenti trovati, è necessario definire in quali posizioni della memoria a loro riservata ognuno dovrà scrivere. \newline
 Esiste una funzione da applicare a un array che calcola esattamente il risultato di cui abbiamo bisogno, ovvero un array che contiene le posizioni in cui il thread corrispondente alla posizione in cui è salvata deve scrivere i suoi risultati.
 Questa funzione è la exclusive scan (chiamata anche prescan), che calcola tutti i prefissi di un array in base ad una operazione binaria data che nel nostro caso è quella di somma. \newline
-La principale caratteristica dell'exclusive scan è che nella prima posizione dell'array risultato viene messo il valore dell'elemento neutrale dell'operazione utilizzata (lo zero per la somma). Tutti i valori del risultato sono quindi spostati di una posizione verso destra e l'ultimo valore dell'array in input non viene considerato. Un esempio di array risultato prodotto dalla exclusive scan è riportato nella figura 5.7.
+La principale caratteristica dell'exclusive scan è che nella prima posizione dell'array risultato viene messo il valore dell'elemento neutrale dell'operazione utilizzata (lo zero per la somma). Tutti i valori del risultato sono quindi spostati di una posizione verso destra e l'ultimo valore dell'array in input non viene considerato. Un esempio di array risultato prodotto dalla exclusive scan è riportato nella figura 3.7.
 
 \begin{figure}[H]
 \centering
@@ -883,19 +905,19 @@ Questa particolare versione permette l'applicazione della exclusive scan ad arra
 % TODO spiegare meglio motivazioni approfondendo aspetti tecnici
 
  In pratica il kernel prescan esegue una exclusive scan su tutto l’array ma a comparti di 64 elementi; ogni 64 posizioni dell’array principale il conteggio riparte da zero. \newline 
-Nella figura 5.8 è rappresentato un esempio del risultato prodotto dal kernel \verb|prescan| con il numero di elementi per blocco ridotto da 64 a 20 per semplicità.
+Nella figura 3.8 è rappresentato un esempio del risultato prodotto dal kernel \verb|prescan| con il numero di elementi per blocco ridotto da 64 a 20 per semplicità.
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
     \ffigbox[\FBwidth]{\caption{\small{Esempio di risultato del kernel prescan con blocchi da 20 elementi invece di 64.}}}{\includegraphics[scale=0.8]{img/prescanK1Ris.drawio.png}}
 \end{floatrow}
 \end{figure} 
-Sempre all’interno del kernel \verb|prescan| si salva l’ultimo valore di ogni blocco (colorato in blu nella figura 5.8) cioè la somma di tutti i valori che contiene (il 64° elemento) in un altro array chiamato \verb|sums| con dimensione pari al numero di blocchi utilizzato. Se si facesse riferimento all'esempio della figura 5.8 il vettore \verb|sums| conterrebbe nelle prime due posizioni i valori 4 e 3.
+Sempre all’interno del kernel \verb|prescan| si salva l’ultimo valore di ogni blocco (colorato in blu nella figura 3.8) cioè la somma di tutti i valori che contiene (il 64° elemento) in un altro array chiamato \verb|sums| con dimensione pari al numero di blocchi utilizzato. Se si facesse riferimento all'esempio della figura 3.8 il vettore \verb|sums| conterrebbe nelle prime due posizioni i valori 4 e 3.
 Si prosegue poi con il kernel \verb|prescan_small| che lavora con 1 solo blocco di thread ed effettua una exclusive scan sull’array \verb|sums|.
 Infine si utilizza un ulteriore kernel denominato \verb|add| che si occupa di sommare a \verb|res_prescan| citato sopra il rispettivo valore contenuto nel risultato del kernel \verb|prescan_small| (che sostanzialmente è la somma di tutti i valori dei compartimenti da 64 precedenti) per compartimenti da 64. \newpage
 
 % descrizione 3 kernel per la reduce
-Nella seguente figura 5.9 viene rappresentato in modo semplificato in che modo i tre kernel collaborano per ottenere il risultato dell'exclusive scan.
+Nella seguente figura 3.9 viene rappresentato in modo semplificato in che modo i tre kernel collaborano per ottenere il risultato dell'exclusive scan.
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
@@ -1088,7 +1110,7 @@ void marching_squares(double *image, double *result_1x, double *result_1y, doubl
 % mettere e spiegare codice per lancio kernel
 Per poter lanciare i kernel CUDA da Python è necessario utilizzare le API CUDA Python come descritto in precedenza. \newline
 Questo componente serve da interfaccia per le chiamate Python esterne e si occupa di tutto il necessario per poter lanciare i kernel sopra descritti ottenendo il risultato richiesto. \newline
-Questo modulo è costituito principalmente da codice molto simile a quello descritto nella sezione 5.1.2. Tutte le logiche di preparazione e lancio di un kernel sono però moltiplicate per 6; ovvero il numero di kernel totali che sono necessari come descritto in precedenza. \newline
+Questo modulo è costituito principalmente da codice molto simile a quello descritto nella sezione 3.1.2. Tutte le logiche di preparazione e lancio di un kernel sono però moltiplicate per 6; ovvero il numero di kernel totali che sono necessari come descritto in precedenza. \newline
 Per motivi di praticità, ci limitiamo a riportare e analizzare solo le parti più significative. \newline \newline
 Tra un kernel e l'altro la funzione \verb|cuda.cuStreamSynchronize(stream)| indicata da Nvidia non si è rivelata sufficiente per una corretta esecuzione: si presentava infatti un \verb|illegal access error| che terminava l'esecuzione. Un errore di questo tipo solitamente è causato da un errore all'interno del codice ma in questo caso si è scoperto essere dovuto a un problema delle API Cuda Python, che faticano a gestire chiamate consecutive senza pause generando ritardi nella risoluzione delle chiamate ai driver Nvidia.
 Per risolvere il problema è stato necessario effettuare numerose prove che hanno condotto all'aggiunta di una ulteriore funzione in accoppiata a \verb|cuda.cuStreamSynchronize(stream)| che permette di risolvere il problema. Come si può vedere nel seguente estratto di codice è stata aggiunta la sincronizzazione anche del \verb|context| oltre che a quella dello \verb|stream|. \\[10pt]
@@ -1105,7 +1127,7 @@ ASSERT_DRV(err)
 \noindent\rule[0.5ex]{\linewidth}{1pt} \\[10pt]
 
 \newpage
-Per quanto riguarda invece il lancio del kernel finale \verb|marching_squares| va fatta un'osservazione sulla corrispondenza tra le celle dell'immagine da esaminare con MS e i thread che se ne occupano. Come analizzato in precedenza nella sezione del kernel \verb|marching_squares| ad ogni thread viene assegnata la cella dell'immagine il cui spigolo in alto a sinistra corrisponde come posizione nella matrice. Di conseguenza il numero di pixel sarà maggiore del numero di thread necessari, per esattezza il numero di thread sarà $numero\_pixel - altezza\_immagine - larghezza\_immagine + 1$. Il calcolo è facilmente intuibile dalla figura 5.10 che riporta l'associazione tra un thread e una singola cella composta da 4 pixel sulla sinistra e mostra quanti thread sono necessari (celle in azzurro) per coprire una certa matrice di pixel sulla destra.
+Per quanto riguarda invece il lancio del kernel finale \verb|marching_squares| va fatta un'osservazione sulla corrispondenza tra le celle dell'immagine da esaminare con MS e i thread che se ne occupano. Come analizzato in precedenza nella sezione del kernel \verb|marching_squares| ad ogni thread viene assegnata la cella dell'immagine il cui spigolo in alto a sinistra corrisponde come posizione nella matrice. Di conseguenza il numero di pixel sarà maggiore del numero di thread necessari, per esattezza il numero di thread sarà $numero\_pixel - altezza\_immagine - larghezza\_immagine + 1$. Il calcolo è facilmente intuibile dalla figura 3.10 che riporta l'associazione tra un thread e una singola cella composta da 4 pixel sulla sinistra e mostra quanti thread sono necessari (celle in azzurro) per coprire una certa matrice di pixel sulla destra.
 
 \begin{figure}[H]
 \centering
@@ -1163,7 +1185,7 @@ Tutti i test seguenti sono stati svolti su una macchina con una Nvidia 1050 Ti.
 
 \section{Immagine reale}
 L'immagine in questione è stata fornita da Bioretics e contiene una quantità di bordi che rappresenta indicativamente la media individuabile in un set di scatti. Oltre ad individuare i contorni dei difetti del frutto vengono esaminate anche tutte le altre aree dell'immagine comprese alcune zone dei rulli in cui la CNN ha attribuito una classe (anche la classe "rullo" viene assegnata).
-L'immagine utilizzata per questi test è riportata nella figura 6.1.
+L'immagine utilizzata per questi test è riportata nella figura 4.1.
 %TODO immagine reale e sintetica
 %TODO immagini da sole e con contorni
 \begin{figure}[H]
@@ -1174,39 +1196,39 @@ L'immagine utilizzata per questi test è riportata nella figura 6.1.
 \end{figure} 
 Questo preciso scatto ritrae un'albicocca che ruota sui nastri su cui la CNN ha individuato un difetto sulla buccia nella parte alta del frutto e il picciolo. Sono state trovate anche molte zone che fanno parte della struttura o dei rulli stessi. La foto viene scatta inquadrando un'area così abbondante dei rulli poiché sarebbe troppo complesso individuare la posizione esatta in cui si troverà un certo frutto che scorre e rotola a velocità elevata davanti alla camera.
 \newpage
-Prima di essere passata al metodo che applica MS l'immagine viene ridimensionata notevolmente e convertita in scala di grigi (grayscale). L'immagine in input al test effettuato sul codice è riportato in figura 6.1.
-L'output è stato riportato in formato grafico nell'immagine 6.3 in cui si possono notare dei bordi colorati che sono stati ricostruiti attorno alle aree con valore maggiore della soglia (impostata in questo caso a $0.5$).
+Prima di essere passata al metodo che applica MS l'immagine viene ridimensionata notevolmente e convertita in scala di grigi (grayscale). L'immagine in input al test effettuato sul codice è riportato in figura 4.1.
+L'output è stato riportato in formato grafico nell'immagine 4.3 in cui si possono notare dei bordi colorati che sono stati ricostruiti attorno alle aree con valore maggiore della soglia (impostata in questo caso a $0.5$).
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
-    \ffigbox[\FBwidth]{\caption{\small{Immagine 6.1 ridimensionata e convertita in grayscale.}}}{\includegraphics[scale=1.25]{img/Figure_4.png}}
+    \ffigbox[\FBwidth]{\caption{\small{Immagine 4.1 ridimensionata e convertita in grayscale.}}}{\includegraphics[scale=1.25]{img/Figure_4.png}}
 \end{floatrow}
 \end{figure} 
 
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
-    \ffigbox[\FBwidth]{\caption{\small{Immagine 6.2 con disegnati i contorni individuati.}}}{\includegraphics[scale=1.25]{img/Figure_1.png}}
+    \ffigbox[\FBwidth]{\caption{\small{Immagine 4.2 con disegnati i contorni individuati.}}}{\includegraphics[scale=1.25]{img/Figure_1.png}}
 \end{floatrow}
 \end{figure} 
-Sono riportati quindi nelle immagine 6.5 i contorni relativi al difetto e del picciolo del frutto dell'immagine 6.4.
+Sono riportati quindi nelle immagine 4.5 i contorni relativi al difetto e del picciolo del frutto dell'immagine 4.4.
 
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
-    \ffigbox[\FBwidth]{\caption{\small{Foto del frutto (albicocca) estratto dall'immagine 5.11.}}}{\includegraphics[scale=1]{img/Figure_6color.png}}
+    \ffigbox[\FBwidth]{\caption{\small{Foto del frutto (albicocca) estratto dall'immagine 3.11.}}}{\includegraphics[scale=1]{img/Figure_6color.png}}
 \end{floatrow}
 \end{figure} 
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
-    \ffigbox[\FBwidth]{\caption{\small{Ingrandimento di una sezione dell'immagine 5.13.}}}{\includegraphics[scale=1.1]{img/Figure_6.png}}
+    \ffigbox[\FBwidth]{\caption{\small{Ingrandimento di una sezione dell'immagine 3.13.}}}{\includegraphics[scale=1.1]{img/Figure_6.png}}
 \end{floatrow}
 \end{figure} 
 \newpage
 In termini di prestazioni sono stati registrati tempi di esecuzione minori di quelli impiegati dalla funzione \verb|find_contours|. Si è quindi ottenuto uno speedup raggiungendo l'obbiettivo del progetto, va però fatta una importante osservazione sul metodo di misura di questo speedup. \newline
 La funzione \verb|find_contours| è costituita da due componenti principali come descritto in precedenza, la seconda parte \verb|_assemble_contours| che si occupa della congiunzione dei segmenti di contorno adiacenti, dovrebbe essere idealmente esclusa dalla misurazione dei tempi di esecuzione. Non è possibile farlo però in maniera esatta poiché la chiamata a \verb|_assemble_contours| viene fatta all'interno del metodo \verb|find_contours| di cui è possibile misurare solo i tempi di esecuzione totali. Dato che il codice della libreria skimage è pubblico e reperibile è stato possibile fare un test indicativo dei tempi di esecuzione di \verb|_assemble_contours| testandoli sul singolo metodo con lo stesso input che avrebbe ricevuto se richiamato all'interno di \verb|find_contours|. 
-I tempi di esecuzione misurati per le due diverse versioni e quello calcolato come stima del metodo \verb|_assemble_contours| sono riportati nella seguente tabella 6.1. 
+I tempi di esecuzione misurati per le due diverse versioni e quello calcolato come stima del metodo \verb|_assemble_contours| sono riportati nella seguente tabella 4.1. 
 
 \begin{table}[h]
 \centering
@@ -1225,7 +1247,7 @@ Metodo con API CUDA-Python  & 0.000283867 s\\
 \end{tabular*}
 \end{table} 
 \newpage
-I tempi sono stati riportati graficamente nella figura 6.6. Nella barra che rappresenta la versione skimage ovvero tutto il metodo \verb|find_contours| è stata colorata in azzurro più chiaro la porzione che si è stimato impieghi il metodo \verb|_assemble_contours|. \newline
+I tempi sono stati riportati graficamente nella figura 4.6. Nella barra che rappresenta la versione skimage ovvero tutto il metodo \verb|find_contours| è stata colorata in azzurro più chiaro la porzione che si è stimato impieghi il metodo \verb|_assemble_contours|. \newline
 Come si può notare, la versione parallela sviluppata con le API CUDA-Python applica l'algoritmo Marching Squares impiegando un tempo minore rispetto alla versione skimage con un ampio margine.
 
 %TODO grafici tempi e speedup
@@ -1239,7 +1261,7 @@ Come si può notare, la versione parallela sviluppata con le API CUDA-Python app
 Si possono fare anche osservazioni sul codice sviluppato da skimage, che presenta delle scelte progettuali estremamente distanti tra loro nei due metodi che costituiscono \verb|find_contours|. Il metodo interno \verb| _get_contour_segments| che applica l'algoritmo Marching Squares è stato particolarmente ottimizzato con l'utilizzo del Cython in modo da ridurre i tempi al minimo. Il metodo \verb|_assemble_contours| invece è composto quasi interamente da pesanti operazioni su liste Python che sono estremamente dispendiose in termini di tempo di esecuzione. Come si può vedere dal grafico la stima del tempo impiegato per l'esecuzione di \verb|_assemble_contours| occupa circa la metà del tempo totale medio impiegato da \verb|find_contours|.
 \newpage
 
-Gli speedup della versione parallela calcolati sulla base delle misurazioni precedenti sono stati riportati nella tabella 6.2. Per completezza è stato inserito anche lo speedup misurato sul tempo totale di \verb|find_contours| dato che la misura del tempo impiegato da \verb|_assemble_contours| che è stato sottratto a quello di \verb|find_contours| per il calcolo dello speedup è una stima.
+Gli speedup della versione parallela calcolati sulla base delle misurazioni precedenti sono stati riportati nella tabella 4.2. Per completezza è stato inserito anche lo speedup misurato sul tempo totale di \verb|find_contours| dato che la misura del tempo impiegato da \verb|_assemble_contours| che è stato sottratto a quello di \verb|find_contours| per il calcolo dello speedup è una stima.
 
 \begin{table}[h]
 \centering
@@ -1261,7 +1283,7 @@ Il valore più importante che determina il successo del progetto è quello dello
 \newpage
 
 \section{Immagine artificiale}
-Le dimensioni dell'immagine generata artificialmente sono le stesse di quella reale ovvero $511 \times 95$. Questa immagine però ha un numero maggiore di segmenti necessari per definire i contorni, ne consegue un maggior carico di lavoro per l'algoritmo Marching Squares che dove gestire più casi di celle che necessitano di un segmento di contorno. L'immagine con cui sono stati effettuati i test è stata creata con l'utilizzo di funzioni matematiche ed è riportato nella figura 6.7. L'output del codice parallelo a cui è stata passato in input questa immagine è osservabile dalla figura 6.8 sottostante.
+Le dimensioni dell'immagine generata artificialmente sono le stesse di quella reale ovvero $511 \times 95$. Questa immagine però ha un numero maggiore di segmenti necessari per definire i contorni, ne consegue un maggior carico di lavoro per l'algoritmo Marching Squares che dove gestire più casi di celle che necessitano di un segmento di contorno. L'immagine con cui sono stati effettuati i test è stata creata con l'utilizzo di funzioni matematiche ed è riportato nella figura 4.7. L'output del codice parallelo a cui è stata passato in input questa immagine è osservabile dalla figura 4.8 sottostante.
 
 
 \begin{figure}[H]
@@ -1274,11 +1296,11 @@ Le dimensioni dell'immagine generata artificialmente sono le stesse di quella re
 \begin{figure}[H]
 \centering
 \begin{floatrow}[1]
-    \ffigbox[\FBwidth]{\caption{\small{Immagine 6.7 con disegnati i contorni individuati.}}}{\includegraphics[scale=1.25]{img/Figure_2.png}}
+    \ffigbox[\FBwidth]{\caption{\small{Immagine 4.7 con disegnati i contorni individuati.}}}{\includegraphics[scale=1.25]{img/Figure_2.png}}
 \end{floatrow}
 \end{figure} 
 
-I tempi di esecuzione sono stati raccolti con lo stesso metodo descritto per l'immagine reale, con la sola differenza che in input alle funzioni è stata passata l'immagine artificiale. La tabella 6.3 riporta i tre tempi misurati.
+I tempi di esecuzione sono stati raccolti con lo stesso metodo descritto per l'immagine reale, con la sola differenza che in input alle funzioni è stata passata l'immagine artificiale. La tabella 4.3 riporta i tre tempi misurati.
 
 \begin{table}[H]
 \centering
@@ -1297,7 +1319,7 @@ Metodo con API CUDA-Python          & 0.000310 s\\
 \end{tabular*}
 \end{table} 
 \newpage
-Anche in questo caso sono stati rappresentati in maniera grafica i tempi di esecuzione delle due versioni consultabili dall'immagine 6.9. In questo caso la porzione della versione skimage occupata da \verb|_assemble_contours| risulta in proporzione ancora maggiore del totale di \verb|find_contours| rispetto a quanto visto con l'immagine reale. Il motivo è dato dal numero maggiore di segmenti individuati per i contorni che mettono in evidenza la scarsa efficienza della funzione \verb|_assemble_contours|. %\newline
+Anche in questo caso sono stati rappresentati in maniera grafica i tempi di esecuzione delle due versioni consultabili dall'immagine 4.9. In questo caso la porzione della versione skimage occupata da \verb|_assemble_contours| risulta in proporzione ancora maggiore del totale di \verb|find_contours| rispetto a quanto visto con l'immagine reale. Il motivo è dato dal numero maggiore di segmenti individuati per i contorni che mettono in evidenza la scarsa efficienza della funzione \verb|_assemble_contours|. %\newline
 Il tempo di esecuzione impiegato dalla versione parallela di MS con le API CUDA-Python risulta anche in questo caso inferiore di quella di skimage in un rapporto ancora maggiore rispetto a quello riscontrato con l'immagine reale.
 \begin{figure}[H]
 \centering
@@ -1305,7 +1327,7 @@ Il tempo di esecuzione impiegato dalla versione parallela di MS con le API CUDA-
     \ffigbox[\FBwidth]{\caption{\small{Tempi di esecuzione delle due metodi analizzati misurati sull'immagine artificiale.}}}{\includegraphics[scale=0.6]{img/grafico-tempi-esec-art.png}}
 \end{floatrow}
 \end{figure} 
-Per l'immagine artificiale il calcolo dello speedup è stato effettuato nello stesso modo utilizzato in precedenza per l'immagine reale e valgono le stesse osservazioni sulla completezza dei valori riportati nella tabella 6.4.
+Per l'immagine artificiale il calcolo dello speedup è stato effettuato nello stesso modo utilizzato in precedenza per l'immagine reale e valgono le stesse osservazioni sulla completezza dei valori riportati nella tabella 4.4.
 \begin{table}[H]
 \centering
 \setlength\tabcolsep{0pt} % let LaTeX figure out amount of inter-column whitespace
@@ -1329,29 +1351,21 @@ Lo speedup ottenuto rispetto all'esecuzione di MS interna a \verb|find_contours|
 
 %TODO spiegare modalità di calcolo speedup per cuda con throughput poichè non è possibile sapare quanti cuda core utilizzati e che nel nostro caso coincidono con il numero di pixel - width - height +1
 
-%OK grafico con barre in base a tempo di esecuzione e colorare due barre sovrapposte con proporzioni tempi assemble contours
-
-%OK grafico
-%|____________________________tempo di esec
-%|-----------------| skimage
-%|------|mio
-
-%OK NOTA se si vuole misurare tempo di 2° paarte di find_contours() poi meglio lasciare distinte le due misurazioni (lib completa e assemble contours) in modo di dare a chi legge la possibilità di valutare la precisione non perfetta della misura
-\newpage
-
-
-%TODO \subsection{Variante con lancio kernel da codice C}
-%TODO mostrare overhead lancio kernel da python rispetto a C
-
-% speedup, ecc.. In sostanza si descrivono e commentano i grafici ottenuti
-
-
 
 \chapter{Conclusioni}
 % speculare all'abstract, si dicono le stesse cose ma invece che "andremo a fare"  si dirà "abbiamo fatto"
 % keyword: ABBIAMO fatto
+L'algoritmo Marching Squares è stato parallelizzato su GPU partendo da codice Python, ottenendo uno speedup di circa 2 volte rispetto alla funzione \verb|find_contours| sulle immagini (reali) acquisite in ambito industriale.
+L'obbiettivo prefissato per il progetto è stato quindi raggiunto con successo. \newline
+La soluzione finale è costituita da un modulo Python che sfrutta le API CUDA Python per interagire con i driver Nvidia e lanciare su GPU i sei kernel CUDA implementati.
+Sono state fatte anche minuziose ispezioni del codice sviluppato dalla libreria scikit-image (skimage) che hanno rivelato livelli di ottimizzazione molto differenti tra i due componenti interni a \verb|find_contours|. I tempi di esecuzione del metodo che hanno dedicato a MS è stato particolarmente ridotto con l'utilizzo del Cython come sostituto del Python per avvicinarsi ai tempi di esecuzione del codice C. Il metodo che congiunge i segmenti di contorno invece è scritto in Python e contiene operazioni su liste che sono estremamente dispendiose in termini di tempo di esecuzione. L'unione di questi due componenti porta \verb|find_contours| a impiegare in certi casi più tempo a unire i segmenti di contorno trovati che a trovarli applicando MS. Se la libreria volesse ridurre ulteriormente il tempo di esecuzione totale dovrebbe indirizzare le proprie risorse sulla fase di ricostruzione dei contorni piuttosto che migliorare ulteriormente la parte di MS. \newline
+Per quanto riguarda la soluzione implementata, le API CUDA Python si sono rivelate uno strumento solido nonostante siano state rilasciate di recente. Per apprenderne il funzionamento è stato necessario un tempo ragionevole basandosi sulle conoscenze in merito alla programmazione CUDA e studiando la documentazione fornita da Nvidia.\newline
+La composizione dei kernel implementati definisce un pattern di programmazione parallela, che permette di arrivare all'esecuzione di un kernel in cui ogni thread determina quanta memoria necessita per scrivere il proprio risultato solo a runtime. I kernel che sono stati progettati sono in grado di calcolare il totale di memoria necessario e le posizioni da cui ogni thread dovrà iniziare a scrivere i propri risultati: permettono quindi di allocare strutture dati della dimensione necessaria e definiscono anche come dovrà essere riempita dal kernel finale. \newline
+Tutti i test e il codice sviluppato sono reperibili al link:\newline \url{https://github.com/AlessandroSciarrillo/marching_squares_parallel_GPU}.
 
-\chapter{Ringraziamenti}
+
+\chapter*{Ringraziamenti}
+
 
 \begin{thebibliography}{9}
 
@@ -1372,8 +1386,6 @@ Nvidia. CUDA Python Documentation: \url{https://nvidia.github.io/cuda-python/}
 GitHub repositories. \newline
 find\_contours.py [commit-a91f4f8]: \url{https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours.py} \newline
 find\_contours.pyx [commit-7511e53]: \url{https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours_cy.pyx}
-
-%TODO citarli nel testo
 
 \end{thebibliography}
 
