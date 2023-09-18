@@ -10,4 +10,4 @@ report/.DS_Store
 report/Thesis/.DS_Store
 report/Thesis/main.synctex.gz
 report/Thesis/*.log
-.DS_Store
+./.DS_Store
