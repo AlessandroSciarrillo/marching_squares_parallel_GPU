@@ -1240,9 +1240,9 @@ I tempi di esecuzione misurati per le due diverse versioni e quello calcolato co
 \toprule
 \multicolumn{1}{c}{ } & \multicolumn{1}{c}{Tempi di esecuzione medi} \\
 \midrule
-Metodo find\_contours (skimage) & 0.001192593 s\\
-Metodo assemble\_contours (skimage) & 0.000629877 s\\
-Metodo con API CUDA-Python  & 0.000283867 s\\
+Metodo find\_contours (skimage) & 0.0011 s\\
+Metodo assemble\_contours (skimage) & 0.0006 s\\
+Metodo con API CUDA-Python  & 0.0002 s\\
 \bottomrule
 \end{tabular*}
 \end{table} 
@@ -1273,8 +1273,8 @@ Gli speedup della versione parallela calcolati sulla base delle misurazioni prec
 \toprule
 \multicolumn{1}{c}{ } & \multicolumn{1}{c}{Speedup stimato} \\
 \midrule
-Rispetto find\_contours                             & 4.201232\\
-Rispetto find\_contours escluso assemble\_contours  & 1.982321\\
+Rispetto find\_contours                             & 4.2012\\
+Rispetto find\_contours escluso assemble\_contours  & 1.9823\\
 \bottomrule
 \end{tabular*}
 \end{table}
@@ -1312,9 +1312,9 @@ I tempi di esecuzione sono stati raccolti con lo stesso metodo descritto per l'i
 \toprule
 \multicolumn{1}{c}{ } & \multicolumn{1}{c}{Tempi di esecuzione medi} \\
 \midrule
-Metodo find\_contours (skimage)       & 0.002102 s\\
-Metodo assemble\_contours (skimage) & 0.001288 s\\
-Metodo con API CUDA-Python          & 0.000310 s\\
+Metodo find\_contours (skimage)       & 0.0021 s\\
+Metodo assemble\_contours (skimage) & 0.0012 s\\
+Metodo con API CUDA-Python          & 0.0003 s\\
 \bottomrule
 \end{tabular*}
 \end{table} 
@@ -1338,8 +1338,8 @@ Per l'immagine artificiale il calcolo dello speedup è stato effettuato nello st
 \toprule
 \multicolumn{1}{c}{ } & \multicolumn{1}{c}{Speedup stimato} \\
 \midrule
-Rispetto find\_contours                             & 6.766283\\
-Rispetto find\_contours escluso assemble\_contours  & 2.620361\\
+Rispetto find\_contours                             & 6.7662\\
+Rispetto find\_contours escluso assemble\_contours  & 2.6203\\
 \bottomrule
 \end{tabular*}
 \end{table} 
@@ -1365,7 +1365,13 @@ Tutti i test e il codice sviluppato sono reperibili al link:\newline \url{https:
 
 
 \chapter*{Ringraziamenti}
-
+Desidero esprimere la mia sincera gratitudine a coloro che hanno reso possibile la realizzazione di questa tesi. \newline
+%Ringrazio il Prof. Moreno Marzolla per aver supervisionato questo lavoro di tesi e avermi dato consigli preziosi per il suo svolgimento. \newline
+Ringrazio il Prof. Moreno Marzolla per la sua preziosa supervisione e i consigli fondamentali che mi ha fornito durante tutto il processo di ricerca. \newline
+%Ringrazio il Dott. Matteo Roffilli e tutto il team Bioretics per le risorse dedicate e avermi dato la possibilità di lavorare su un problema reale di interesse in ambito industriale. \newline
+Un sentito ringraziamento va al Dott. Matteo Roffilli e a tutto il team Bioretics per le risorse generosamente dedicate a questo lavoro e per avermi offerto l'opportunità di affrontare un problema reale di rilevanza industriale. \newline
+%Ringrazio i miei genitori e tutta la mia famiglia per il supporto che mi ha permesso di affrontare questo percorso.
+Infine, vorrei ringraziare i miei genitori e tutta la mia famiglia per il loro costante supporto, che mi ha permesso di superare le sfide di questo percorso.
 
 \begin{thebibliography}{9}
 
