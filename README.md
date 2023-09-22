@@ -1,6 +1,6 @@
 # Marching Squares parallelo su GPU
 
-## Implementazione Marching Squares usta attualmente
+## Implementazione Marching Squares usata attualmente
 
 ### Libreria Skimage implementazione find_contours
 _find_contours.py (https://github.com/scikit-image/scikit-image/blob/main/skimage/measure/_find_contours.py)	
