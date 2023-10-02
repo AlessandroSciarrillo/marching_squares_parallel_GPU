@@ -127,47 +127,6 @@ void prescan(int *output, int *input, size_t n, int *sums) { // n = elements_per
     output[blockOffset + (2 * threadID) + 1] = temp[2 * threadID + 1];
 }
 
-//TODO 
-/* This part is need
-
-https://github.com/mattdean1/cuda/blob/master/parallel-scan/Submission.cu
-
-void scanLargeEvenDeviceArray(int *d_out, int *d_in, int length, bool bcao) {
-	const int blocks = length / ELEMENTS_PER_BLOCK;
-	const int sharedMemArraySize = ELEMENTS_PER_BLOCK * sizeof(int);
-
-	int *d_sums, *d_incr;
-	cudaMalloc((void **)&d_sums, blocks * sizeof(int));
-	cudaMalloc((void **)&d_incr, blocks * sizeof(int));
-
-	if (bcao) {
-		prescan_large<<<blocks, THREADS_PER_BLOCK, 2 * sharedMemArraySize>>>(d_out, d_in, ELEMENTS_PER_BLOCK, d_sums);
-	}
-	else {
-		prescan_large_unoptimized<<<blocks, THREADS_PER_BLOCK, 2 * sharedMemArraySize>>>(d_out, d_in, ELEMENTS_PER_BLOCK, d_sums);
-	}
-
-    ======================== TODO questa parte non è
-    ||
-    V
-
-	const int sumsArrThreadsNeeded = (blocks + 1) / 2;
-	if (sumsArrThreadsNeeded > THREADS_PER_BLOCK) {
-		// perform a large scan on the sums arr
-		scanLargeDeviceArray(d_incr, d_sums, blocks, bcao);
-	}
-	else {
-		// only need one block to scan sums arr so can use small scan
-		scanSmallDeviceArray(d_incr, d_sums, blocks, bcao);
-	}
-
-	add<<<blocks, ELEMENTS_PER_BLOCK>>>(d_out, ELEMENTS_PER_BLOCK, d_incr);
-
-	cudaFree(d_sums);
-	cudaFree(d_incr);
-}
-
-*/
 extern "C" __global__ 
 void prescan_small(int *output, int *input, int n, int powerOfTwo) {
 	extern __shared__ int temp[1024];  //TODO make dynamic from kernel launch call // allocated on invocation
